@@ -410,8 +410,8 @@ void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj)
             for (const auto& att : *attValues)
             {
                 if (att.GetName() == "PostT") {
-                    double timeNs = std::stod(att.GetValue()) / CLHEP::ns;
-                    td.time = std::to_string(timeNs) + " ns";
+                    //double timeNs = std::stod(att.GetValue()) / CLHEP::ps;
+                    td.time = att.GetValue();
                 } else if (att.GetName() == "TED") { // total energy deposit
                     td.edep = att.GetValue();
                 } else if (att.GetName() == "PDS") { // process defined step
