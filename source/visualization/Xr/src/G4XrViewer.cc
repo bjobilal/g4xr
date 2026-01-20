@@ -1,7 +1,6 @@
 #include "G4XrViewer.hh"
 #include "G4VSceneHandler.hh"
-#include "G4XrSceneHandler.hh" 
-#include "zlib.h"
+#include "G4XrSceneHandler.hh" //BEN
 
 // tinygltf
 // Define these only in *one* .cc file.
@@ -200,69 +199,30 @@ std::string G4XrViewer::get_local_ip()
 void G4XrViewer::push_file(const std::string& dirname)
 {
     httplib::Client cli(URL.c_str());
-
-    std::string clean_dir = dirname;
-    if (!clean_dir.empty() && clean_dir.front() == '/')
-        clean_dir.erase(0, 1);
-
-    std::filesystem::path dir = std::filesystem::current_path() / clean_dir;
-
-    for (const auto& entry : std::filesystem::directory_iterator(dir))
+    
+    for (const auto& entry : std::filesystem::directory_iterator(std::filesystem::current_path().c_str()+dirname))
     {
-        if (entry.is_regular_file() &&
-            std::find(pushedFiles.begin(), pushedFiles.end(),
-                      entry.path().filename().string()) == pushedFiles.end())
+        if (entry.is_regular_file() && (std::find(pushedFiles.begin(), pushedFiles.end(), entry.path().filename().string()) == pushedFiles.end()))
         {
-            std::cout << "Pushing " << entry.path().filename().string()
-                      << " from " << dir << std::endl;
-
+            std::cout<<"Pushing "<<entry.path().filename().string()<<" from "<<std::filesystem::current_path().c_str()+dirname<<std::endl;
             auto filepath = entry.path();
             std::ifstream ifs(filepath, std::ios::binary);
-            std::string content((std::istreambuf_iterator<char>(ifs)),
-                                 std::istreambuf_iterator<char>());
-
-            if (filepath.extension() == ".csv")
-                content = compress_csv(content);
-
+            std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+            
             httplib::MultipartFormDataItems items = {
-                {
-                    "file",
-                    content,
-                    filepath.filename().string() +
-                        (filepath.extension() == ".csv" ? ".gz" : ""),
-                    "application/octet-stream"
-                }
+                { "file", content, filepath.filename().string(), "application/octet-stream" }
             };
-
-            auto res = cli.Post("/upload/testuser", items);
+            auto res = cli.Post(("/upload/testuser"), items); // "testuser" is arbitrary as long as it is consistent with where G4VR looks...
             if (!res)
-            {
-                std::cerr << "Server Connection Lost\n";
-                return;
-            }
-
-            pushedFiles.push_back(filepath.filename().string());
-
+            {std::cerr << "Server Connection Lost\n"; return;}
+            
+            pushedFiles.push_back(entry.path().filename().string());
+            
             G4UImanager::GetUIpointer()->ApplyCommand("/vis/scene/notifyHandlers");
             G4UImanager::GetUIpointer()->ApplyCommand("/vis/viewer/update");
         }
+
     }
-}
-
-
-
-
-std::string G4XrViewer::compress_csv(const std::string& csvData)
-{
-    uLongf compressedSize = compressBound(csvData.size());
-    std::string compressedData(compressedSize, '\0');
-
-    int res = compress(reinterpret_cast<Bytef*>(&compressedData[0]), &compressedSize, reinterpret_cast<const Bytef*>(csvData.data()), csvData.size());
-    if (res != Z_OK) {
-        throw std::runtime_error("Compression failed");
-    }
-    compressedData.resize(compressedSize);
-    return compressedData;
 }
 
 
