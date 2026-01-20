@@ -103,7 +103,7 @@ void G4XrSceneHandler::AddPrimitive(const G4Polyline& polyline)
             if(loggedIDs.find(trackID)==loggedIDs.end()) // prevents logging a particular trajectory more than once
             {
                 loggedIDs.insert(trackID);
-                CollectTrackData(traj);
+                CollectTrackData(traj, fObjectTransformation);
             }
         }
     }
@@ -174,7 +174,8 @@ void G4XrSceneHandler::AddPrimitive(const G4Polyhedron& polyhedron)
         mesh.positions.reserve(vertexno);
         for (int i = 1; i <= vertexno; ++i) {
             G4Point3D v = polyhedron.GetVertex(i);
-            G4ThreeVector worldV = fObjectTransformation * v;
+            //G4ThreeVector worldV = fObjectTransformation * v;
+            G4ThreeVector worldV = v;
             mesh.positions.push_back(worldV);
         }
         
@@ -407,7 +408,7 @@ void G4XrSceneHandler::ConvertMeshToGLB(const std::vector<MeshData>& meshList, c
 }
 
 
-void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj)
+void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, G4Transform3D fObjectTransformation)
 {
     G4String trackID = std::to_string(traj->GetTrackID());
     G4String particleName = traj->GetParticleName();
@@ -422,12 +423,16 @@ void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj)
         if (!point) continue;
 
         const G4ThreeVector& pos = point->GetPosition();
-        
+
+        G4ThreeVector visPos = G4Point3D(pos.x(), pos.y(), pos.z());
+
         TrackData td;
         td.trackID = trackID;
         td.particleName = particleName;
         td.step = std::to_string(i);
-        td.x = std::to_string(pos.x()); td.y = std::to_string(pos.y());td.z = std::to_string(pos.z());
+        td.x = std::to_string(visPos.x());
+        td.y = std::to_string(visPos.y());
+        td.z = std::to_string(visPos.z());        
         td.charge = charge;
 
         std::vector<G4AttValue>* attValues = point->CreateAttValues();
