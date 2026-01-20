@@ -221,9 +221,6 @@ void G4XrViewer::push_file(const std::string& dirname)
             std::string content((std::istreambuf_iterator<char>(ifs)),
                                  std::istreambuf_iterator<char>());
 
-            if (filepath.extension() == ".csv")
-                content = compress_csv(content);
-
             httplib::MultipartFormDataItems items = {
                 {
                     "file",
@@ -248,23 +245,6 @@ void G4XrViewer::push_file(const std::string& dirname)
         }
     }
 }
-
-
-
-
-std::string G4XrViewer::compress_csv(const std::string& csvData)
-{
-    uLongf compressedSize = compressBound(csvData.size());
-    std::string compressedData(compressedSize, '\0');
-
-    int res = compress(reinterpret_cast<Bytef*>(&compressedData[0]), &compressedSize, reinterpret_cast<const Bytef*>(csvData.data()), csvData.size());
-    if (res != Z_OK) {
-        throw std::runtime_error("Compression failed");
-    }
-    compressedData.resize(compressedSize);
-    return compressedData;
-}
-
 
 
 

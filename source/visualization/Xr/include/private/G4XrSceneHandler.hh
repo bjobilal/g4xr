@@ -44,6 +44,7 @@
 
 #include <map>
 #include <vector>
+#include </opt/homebrew/include/H5Cpp.h>
 
 struct MeshData {
     std::string name;
@@ -56,23 +57,26 @@ struct MeshData {
 struct TrackData {
     std::string trackID;
     std::string particleName;
+    std::string charge;
     std::string step;
-    std::string x,y,z;
-    std::string px,py,pz;
-
-    std::string energy;
-    
-    std::string time;
-    std::string edep;
+    std::string x;  
+    std::string y;
+    std::string z;
+    std::string time;   
+    std::string edep;    
     std::string process;
-    
-    double charge;
+    std::string px; 
+    std::string py;
+    std::string pz;
+    std::string energy; 
 };
+
 
 struct HitData {
-    std::string x,y,z;
-    std::string edep = "0.0";
+    std::string x, y, z;
+    std::string edep;
 };
+
 
 class G4XrSceneHandler : public G4VSceneHandler
 {
@@ -94,15 +98,17 @@ class G4XrSceneHandler : public G4VSceneHandler
     void CollectHitData(const G4VHit* hit);
     void EndModeling() override;
     
+    void InitHDF5(const std::string& fname);
+
     void ConvertMeshToGLB(const std::vector<MeshData>& meshList, const std::string& outputFile);
-    void WriteToJSON(const std::string& filename);
-    void WriteToCSV(const std::string& filename, const TrackData td);
-    void WriteToCSV(const std::string& filename, const HitData hd);
+    void WriteTrackHDF5(const std::string& fname, const TrackData& td);
+    void WriteHitHDF5(const std::string& fname, const HitData& hd);
     
     std::vector<MeshData> GetCollectedMeshes(){return collectedMeshes;}
     std::vector<TrackData> GetCollectedTracks(){return collectedTracks;}
     
-    
+    H5::CompType CreateTrack(); 
+    H5::CompType CreateHit();
 
   protected:
     static G4int fSceneIdCount;  // Counter for Vtk scene handlers.

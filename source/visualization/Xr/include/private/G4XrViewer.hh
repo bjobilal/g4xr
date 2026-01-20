@@ -35,6 +35,7 @@
 
 
 #include "httplib.h"
+#include </opt/homebrew/include/H5Cpp.h>
 
 #include "G4VViewer.hh"
 #include "G4XrSceneHandler.hh"
@@ -83,8 +84,6 @@ class G4XrViewer : public G4VViewer
     static std::string get_local_ip();
     void push_file(const std::string& dirname = "/GLTF"); 
     int server_init();
-    std::string compress_csv(const std::string& csvData);
-    
 };
 
 

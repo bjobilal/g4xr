@@ -466,7 +466,7 @@ void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj)
             delete attValues;
         }
         collectedTracks.push_back(td);
-        WriteToCSV((fs::current_path() / "GLTF" / ("run" + std::to_string(runno) + ".csv")).string(), td);
+        WriteTrackHDF5((fs::current_path() / "GLTF" / ("run" + std::to_string(runno) + ".h5")).string(), td);
     }
 }
 
@@ -485,7 +485,8 @@ void G4XrSceneHandler::CollectHitData(const G4VHit* hit)
             const G4AttValue& attVal = attVals->at(i);
             const G4String& name = attVal.GetName();
             const G4String& value = attVal.GetValue();
-            if (name == "Pos") {
+            if (name == "Pos") 
+            {
                 std::istringstream iss(value);
                 G4double x, y, z;
                 iss >> x >> y >> z;
@@ -500,26 +501,125 @@ void G4XrSceneHandler::CollectHitData(const G4VHit* hit)
         if (!hd.x.empty() && !hd.y.empty() && !hd.z.empty())
         {
             collectedHits.push_back(hd);
-            WriteToCSV((fs::current_path() / "GLTF" / ("run" + std::to_string(runno) + ".csv")).string(), hd);
+            WriteHitHDF5((fs::current_path() / "GLTF" / ("run" + std::to_string(runno) + ".h5")).string(), hd);
         }
     }
 }
 
+// HDF5 File Writing
 
-void G4XrSceneHandler::WriteToCSV(const std::string& filename, const TrackData td) // called with every traj entry
-{
-    std::ofstream file(filename,std::ios::app);
-    file << "track,"<< td.trackID << ","<< td.particleName << "," << td.charge << ","<< td.step << ","<< td.x << ","<< td.y << ","<< td.z << ","<< td.time << ","<< td.edep<< "," << td.process << "," << td.px << ","<< td.py<< "," << td.pz << "," << td.energy << "\n";
-    
-    // the order is track, ID, pName, charge, step, x,y,z, time, edep, process, px, py, pz, energy.
-    file.close();
+void G4XrSceneHandler::InitHDF5(const std::string& fname) {
+    H5::H5File file(fname, H5F_ACC_TRUNC);
+
+    hsize_t dims[1]     = {0};
+    hsize_t maxdims[1]  = {H5S_UNLIMITED};
+    H5::DataSpace space(1, dims, maxdims);
+
+    H5::DSetCreatPropList plist;
+    hsize_t chunk[1] = {1024};
+    plist.setChunk(1, chunk);
+    plist.setDeflate(6); 
+
+    file.createDataSet("/tracks", CreateTrack(), space, plist);
+    file.createDataSet("/hits",   CreateHit(),   space, plist);
 }
 
-void G4XrSceneHandler::WriteToCSV(const std::string& filename, const HitData hd) // called with every hit entry
+H5::CompType G4XrSceneHandler::CreateTrack() 
 {
-    std::ofstream file(filename,std::ios::app);
-    file << "hit,"<< hd.x << ","<< hd.y << ","<< hd.z << "," << hd.edep << "\n";
-    file.close();
+    H5::CompType t(sizeof(TrackData));
+    t.insertMember("trackID",        HOFFSET(TrackData, trackID), H5::PredType::NATIVE_INT);
+    t.insertMember("charge",         HOFFSET(TrackData, charge),  H5::PredType::NATIVE_INT);
+    t.insertMember("step",           HOFFSET(TrackData, step),    H5::PredType::NATIVE_INT);
+    t.insertMember("x",              HOFFSET(TrackData, x),       H5::PredType::NATIVE_DOUBLE);
+    t.insertMember("y",              HOFFSET(TrackData, y),       H5::PredType::NATIVE_DOUBLE);
+    t.insertMember("z",              HOFFSET(TrackData, z),       H5::PredType::NATIVE_DOUBLE);
+    t.insertMember("time",           HOFFSET(TrackData, time),    H5::PredType::NATIVE_DOUBLE);
+    t.insertMember("edep",           HOFFSET(TrackData, edep),    H5::PredType::NATIVE_DOUBLE);
+    t.insertMember("px",              HOFFSET(TrackData, px),     H5::PredType::NATIVE_DOUBLE);
+    t.insertMember("py",              HOFFSET(TrackData, py),     H5::PredType::NATIVE_DOUBLE);
+    t.insertMember("pz",              HOFFSET(TrackData, pz),     H5::PredType::NATIVE_DOUBLE);
+    t.insertMember("energy",         HOFFSET(TrackData, energy),  H5::PredType::NATIVE_DOUBLE);
+
+    H5::StrType s(H5::PredType::C_S1, 32);
+    t.insertMember("particleName",   HOFFSET(TrackData, particleName), s);
+    t.insertMember("process",        HOFFSET(TrackData, process),      s);
+
+    return t;
 }
+
+H5::CompType G4XrSceneHandler::CreateHit() 
+{
+    H5::CompType t(sizeof(HitData));
+    t.insertMember("x",     HOFFSET(HitData, x),     H5::PredType::NATIVE_DOUBLE);
+    t.insertMember("y",     HOFFSET(HitData, y),     H5::PredType::NATIVE_DOUBLE);
+    t.insertMember("z",     HOFFSET(HitData, z),     H5::PredType::NATIVE_DOUBLE);
+    t.insertMember("edep",  HOFFSET(HitData, edep),  H5::PredType::NATIVE_DOUBLE);
+    return t;
+}
+
+void G4XrSceneHandler::WriteTrackHDF5(const std::string& fname, const TrackData& td)
+{
+    if (!std::filesystem::exists(fname))
+        InitHDF5(fname);
+
+    H5::H5File file(fname, H5F_ACC_RDWR);
+    H5::DataSet ds = file.openDataSet("/tracks");
+
+    hsize_t size;
+    ds.getSpace().getSimpleExtentDims(&size);
+
+    hsize_t newSize = size + 1;
+    ds.extend(&newSize);
+
+    H5::DataSpace fspace = ds.getSpace();
+    hsize_t start[1] = {size};
+    hsize_t count[1] = {1};
+    fspace.selectHyperslab(H5S_SELECT_SET, count, start);
+
+    H5::DataSpace mspace(1, count);
+
+    TrackData row{};
+    row.trackID = td.trackID;
+    row.charge  = td.charge;
+    row.step    = td.step;
+    row.x = td.x; row.y = td.y; row.z = td.z;
+    row.time = td.time;
+    row.edep = td.edep;
+    row.px = td.px; row.py = td.py; row.pz = td.pz;
+    row.energy = td.energy;
+
+    row.particleName = td.particleName;
+    row.process = td.process;
+
+    ds.write(&row, CreateTrack(), mspace, fspace);
+}
+
+void G4XrSceneHandler::WriteHitHDF5(const std::string& fname, const HitData& hd)
+{
+    if (!std::filesystem::exists(fname))
+        InitHDF5(fname);
+
+    H5::H5File file(fname, H5F_ACC_RDWR);
+    H5::DataSet ds = file.openDataSet("/hits");
+
+    hsize_t size;
+    ds.getSpace().getSimpleExtentDims(&size);
+
+    hsize_t newSize = size + 1;
+    ds.extend(&newSize);
+
+    H5::DataSpace fspace = ds.getSpace();
+    hsize_t start[1] = {size};
+    hsize_t count[1] = {1};
+    fspace.selectHyperslab(H5S_SELECT_SET, count, start);
+
+    H5::DataSpace mspace(1, count);
+
+    HitData row{hd.x, hd.y, hd.z, hd.edep};
+    ds.write(&row, CreateHit(), mspace, fspace);
+}
+
+
+
 
 
