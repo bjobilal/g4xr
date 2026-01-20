@@ -220,146 +220,190 @@ void G4XrSceneHandler::EndModeling()
     }
 }
 
-void G4XrSceneHandler::ConvertMeshToGLB(const std::vector<MeshData>& meshList, const std::string& outputFile)
+void G4XrSceneHandler::ConvertMeshToGLB(const std::vector<MeshData>& meshList,
+                                        const std::string& outputFile)
 {
     tinygltf::Model model;
     tinygltf::Scene scene;
     scene.name = "G4Scene";
 
-    for (size_t meshIndex = 0; meshIndex < meshList.size(); ++meshIndex)
+    model.extensionsUsed.push_back("EXT_mesh_gpu_instancing");
+    model.extensionsRequired.push_back("EXT_mesh_gpu_instancing");
+
+    const MeshData& mesh = meshList[0]; 
+
+    std::vector<float> vertices;
+    for (auto& v : mesh.positions)
     {
-        const MeshData& mesh = meshList[meshIndex];
-        std::vector<float> vertices;
-        for ( auto& v : mesh.positions)
-        {
-            vertices.push_back(static_cast<float>(v.x()));
-            vertices.push_back(static_cast<float>(v.y()));
-            vertices.push_back(static_cast<float>(v.z()));
-        }
-
-        std::vector<uint16_t> indices(mesh.indices.begin(), mesh.indices.end());
-
-
-        tinygltf::Buffer buffer;
-
-        int vertexBufferByteLength = vertices.size() * sizeof(float);
-        buffer.data.insert(buffer.data.end(),
-            reinterpret_cast<const unsigned char*>(vertices.data()),
-            reinterpret_cast<const unsigned char*>(vertices.data() + vertices.size()));
-
-        int alignedVertexByteLength = alignTo4(vertexBufferByteLength);
-        buffer.data.insert(buffer.data.end(), alignedVertexByteLength - vertexBufferByteLength, 0);
-
-        int indexBufferByteOffset = alignedVertexByteLength;
-        int indexBufferByteLength = indices.size() * sizeof(uint16_t);
-        buffer.data.insert(buffer.data.end(),
-            reinterpret_cast<const unsigned char*>(indices.data()),
-            reinterpret_cast<const unsigned char*>(indices.data() + indices.size()));
-
-        int bufferIndex = model.buffers.size();
-        model.buffers.push_back(buffer);
-
-        // position bufferViews
-        tinygltf::BufferView positionBufferView;
-        positionBufferView.buffer = bufferIndex;
-        positionBufferView.byteOffset = 0;
-        positionBufferView.byteLength = vertexBufferByteLength;
-        positionBufferView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
-
-        int positionBufferViewIndex = model.bufferViews.size();
-        model.bufferViews.push_back(positionBufferView);
-
-        // index bufferViews
-        tinygltf::BufferView indexBufferView;
-        indexBufferView.buffer = bufferIndex;
-        indexBufferView.byteOffset = indexBufferByteOffset;
-        indexBufferView.byteLength = indexBufferByteLength;
-        indexBufferView.target = TINYGLTF_TARGET_ELEMENT_ARRAY_BUFFER;
-
-        int indexBufferViewIndex = model.bufferViews.size();
-        model.bufferViews.push_back(indexBufferView);
-
-        // position accessors
-        tinygltf::Accessor positionAccessor;
-        positionAccessor.bufferView = positionBufferViewIndex;
-        positionAccessor.byteOffset = 0;
-        positionAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
-        positionAccessor.count = vertices.size() / 3;
-        positionAccessor.type = TINYGLTF_TYPE_VEC3;
-
-        float minX = std::numeric_limits<float>::max();
-        float minY = std::numeric_limits<float>::max();
-        float minZ = std::numeric_limits<float>::max();
-        float maxX = std::numeric_limits<float>::lowest();
-        float maxY = std::numeric_limits<float>::lowest();
-        float maxZ = std::numeric_limits<float>::lowest();
-
-        for (size_t i = 0; i < vertices.size(); i += 3)
-        {
-            float x = vertices[i];
-            float y = vertices[i + 1];
-            float z = vertices[i + 2];
-            minX = std::min(minX, x);
-            minY = std::min(minY, y);
-            minZ = std::min(minZ, z);
-            maxX = std::max(maxX, x);
-            maxY = std::max(maxY, y);
-            maxZ = std::max(maxZ, z);
-        }
-
-        positionAccessor.minValues = { minX, minY, minZ };
-        positionAccessor.maxValues = { maxX, maxY, maxZ };
-
-        model.accessors.push_back(positionAccessor);
-
-        // index accessors
-        tinygltf::Accessor indexAccessor;
-        indexAccessor.bufferView = model.bufferViews.size() - 1;
-        indexAccessor.byteOffset = 0;
-        indexAccessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT;
-        indexAccessor.count = indices.size();
-        indexAccessor.type = TINYGLTF_TYPE_SCALAR;
-        model.accessors.push_back(indexAccessor);
-        
-        // material matching
-        tinygltf::Material material;
-        material.name = mesh.name + "_mat";
-        material.pbrMetallicRoughness.baseColorFactor = {mesh.lvColour.GetRed(), mesh.lvColour.GetGreen(), mesh.lvColour.GetBlue(), 0.1f}; // alpha specified here so G4VR doesn't have to manipulate the geometries further - BEN
-        material.alphaMode = "BLEND"; // to impose opacity.
-        material.pbrMetallicRoughness.metallicFactor = 0.0;
-        material.pbrMetallicRoughness.roughnessFactor = 0.0; // these are defaults - no physical meaning.
-        material.emissiveFactor = {mesh.lvColour.GetRed(), mesh.lvColour.GetGreen(), mesh.lvColour.GetBlue()};
-        
-        int materialIndex = model.materials.size();
-        model.materials.push_back(material);
-
-        tinygltf::Primitive primitive;
-        primitive.attributes["POSITION"] = model.accessors.size() - 2;
-        primitive.indices = model.accessors.size() - 1;
-        primitive.material = materialIndex;
-        primitive.mode = TINYGLTF_MODE_TRIANGLES;
-
-        tinygltf::Mesh gltfMesh;
-        gltfMesh.name = mesh.name;
-        gltfMesh.primitives.push_back(primitive);
-        model.meshes.push_back(gltfMesh);
-
-        tinygltf::Node node;
-        node.mesh = model.meshes.size() - 1;
-        model.nodes.push_back(node);
-        scene.nodes.push_back(model.nodes.size() - 1);
+        vertices.push_back((float)v.x());
+        vertices.push_back((float)v.y());
+        vertices.push_back((float)v.z());
     }
 
+    std::vector<uint16_t> indices(mesh.indices.begin(), mesh.indices.end());
+
+    tinygltf::Buffer buffer;
+    buffer.data.insert(buffer.data.end(),
+        reinterpret_cast<const unsigned char*>(vertices.data()),
+        reinterpret_cast<const unsigned char*>(vertices.data() + vertices.size()));
+
+    int alignedVertexByteLength = alignTo4(vertices.size() * sizeof(float));
+    buffer.data.insert(buffer.data.end(), alignedVertexByteLength - vertices.size() * sizeof(float), 0);
+
+    int indexOffset = alignedVertexByteLength;
+    buffer.data.insert(buffer.data.end(),
+        reinterpret_cast<const unsigned char*>(indices.data()),
+        reinterpret_cast<const unsigned char*>(indices.data() + indices.size()));
+
+    int bufferIndex = model.buffers.size();
+    model.buffers.push_back(buffer);
+
+    // position view
+    tinygltf::BufferView posView;
+    posView.buffer = bufferIndex;
+    posView.byteOffset = 0;
+    posView.byteLength = vertices.size() * sizeof(float);
+    posView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+    int posViewIdx = model.bufferViews.size();
+    model.bufferViews.push_back(posView);
+
+    // index view
+    tinygltf::BufferView idxView;
+    idxView.buffer = bufferIndex;
+    idxView.byteOffset = indexOffset;
+    idxView.byteLength = indices.size() * sizeof(uint16_t);
+    idxView.target = TINYGLTF_TARGET_ELEMENT_ARRAY_BUFFER;
+    int idxViewIdx = model.bufferViews.size();
+    model.bufferViews.push_back(idxView);
+
+    // position accessor
+    tinygltf::Accessor posAcc;
+    posAcc.bufferView = posViewIdx;
+    posAcc.byteOffset = 0;
+    posAcc.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+    posAcc.count = vertices.size() / 3;
+    posAcc.type = TINYGLTF_TYPE_VEC3;
+    model.accessors.push_back(posAcc);
+
+    // index accessor
+    tinygltf::Accessor idxAcc;
+    idxAcc.bufferView = idxViewIdx;
+    idxAcc.byteOffset = 0;
+    idxAcc.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT;
+    idxAcc.count = indices.size();
+    idxAcc.type = TINYGLTF_TYPE_SCALAR;
+    model.accessors.push_back(idxAcc);
+
+
+    tinygltf::Material material;
+    material.name = "instanced_mat";
+    material.pbrMetallicRoughness.baseColorFactor = {1, 1, 1, 1};
+    material.alphaMode = "OPAQUE";
+    model.materials.push_back(material);
+
+    tinygltf::Primitive prim;
+    prim.attributes["POSITION"] = 0; // index of posAcc
+    prim.indices = 1;                // index of idxAcc
+    prim.material = 0;
+
+    tinygltf::Mesh gltfMesh;
+    gltfMesh.primitives.push_back(prim);
+    model.meshes.push_back(gltfMesh);
+
+    std::vector<float> translations;
+    std::vector<float> rotations;
+    std::vector<float> scales;
+
+    translations.insert(translations.end(), {0,0,0,  5,0,0,  0,5,0});
+    rotations.insert(rotations.end(), {0,0,0,1,  0,0,0,1,  0,0,0,1});
+    scales.insert(scales.end(), {1,1,1,  1,1,1,  1,1,1});
+
+    tinygltf::Buffer instBuffer;
+    instBuffer.data.insert(instBuffer.data.end(),
+        reinterpret_cast<const unsigned char*>(translations.data()),
+        reinterpret_cast<const unsigned char*>(translations.data() + translations.size()));
+
+    int rotOffset = instBuffer.data.size();
+    instBuffer.data.insert(instBuffer.data.end(),
+        reinterpret_cast<const unsigned char*>(rotations.data()),
+        reinterpret_cast<const unsigned char*>(rotations.data() + rotations.size()));
+
+    int scaleOffset = instBuffer.data.size();
+    instBuffer.data.insert(instBuffer.data.end(),
+        reinterpret_cast<const unsigned char*>(scales.data()),
+        reinterpret_cast<const unsigned char*>(scales.data() + scales.size()));
+
+    int instBufferIndex = model.buffers.size();
+    model.buffers.push_back(instBuffer);
+
+    tinygltf::BufferView transView;
+    transView.buffer = instBufferIndex;
+    transView.byteOffset = 0;
+    transView.byteLength = translations.size() * sizeof(float);
+    transView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+    int transViewIdx = model.bufferViews.size();
+    model.bufferViews.push_back(transView);
+
+    tinygltf::BufferView rotView;
+    rotView.buffer = instBufferIndex;
+    rotView.byteOffset = rotOffset;
+    rotView.byteLength = rotations.size() * sizeof(float);
+    rotView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+    int rotViewIdx = model.bufferViews.size();
+    model.bufferViews.push_back(rotView);
+
+    tinygltf::BufferView scaleView;
+    scaleView.buffer = instBufferIndex;
+    scaleView.byteOffset = scaleOffset;
+    scaleView.byteLength = scales.size() * sizeof(float);
+    scaleView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+    int scaleViewIdx = model.bufferViews.size();
+    model.bufferViews.push_back(scaleView);
+
+    tinygltf::Accessor transAcc;
+    transAcc.bufferView = transViewIdx;
+    transAcc.byteOffset = 0;
+    transAcc.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+    transAcc.count = translations.size() / 3;
+    transAcc.type = TINYGLTF_TYPE_VEC3;
+    model.accessors.push_back(transAcc);
+
+    tinygltf::Accessor rotAcc;
+    rotAcc.bufferView = rotViewIdx;
+    rotAcc.byteOffset = 0;
+    rotAcc.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+    rotAcc.count = rotations.size() / 4;
+    rotAcc.type = TINYGLTF_TYPE_VEC4;
+    model.accessors.push_back(rotAcc);
+
+    tinygltf::Accessor scaleAcc;
+    scaleAcc.bufferView = scaleViewIdx;
+    scaleAcc.byteOffset = 0;
+    scaleAcc.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+    scaleAcc.count = scales.size() / 3;
+    scaleAcc.type = TINYGLTF_TYPE_VEC3;
+    model.accessors.push_back(scaleAcc);
+
+    tinygltf::Node node;
+    node.mesh = 0;
+
+    tinygltf::Value::Object attrObj;
+    attrObj["TRANSLATION"] = tinygltf::Value((int)(model.accessors.size() - 3));
+    attrObj["ROTATION"]    = tinygltf::Value((int)(model.accessors.size() - 2));
+    attrObj["SCALE"]       = tinygltf::Value((int)(model.accessors.size() - 1));
+
+    tinygltf::Value::Object instObj;
+    instObj["attributes"] = tinygltf::Value(attrObj);
+
+    node.extensions["EXT_mesh_gpu_instancing"] = tinygltf::Value(instObj);
+
+    model.nodes.push_back(node);
+    scene.nodes.push_back(model.nodes.size() - 1);
     model.scenes.push_back(scene);
     model.defaultScene = 0;
 
     tinygltf::TinyGLTF gltf;
-    std::string err, warn;
-
-    bool write_status = gltf.WriteGltfSceneToFile(&model, outputFile, true, true, false, true); // glb file writing
-    
-    if(write_status) glbState = true;
-
+    gltf.WriteGltfSceneToFile(&model, outputFile, true, true, false, true);
 }
 
 
