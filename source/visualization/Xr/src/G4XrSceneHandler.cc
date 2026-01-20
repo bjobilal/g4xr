@@ -220,8 +220,7 @@ void G4XrSceneHandler::EndModeling()
     }
 }
 
-void G4XrSceneHandler::ConvertMeshToGLB(const std::vector<MeshData>& meshList,
-                                        const std::string& outputFile)
+void G4XrSceneHandler::ConvertMeshToGLB(const std::vector<MeshData>& meshList, const std::string& outputFile)
 {
     tinygltf::Model model;
     tinygltf::Scene scene;
@@ -302,11 +301,12 @@ void G4XrSceneHandler::ConvertMeshToGLB(const std::vector<MeshData>& meshList,
     model.materials.push_back(material);
 
     tinygltf::Primitive prim;
-    prim.attributes["POSITION"] = 0; // index of posAcc
-    prim.indices = 1;                // index of idxAcc
+    prim.attributes["POSITION"] = 0; 
+    prim.indices = 1;                
     prim.material = 0;
 
     tinygltf::Mesh gltfMesh;
+    gltfMesh.name = mesh.name;
     gltfMesh.primitives.push_back(prim);
     model.meshes.push_back(gltfMesh);
 
