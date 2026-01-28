@@ -90,7 +90,7 @@ class G4XrSceneHandler : public G4VSceneHandler
     void AddPrimitive(const G4Square&) override;
     void AddPrimitive(const G4Polyhedron&) override;
     
-    void CollectTrackData(const G4VTrajectory* traj, G4Transform3D);
+    void CollectTrackData(const G4VTrajectory* traj);
     void CollectHitData(const G4VHit* hit);
     void EndModeling() override;
     
