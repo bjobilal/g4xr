@@ -174,7 +174,10 @@ void G4XrSceneHandler::AddPrimitive(const G4Polyhedron& polyhedron)
         mesh.positions.reserve(vertexno);
         for (int i = 1; i <= vertexno; ++i) {
             G4Point3D v = polyhedron.GetVertex(i);
-            G4ThreeVector worldV = v;
+            const G4Transform3D& T = fObjectTransformation;
+            G4RotationMatrix R = T.getRotation();
+            G4ThreeVector     P = T.getTranslation();
+            G4ThreeVector worldV = R * v + P;
             mesh.positions.push_back(worldV);
         }
         
