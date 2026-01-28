@@ -52,8 +52,6 @@
 #include <chrono>
 #include <stdio.h>
 #include <vector>
-#include <string>
-#include <stdexcept>
 
 namespace fs = std::filesystem;
 
@@ -83,7 +81,7 @@ class G4XrViewer : public G4VViewer
     static std::string get_local_ip();
     void push_file(const std::string& dirname = "/GLTF"); 
     int server_init();
-    std::string compress_csv(const std::string& csvData);
+    
     
 };
 

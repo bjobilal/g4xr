@@ -103,7 +103,7 @@ void G4XrSceneHandler::AddPrimitive(const G4Polyline& polyline)
             if(loggedIDs.find(trackID)==loggedIDs.end()) // prevents logging a particular trajectory more than once
             {
                 loggedIDs.insert(trackID);
-                CollectTrackData(traj, fObjectTransformation);
+                CollectTrackData(traj);
             }
         }
     }
@@ -365,7 +365,7 @@ void G4XrSceneHandler::ConvertMeshToGLB(const std::vector<MeshData>& meshList, c
 
 }
 
-void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, G4Transform3D fObjectTransformation)
+void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj)
 {
     G4String trackID = std::to_string(traj->GetTrackID());
     G4String particleName = traj->GetParticleName();
@@ -380,16 +380,12 @@ void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, G4Transform3D
         if (!point) continue;
 
         const G4ThreeVector& pos = point->GetPosition();
-
-        G4ThreeVector visPos = G4Point3D(pos.x(), pos.y(), pos.z());
-
+        
         TrackData td;
         td.trackID = trackID;
         td.particleName = particleName;
         td.step = std::to_string(i);
-        td.x = std::to_string(visPos.x());
-        td.y = std::to_string(visPos.y());
-        td.z = std::to_string(visPos.z());        
+        td.x = std::to_string(pos.x()); td.y = std::to_string(pos.y());td.z = std::to_string(pos.z());
         td.charge = charge;
 
         std::vector<G4AttValue>* attValues = point->CreateAttValues();
@@ -416,8 +412,8 @@ void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, G4Transform3D
             for (const auto& att : *attValues)
             {
                 if (att.GetName() == "PostT") {
-                    //double timeNs = std::stod(att.GetValue()) / CLHEP::ps;
-                    td.time = att.GetValue();
+                    double timeNs = std::stod(att.GetValue()) / CLHEP::ns;
+                    td.time = std::to_string(timeNs) + " ns";
                 } else if (att.GetName() == "TED") { // total energy deposit
                     td.edep = att.GetValue();
                 } else if (att.GetName() == "PDS") { // process defined step
@@ -483,5 +479,4 @@ void G4XrSceneHandler::WriteToCSV(const std::string& filename, const HitData hd)
     file << "hit,"<< hd.x << ","<< hd.y << ","<< hd.z << "," << hd.edep << "\n";
     file.close();
 }
-
 
