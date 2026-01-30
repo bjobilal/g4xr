@@ -41,6 +41,7 @@
 #include "G4Polyhedron.hh"
 #include "G4Transform3D.hh"
 #include "G4ThreeVector.hh"
+#include "G4VisAttributes.hh"
 
 #include <map>
 #include <vector>
@@ -65,6 +66,10 @@ struct TrackData {
     std::string time;
     std::string edep;
     std::string process;
+
+    double r = 0.0;
+    double g = 0.0; 
+    double b = 0.0;
     
     double charge;
 };
@@ -90,7 +95,7 @@ class G4XrSceneHandler : public G4VSceneHandler
     void AddPrimitive(const G4Square&) override;
     void AddPrimitive(const G4Polyhedron&) override;
     
-    void CollectTrackData(const G4VTrajectory* traj);
+    void CollectTrackData(const G4VTrajectory* traj, const G4VisAttributes* visAttr);
     void CollectHitData(const G4VHit* hit);
     void EndModeling() override;
     

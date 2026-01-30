@@ -102,8 +102,10 @@ void G4XrSceneHandler::AddPrimitive(const G4Polyline& polyline)
             int trackID = traj->GetTrackID();
             if(loggedIDs.find(trackID)==loggedIDs.end()) // prevents logging a particular trajectory more than once
             {
+                auto currentLV = dynamic_cast<G4PhysicalVolumeModel*>(fpModel)->GetCurrentLV();
+                const G4VisAttributes* visAttr = currentLV->GetVisAttributes();
                 loggedIDs.insert(trackID);
-                CollectTrackData(traj);
+                CollectTrackData(traj, visAttr);
             }
         }
     }
@@ -362,7 +364,7 @@ void G4XrSceneHandler::ConvertMeshToGLB(const std::vector<MeshData>& meshList, c
 
 }
 
-void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj)
+void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, const G4VisAttributes* visAttr)
 {
     G4String trackID = std::to_string(traj->GetTrackID());
     G4String particleName = traj->GetParticleName();
@@ -390,6 +392,14 @@ void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj)
         if (rich_traj)
         {
             G4RichTrajectory* rich_traj_nc = const_cast<G4RichTrajectory*>(rich_traj);
+
+            if (visAttr)
+            {
+                const G4Colour& colour = visAttr->GetColour();
+                td.r = colour.GetRed();
+                td.g = colour.GetGreen();
+                td.b = colour.GetBlue();
+            }
 
             const G4ParticleDefinition* pdef = rich_traj_nc->GetParticleDefinition();
             G4double mass = pdef ? pdef->GetPDGMass() : 0.0;
@@ -464,9 +474,11 @@ void G4XrSceneHandler::CollectHitData(const G4VHit* hit)
 void G4XrSceneHandler::WriteToCSV(const std::string& filename, const TrackData td) // called with every traj entry
 {
     std::ofstream file(filename,std::ios::app);
-    file << "track,"<< td.trackID << ","<< td.particleName << "," << td.charge << ","<< td.step << ","<< td.x << ","<< td.y << ","<< td.z << ","<< td.time << ","<< td.edep<< "," << td.process << "," << td.px << ","<< td.py<< "," << td.pz << "," << td.energy << "\n";
+    file << "track,"<< td.trackID << ","<< td.particleName << "," << td.charge << ","<< td.step << ","<< td.x << ","<< td.y << ","<< td.z
+    << ","<< td.time << ","<< td.edep<< "," << td.process << "," << td.px << ","<< td.py<< "," << td.pz << "," << td.energy << ","<< td.energy 
+    << ","<< td.r << "," << td.g << "," << td.b << "\n";
     
-    // the order is track, ID, pName, charge, step, x,y,z, time, edep, process, px, py, pz, energy.
+    // the order is track, ID, pName, charge, step, x,y,z, time, edep, process, px, py, pz, energy, r, g, b
     file.close();
 }
 
