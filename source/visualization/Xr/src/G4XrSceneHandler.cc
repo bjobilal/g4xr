@@ -93,7 +93,11 @@ G4XrSceneHandler::~G4XrSceneHandler()
 void G4XrSceneHandler::AddPrimitive(const G4Polyline& polyline)
 {
     G4AttHolder holder;
-    if (const G4TrajectoriesModel* trajModel = dynamic_cast<G4TrajectoriesModel*>(fpModel))
+
+    const G4VisAttributes* visAttr = polyline.GetVisAttributes();
+
+    const G4TrajectoriesModel* trajModel = dynamic_cast<G4TrajectoriesModel*>(fpModel);
+    if (trajModel)
     {
         if (trajModel->GetRunID() != runno) {runno = trajModel->GetRunID();loggedIDs.clear();} //loggedIDs is cleared as soon as a trajectory with a new run no. is seen.
         const G4VTrajectory* traj = trajModel->GetCurrentTrajectory();
@@ -102,10 +106,16 @@ void G4XrSceneHandler::AddPrimitive(const G4Polyline& polyline)
             int trackID = traj->GetTrackID();
             if(loggedIDs.find(trackID)==loggedIDs.end()) // prevents logging a particular trajectory more than once
             {
-                auto currentLV = dynamic_cast<G4PhysicalVolumeModel*>(fpModel)->GetCurrentLV();
-                const G4VisAttributes* visAttr = currentLV->GetVisAttributes();
+                double r = 0.0; double g = 0.0; double b = 0.0;
+                if (visAttr)
+                {
+                    const G4Colour c = visAttr->GetColour();
+                    r = c.GetRed();
+                    g = c.GetGreen();
+                    b = c.GetBlue();
+                }
                 loggedIDs.insert(trackID);
-                CollectTrackData(traj, visAttr);
+                CollectTrackData(traj, r, g, b);
             }
         }
     }
@@ -176,7 +186,10 @@ void G4XrSceneHandler::AddPrimitive(const G4Polyhedron& polyhedron)
         mesh.positions.reserve(vertexno);
         for (int i = 1; i <= vertexno; ++i) {
             G4Point3D v = polyhedron.GetVertex(i);
-            G4ThreeVector worldV = v;
+            const G4Transform3D& T = fObjectTransformation;
+            G4RotationMatrix R = T.getRotation();
+            G4ThreeVector     P = T.getTranslation();
+            G4ThreeVector worldV = R * v + P;
             mesh.positions.push_back(worldV);
         }
         
@@ -364,7 +377,7 @@ void G4XrSceneHandler::ConvertMeshToGLB(const std::vector<MeshData>& meshList, c
 
 }
 
-void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, const G4VisAttributes* visAttr)
+void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, G4double r ,G4double g, G4double b)
 {
     G4String trackID = std::to_string(traj->GetTrackID());
     G4String particleName = traj->GetParticleName();
@@ -386,6 +399,7 @@ void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, const G4VisAt
         td.step = std::to_string(i);
         td.x = std::to_string(pos.x()); td.y = std::to_string(pos.y());td.z = std::to_string(pos.z());
         td.charge = charge;
+        td.r = r; td.g = g; td.b = b;
 
         std::vector<G4AttValue>* attValues = point->CreateAttValues();
         
@@ -393,20 +407,12 @@ void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, const G4VisAt
         {
             G4RichTrajectory* rich_traj_nc = const_cast<G4RichTrajectory*>(rich_traj);
 
-            if (visAttr)
-            {
-                const G4Colour& colour = visAttr->GetColour();
-                td.r = colour.GetRed();
-                td.g = colour.GetGreen();
-                td.b = colour.GetBlue();
-            }
-
             const G4ParticleDefinition* pdef = rich_traj_nc->GetParticleDefinition();
             G4double mass = pdef ? pdef->GetPDGMass() : 0.0;
 
             const G4ThreeVector initMom = rich_traj_nc->GetInitialMomentum();
             G4double p = initMom.mag();
-            td.px = std::to_string(initMom.x()/CLHEP::MeV);  // MeV/c
+            td.px = std::to_string(initMom.x()/CLHEP::MeV);  
             td.py = std::to_string(initMom.y()/CLHEP::MeV);
             td.pz = std::to_string(initMom.z()/CLHEP::MeV);
             G4double E = std::sqrt(p*p + mass*mass);
