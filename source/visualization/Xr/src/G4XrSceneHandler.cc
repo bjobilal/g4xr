@@ -481,7 +481,7 @@ void G4XrSceneHandler::WriteToCSV(const std::string& filename, const TrackData t
 {
     std::ofstream file(filename,std::ios::app);
     file << "track,"<< td.trackID << ","<< td.particleName << "," << td.charge << ","<< td.step << ","<< td.x << ","<< td.y << ","<< td.z
-    << ","<< td.time << ","<< td.edep<< "," << td.process << "," << td.px << ","<< td.py<< "," << td.pz << "," << td.energy << ","<< td.energy 
+    << ","<< td.time << ","<< td.edep<< "," << td.process << "," << td.px << ","<< td.py<< "," << td.pz << "," << td.energy 
     << ","<< td.r << "," << td.g << "," << td.b << "\n";
     
     // the order is track, ID, pName, charge, step, x,y,z, time, edep, process, px, py, pz, energy, r, g, b
