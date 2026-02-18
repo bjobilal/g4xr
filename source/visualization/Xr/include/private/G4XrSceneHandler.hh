@@ -54,30 +54,37 @@ struct MeshData {
     G4Colour lvColour;
 };
 
-struct TrackData {
-    std::string trackID;
+struct TrackData
+{
+    int trackID;
     std::string particleName;
-    std::string step;
-    std::string x,y,z;
-    std::string px,py,pz;
-
-    std::string energy;
-    
-    std::string time;
-    std::string edep;
-    std::string process;
-
-    double r = 0.0;
-    double g = 0.0; 
-    double b = 0.0;
-    
     double charge;
+
+    float r,g,b;
+
+    std::vector<float> x,y,z;
+    std::vector<float> time;
+    std::vector<float> edep;
+
+    std::vector<float> px,py,pz;
+    std::vector<float> energy;
+
+    std::vector<uint16_t> processID;
 };
+
 
 struct HitData {
     std::string x,y,z;
     std::string edep = "0.0";
 };
+
+struct Header
+{
+    char magic[4] = {'G','4','T','K'};
+    uint32_t version = 1;
+    uint32_t stringCount = 0;
+    uint32_t trackCount = 0;
+}; 
 
 class G4XrSceneHandler : public G4VSceneHandler
 {
@@ -100,9 +107,10 @@ class G4XrSceneHandler : public G4VSceneHandler
     void EndModeling() override;
     
     void ConvertMeshToGLB(const std::vector<MeshData>& meshList, const std::string& outputFile);
-    void WriteToJSON(const std::string& filename);
-    void WriteToCSV(const std::string& filename, const TrackData td);
+    void WriteTrackBinary(const TrackData& t);
     void WriteToCSV(const std::string& filename, const HitData hd);
+
+    void FinalizeBinary();
     
     std::vector<MeshData> GetCollectedMeshes(){return collectedMeshes;}
     std::vector<TrackData> GetCollectedTracks(){return collectedTracks;}
@@ -118,9 +126,17 @@ class G4XrSceneHandler : public G4VSceneHandler
     std::vector<TrackData> collectedTracks;
     std::vector<HitData> collectedHits;
     std::unordered_set<int> loggedIDs;
+
+    std::ofstream out;
+    std::vector<std::string> stringTable;
+    std::unordered_map<std::string,uint16_t> stringIndex;
+    Header header;
     
     bool glbState = false;
     G4int runno = -1;
+
+    void InitializeBinary();
+    uint16_t GetStringID(const std::string& s); 
 
 };
 
