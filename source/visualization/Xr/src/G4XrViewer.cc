@@ -13,9 +13,8 @@
 namespace fs = std::filesystem;
 
 G4XrViewer::G4XrViewer(G4VSceneHandler& sceneHandler, const G4String& name)
-  : G4VViewer(sceneHandler, sceneHandler.IncrementViewCount(), name)
+  : G4VViewer(sceneHandler, sceneHandler.IncrementViewCount(), name), sceneHandler(sceneHandler)
 {
-    
   // Set default and current view parameters
   fVP.SetAutoRefresh(true);
   fDefaultVP.SetAutoRefresh(true);
@@ -43,6 +42,10 @@ void G4XrViewer::DrawView()
     ProcessView();
     
     FinishView();
+
+    auto* xr = dynamic_cast<G4XrSceneHandler*>(&sceneHandler);
+    if(xr)
+        xr->FinalizeBinary();
     
     push_file();
     
