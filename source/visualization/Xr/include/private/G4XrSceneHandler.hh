@@ -79,11 +79,18 @@ struct HitData {
     std::string edep = "0.0";
 };
 
+struct InstanceData {
+    int uniqueMeshIndex;
+    G4Transform3D transform;
+    G4Colour colour;
+};
+
+
 class G4XrSceneHandler : public G4VSceneHandler
 {
   public:
     G4XrSceneHandler(G4VGraphicsSystem& system, const G4String& name);
-    virtual ~G4XrSceneHandler() override; // BEN - MARKED VIRTUAL
+    virtual ~G4XrSceneHandler() override; 
 
     ////////////////////////////////////////////////////////////////
     // Required implementation of pure virtual functions...
@@ -99,7 +106,7 @@ class G4XrSceneHandler : public G4VSceneHandler
     void CollectHitData(const G4VHit* hit);
     void EndModeling() override;
     
-    void ConvertMeshToGLB(const std::vector<MeshData>& meshList, const std::string& outputFile);
+    void ConvertMeshToGLB(const std::string& outputFile);
     void WriteToJSON(const std::string& filename);
     void WriteToCSV(const std::string& filename, const TrackData td);
     void WriteToCSV(const std::string& filename, const HitData hd);
@@ -118,7 +125,12 @@ class G4XrSceneHandler : public G4VSceneHandler
     std::vector<TrackData> collectedTracks;
     std::vector<HitData> collectedHits;
     std::unordered_set<int> loggedIDs;
-    
+
+    // instancing layers
+    std::vector<MeshData> uniqueMeshes;
+    std::vector<InstanceData> instances;
+    std::unordered_map<std::string, int> meshMap;
+
     bool glbState = false;
     G4int runno = -1;
 
