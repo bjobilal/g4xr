@@ -78,6 +78,12 @@ struct HitData {
     std::string edep = "0.0";
 };
 
+struct InstanceData {
+    int uniqueMeshIndex;
+    G4Transform3D transform;
+    G4Colour colour;
+};
+
 struct Header
 {
     char magic[4] = {'G','4','T','K'};
@@ -90,7 +96,7 @@ class G4XrSceneHandler : public G4VSceneHandler
 {
   public:
     G4XrSceneHandler(G4VGraphicsSystem& system, const G4String& name);
-    virtual ~G4XrSceneHandler() override; // BEN - MARKED VIRTUAL
+    virtual ~G4XrSceneHandler() override; 
 
     ////////////////////////////////////////////////////////////////
     // Required implementation of pure virtual functions...
@@ -106,7 +112,7 @@ class G4XrSceneHandler : public G4VSceneHandler
     void CollectHitData(const G4VHit* hit);
     void EndModeling() override;
     
-    void ConvertMeshToGLB(const std::vector<MeshData>& meshList, const std::string& outputFile);
+    void ConvertMeshToGLB(const std::string& outputFile);
     void WriteTrackBinary(const TrackData& t);
     void WriteToCSV(const std::string& filename, const HitData hd);
 
@@ -126,6 +132,11 @@ class G4XrSceneHandler : public G4VSceneHandler
     std::vector<TrackData> collectedTracks;
     std::vector<HitData> collectedHits;
     std::unordered_set<int> loggedIDs;
+
+    // instancing layers
+    std::vector<MeshData> uniqueMeshes;
+    std::vector<InstanceData> instances;
+    std::unordered_map<std::string, int> meshMap;
 
     std::ofstream out;
     std::vector<std::string> stringTable;
