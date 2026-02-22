@@ -276,6 +276,7 @@ void G4XrSceneHandler::EndModeling()
     {
         fs::path output_path = gltf_dir / "trial.glb";
         ConvertMeshToGLB(output_path.string());
+        glbState = true;
     }
 }
 
