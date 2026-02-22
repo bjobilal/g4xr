@@ -83,12 +83,53 @@ G4XrSceneHandler::G4XrSceneHandler(G4VGraphicsSystem& system, const G4String& na
 
 G4XrSceneHandler::~G4XrSceneHandler()
 {
+
     fs::path gltf = fs::current_path() / "GLTF";
     fs::path uploads = fs::current_path() / "uploads";
     fs::remove_all(gltf);
     fs::remove_all(uploads);
     std::cout << "G4Xr contents deleted." << std::endl;
 }
+
+void G4XrSceneHandler::InitializeBinary()
+{
+    std::string path = (fs::current_path() / "GLTF" / ("run" + std::to_string(runno) + ".bin")).string();
+    out.open(path,std::ios::binary);
+    header = Header(); 
+    out.write(header.magic, 4);
+    out.write((char*)&header.version, 4);
+    out.write((char*)&header.stringCount, 4);
+    out.write((char*)&header.trackCount, 4);
+}
+
+void G4XrSceneHandler::FinalizeBinary()
+{
+    for(auto& s : stringTable)
+    {
+        uint16_t len = s.size();
+        out.write((char*)&len,2);
+        out.write(s.data(),len);
+    }
+    out.seekp(0);
+    header.stringCount = stringTable.size();
+    out.write((char*)&header,sizeof(header));
+    out.close();
+}
+
+// helper function(s) for track data writing
+
+uint16_t G4XrSceneHandler::GetStringID(const std::string& s)
+{
+    auto it = stringIndex.find(s);
+    if(it!=stringIndex.end())
+        return it->second;
+
+    uint16_t id = stringTable.size();
+    stringTable.push_back(s);
+    stringIndex[s] = id;
+    return id;
+}
+
 
 void G4XrSceneHandler::AddPrimitive(const G4Polyline& polyline)
 {
@@ -99,7 +140,12 @@ void G4XrSceneHandler::AddPrimitive(const G4Polyline& polyline)
     const G4TrajectoriesModel* trajModel = dynamic_cast<G4TrajectoriesModel*>(fpModel);
     if (trajModel)
     {
-        if (trajModel->GetRunID() != runno) {runno = trajModel->GetRunID();loggedIDs.clear();} //loggedIDs is cleared as soon as a trajectory with a new run no. is seen.
+        if (trajModel->GetRunID() != runno) 
+        {
+            runno = trajModel->GetRunID();
+            loggedIDs.clear(); //loggedIDs is cleared as soon as a trajectory with a new run no. is seen.
+            InitializeBinary(); // create a new binary file.
+        }
         const G4VTrajectory* traj = trajModel->GetCurrentTrajectory();
         if(traj)
         {
@@ -442,70 +488,73 @@ void G4XrSceneHandler::ConvertMeshToGLB(const std::string& outputFile)
     gltf.WriteGltfSceneToFile(&model, outputFile, true, true, false, true);
 }
 
-void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, G4double r ,G4double g, G4double b)
+void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, G4double r,G4double g,G4double b)
 {
-    G4String trackID = std::to_string(traj->GetTrackID());
-    G4String particleName = traj->GetParticleName();
-    G4double charge = traj->GetCharge();
-    
-    const G4RichTrajectory* rich_traj = dynamic_cast<const G4RichTrajectory*>(traj);
+    TrackData t;
 
-    G4int points = traj->GetPointEntries();
-    for (G4int i = 0; i < points; ++i)
+    t.trackID = traj->GetTrackID();
+    t.particleName = traj->GetParticleName();
+    t.charge = traj->GetCharge();
+
+    t.r=r; t.g=g; t.b=b;
+
+    const G4RichTrajectory* rich = dynamic_cast<const G4RichTrajectory*>(traj);
+    G4RichTrajectory* rich_nc = const_cast<G4RichTrajectory*>(rich);
+
+    double mass=0;
+    if(rich_nc && rich_nc->GetParticleDefinition())
+        mass = rich_nc->GetParticleDefinition()->GetPDGMass();
+
+    int N = traj->GetPointEntries();
+
+    for(int i=0;i<N;i++)
     {
-        const G4VTrajectoryPoint* point = traj->GetPoint(i);
-        if (!point) continue;
+        auto* p = traj->GetPoint(i);
+        if(!p) continue;
 
-        const G4ThreeVector& pos = point->GetPosition();
-        
-        TrackData td;
-        td.trackID = trackID;
-        td.particleName = particleName;
-        td.step = std::to_string(i);
-        td.x = std::to_string(pos.x()); td.y = std::to_string(pos.y());td.z = std::to_string(pos.z());
-        td.charge = charge;
-        td.r = r; td.g = g; td.b = b;
+        auto pos = p->GetPosition();
 
-        std::vector<G4AttValue>* attValues = point->CreateAttValues();
-        
-        if (rich_traj)
+        t.x.push_back(pos.x());
+        t.y.push_back(pos.y());
+        t.z.push_back(pos.z());
+
+        if(rich)
         {
-            G4RichTrajectory* rich_traj_nc = const_cast<G4RichTrajectory*>(rich_traj);
-
-            const G4ParticleDefinition* pdef = rich_traj_nc->GetParticleDefinition();
-            G4double mass = pdef ? pdef->GetPDGMass() : 0.0;
-
-            const G4ThreeVector initMom = rich_traj_nc->GetInitialMomentum();
-            G4double p = initMom.mag();
-            td.px = std::to_string(initMom.x()/CLHEP::MeV);  
-            td.py = std::to_string(initMom.y()/CLHEP::MeV);
-            td.pz = std::to_string(initMom.z()/CLHEP::MeV);
-            G4double E = std::sqrt(p*p + mass*mass);
-
-            td.energy = std::to_string(E/CLHEP::MeV) + " MeV";
+            auto mom = rich_nc->GetInitialMomentum();
+            t.px.push_back(mom.x());
+            t.py.push_back(mom.y());
+            t.pz.push_back(mom.z());
+            double P = mom.mag();
+            t.energy.push_back(std::sqrt(P*P + mass*mass));
         }
 
-        if (attValues)
+        auto* atts = p->CreateAttValues();
+
+        float time=0,edep=0;
+        uint16_t procID=0;
+
+        if(atts)
         {
-            for (const auto& att : *attValues)
+            for(auto& a:*atts)
             {
-                if (att.GetName() == "PostT") {
-                    double timeNs = std::stod(att.GetValue()) / CLHEP::ns;
-                    td.time = std::to_string(timeNs) + " ns";
-                } else if (att.GetName() == "TED") { // total energy deposit
-                    td.edep = att.GetValue();
-                } else if (att.GetName() == "PDS") { // process defined step
-                    td.process = att.GetValue();
-                }
-            }
-            
-            delete attValues;
-        }
-        collectedTracks.push_back(td);
-        WriteToCSV((fs::current_path() / "GLTF" / ("run" + std::to_string(runno) + ".csv")).string(), td);
-    }
-}
+                if(a.GetName()=="PostT")
+                    time = std::stod(a.GetValue());
 
+                else if(a.GetName()=="TED")
+                    edep = std::stod(a.GetValue());
+
+                else if(a.GetName()=="PDS")
+                    procID = GetStringID(a.GetValue());
+            }
+            delete atts;
+        }
+
+        t.time.push_back(time);
+        t.edep.push_back(edep);
+        t.processID.push_back(procID);
+    }
+    WriteTrackBinary(t);
+}
 
 void G4XrSceneHandler::CollectHitData(const G4VHit* hit)
 {
@@ -536,22 +585,59 @@ void G4XrSceneHandler::CollectHitData(const G4VHit* hit)
         if (!hd.x.empty() && !hd.y.empty() && !hd.z.empty())
         {
             collectedHits.push_back(hd);
-            WriteToCSV((fs::current_path() / "GLTF" / ("run" + std::to_string(runno) + ".csv")).string(), hd);
+            //WriteToCSV((fs::current_path() / "GLTF" / ("run" + std::to_string(runno) + ".csv")).string(), hd);
         }
     }
 }
 
-
-void G4XrSceneHandler::WriteToCSV(const std::string& filename, const TrackData td) // called with every traj entry
+void G4XrSceneHandler::WriteTrackBinary(const TrackData& t)
 {
-    std::ofstream file(filename,std::ios::app);
-    file << "track,"<< td.trackID << ","<< td.particleName << "," << td.charge << ","<< td.step << ","<< td.x << ","<< td.y << ","<< td.z
-    << ","<< td.time << ","<< td.edep<< "," << td.process << "," << td.px << ","<< td.py<< "," << td.pz << "," << td.energy 
-    << ","<< td.r << "," << td.g << "," << td.b << "\n";
-    
-    // the order is track, ID, pName, charge, step, x,y,z, time, edep, process, px, py, pz, energy, r, g, b
-    file.close();
+    std::streampos writePos = out.tellp(); // remember where we are
+
+    header.trackCount++;
+
+    uint32_t n = t.x.size();
+    uint16_t nameID = GetStringID(t.particleName);
+
+    out.write((char*)&t.trackID,4);
+    out.write((char*)&nameID,2);
+    out.write((char*)&t.charge,8);
+
+    out.write((char*)&t.r,sizeof(float));
+    out.write((char*)&t.g,sizeof(float));
+    out.write((char*)&t.b,sizeof(float));
+
+    out.write((char*)&n,4);
+
+    out.write((char*)t.x.data(),sizeof(float)*n);
+    out.write((char*)t.y.data(),sizeof(float)*n);
+    out.write((char*)t.z.data(),sizeof(float)*n);
+
+    out.write((char*)t.time.data(),sizeof(float)*n);
+    out.write((char*)t.edep.data(),sizeof(float)*n);
+
+    out.write((char*)t.px.data(),sizeof(float)*n);
+    out.write((char*)t.py.data(),sizeof(float)*n);
+    out.write((char*)t.pz.data(),sizeof(float)*n);
+    out.write((char*)t.energy.data(),sizeof(float)*n);
+
+    out.write((char*)t.processID.data(),sizeof(uint16_t)*n);
+
+    // --- update header in file ---
+    std::streampos endPos = out.tellp();
+    out.seekp(0);
+
+    header.stringCount = stringTable.size();
+
+    out.write(header.magic,4);
+    out.write((char*)&header.version,4);
+    out.write((char*)&header.stringCount,4);
+    out.write((char*)&header.trackCount,4);
+
+    out.seekp(endPos); // return to end for next write
+    out.flush();
 }
+
 
 void G4XrSceneHandler::WriteToCSV(const std::string& filename, const HitData hd) // called with every hit entry
 {

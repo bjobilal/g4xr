@@ -72,7 +72,7 @@ class G4XrViewer : public G4VViewer
     httplib::Server svr;
     std::thread svr_thread;
     std::vector<std::string> pushedFiles;
-    
+    G4VSceneHandler& sceneHandler; 
     
     const std::string UPLOAD_DIR = "./uploads";
     const int PORT = 2535;
