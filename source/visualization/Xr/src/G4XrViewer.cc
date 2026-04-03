@@ -64,6 +64,10 @@ void G4XrViewer::DrawView()
     ProcessView();
     
     FinishView();
+
+    auto* xr = dynamic_cast<G4XrSceneHandler*>(&sceneHandler);
+    if(xr)
+        xr->FinalizeBinary();
     
     push_file();
     

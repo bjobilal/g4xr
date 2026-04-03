@@ -85,20 +85,77 @@ G4XrSceneHandler::~G4XrSceneHandler()
 {
 }
 
+void G4XrSceneHandler::InitializeBinary()
+{
+    std::string path = (fs::current_path() / "GLTF" / ("run" + std::to_string(runno) + ".bin")).string();
+    out.open(path,std::ios::binary);
+    header = Header(); 
+    out.write(header.magic, 4);
+    out.write((char*)&header.version, 4);
+    out.write((char*)&header.stringCount, 4);
+    out.write((char*)&header.trackCount, 4);
+}
+
+void G4XrSceneHandler::FinalizeBinary()
+{
+    for(auto& s : stringTable)
+    {
+        uint16_t len = s.size();
+        out.write((char*)&len,2);
+        out.write(s.data(),len);
+    }
+    out.seekp(0);
+    header.stringCount = stringTable.size();
+    out.write((char*)&header,sizeof(header));
+    out.close();
+}
+
+// helper function(s) for track data writing
+
+uint16_t G4XrSceneHandler::GetStringID(const std::string& s)
+{
+    auto it = stringIndex.find(s);
+    if(it!=stringIndex.end())
+        return it->second;
+
+    uint16_t id = stringTable.size();
+    stringTable.push_back(s);
+    stringIndex[s] = id;
+    return id;
+}
+
+
 void G4XrSceneHandler::AddPrimitive(const G4Polyline& polyline)
 {
     G4AttHolder holder;
-    if (const G4TrajectoriesModel* trajModel = dynamic_cast<G4TrajectoriesModel*>(fpModel))
+
+    const G4VisAttributes* visAttr = polyline.GetVisAttributes();
+
+    const G4TrajectoriesModel* trajModel = dynamic_cast<G4TrajectoriesModel*>(fpModel);
+    if (trajModel)
     {
-        if (trajModel->GetRunID() != runno) {runno = trajModel->GetRunID();loggedIDs.clear();} //loggedIDs is cleared as soon as a trajectory with a new run no. is seen.
+        if (trajModel->GetRunID() != runno) 
+        {
+            runno = trajModel->GetRunID();
+            loggedIDs.clear(); //loggedIDs is cleared as soon as a trajectory with a new run no. is seen.
+            InitializeBinary(); // create a new binary file.
+        }
         const G4VTrajectory* traj = trajModel->GetCurrentTrajectory();
         if(traj)
         {
             int trackID = traj->GetTrackID();
             if(loggedIDs.find(trackID)==loggedIDs.end()) // prevents logging a particular trajectory more than once
             {
+                double r = 0.0; double g = 0.0; double b = 0.0;
+                if (visAttr)
+                {
+                    const G4Colour c = visAttr->GetColour();
+                    r = c.GetRed();
+                    g = c.GetGreen();
+                    b = c.GetBlue();
+                }
                 loggedIDs.insert(trackID);
-                CollectTrackData(traj);
+                CollectTrackData(traj, r, g, b);
             }
         }
     }
@@ -133,75 +190,73 @@ void G4XrSceneHandler::AddPrimitive(const G4Square& square)
 
 void G4XrSceneHandler::AddPrimitive(const G4Polyhedron& polyhedron)
 {
-    MeshData mesh;
     auto pPVModel = dynamic_cast<G4PhysicalVolumeModel*>(fpModel);
+    if (!pPVModel) return;
 
-    G4String parameterisationName;
-    mesh.name = "NOTPHYSVOL";
-    if (pPVModel) {
-        
-        // model naming
-        parameterisationName  = pPVModel->GetFullPVPath().back().GetPhysicalVolume()->GetName();
-        mesh.name = parameterisationName;
-        //G4cout<<mesh.name<<G4endl;
-        
-        // model colo(u)ring
-        
-        auto currentLV = dynamic_cast<G4PhysicalVolumeModel*>(fpModel)->GetCurrentLV();
-        if (currentLV)
-        {
-            const G4VisAttributes* visAttr = currentLV->GetVisAttributes();
-            if (visAttr)
-                mesh.lvColour = visAttr->GetColour();
-            else
-                mesh.lvColour = G4Colour(0.5, 0.5, 0.5, 0.1);
-        }
-        else
-        {
-            mesh.lvColour = G4Colour(0.5, 0.5, 0.5, 0.1);
-        }
-        
-        // fill in MeshData type with transform data from the G4Scene.
+    std::string meshName =
+        pPVModel->GetFullPVPath().back().GetPhysicalVolume()->GetName();
 
-        mesh.transform = fObjectTransformation;
-                
+    G4Colour colour(0.5, 0.5, 0.5, 0.1);
+    auto currentLV = pPVModel->GetCurrentLV();
+    if (currentLV) {
+        const G4VisAttributes* visAttr = currentLV->GetVisAttributes();
+        if (visAttr)
+            colour = visAttr->GetColour();
+    }
+
+    int uniqueIndex;
+
+    if (meshMap.find(meshName) == meshMap.end())
+    {
+        MeshData mesh;
+        mesh.name = meshName;
+        mesh.lvColour = colour;
+
         int vertexno = polyhedron.GetNoVertices();
         mesh.positions.reserve(vertexno);
+
         for (int i = 1; i <= vertexno; ++i) {
             G4Point3D v = polyhedron.GetVertex(i);
-            const G4Transform3D& T = fObjectTransformation;
-            G4RotationMatrix R = T.getRotation();
-            G4ThreeVector     P = T.getTranslation();
-            G4ThreeVector worldV = R * v + P;
-            mesh.positions.push_back(worldV);
+            mesh.positions.push_back(v);  
         }
-        
+
         int numFacets = polyhedron.GetNoFacets();
         for (int i = 1; i <= numFacets; i++) {
             G4int nEdges = 0;
             G4int nodeIndices[4];
-            
+
             polyhedron.GetFacet(i, nEdges, nodeIndices);
-            
+
             if (nEdges == 3) {
-                mesh.indices.push_back(nodeIndices[0] - 1);
-                mesh.indices.push_back(nodeIndices[1] - 1);
-                mesh.indices.push_back(nodeIndices[2] - 1);
-            } else if (nEdges == 4) {
-                mesh.indices.push_back(nodeIndices[0] - 1);
-                mesh.indices.push_back(nodeIndices[1] - 1);
-                mesh.indices.push_back(nodeIndices[2] - 1);
-                
-                mesh.indices.push_back(nodeIndices[0] - 1);
-                mesh.indices.push_back(nodeIndices[2] - 1);
-                mesh.indices.push_back(nodeIndices[3] - 1);
+                    mesh.indices.push_back(static_cast<uint32_t>(nodeIndices[0] - 1));
+                    mesh.indices.push_back(static_cast<uint32_t>(nodeIndices[1] - 1));
+                    mesh.indices.push_back(static_cast<uint32_t>(nodeIndices[2] - 1));
             }
-            else {std::cout<<"WARNING. A facet has neither 3 nor 4 edges"<<std::endl;}
+            else if (nEdges == 4) {
+                    mesh.indices.push_back(static_cast<uint32_t>(nodeIndices[0] - 1));
+                    mesh.indices.push_back(static_cast<uint32_t>(nodeIndices[1] - 1));
+                    mesh.indices.push_back(static_cast<uint32_t>(nodeIndices[2] - 1));
+                    mesh.indices.push_back(static_cast<uint32_t>(nodeIndices[0] - 1));
+                    mesh.indices.push_back(static_cast<uint32_t>(nodeIndices[2] - 1));
+                    mesh.indices.push_back(static_cast<uint32_t>(nodeIndices[3] - 1));
+            }
         }
-        
-        collectedMeshes.push_back(std::move(mesh));
+
+        uniqueIndex = uniqueMeshes.size();
+        uniqueMeshes.push_back(std::move(mesh));
+        meshMap[meshName] = uniqueIndex;
     }
-    
+    else
+    {
+        uniqueIndex = meshMap[meshName];
+    }
+
+    InstanceData instance;
+    instance.uniqueMeshIndex = uniqueIndex;
+    instance.transform = fObjectTransformation;
+    instance.colour = colour;
+
+    instances.push_back(instance);
 }
 
 auto alignTo4 = [](size_t offset) {return (offset + 3) & ~3;};
@@ -214,76 +269,80 @@ void G4XrSceneHandler::EndModeling()
     if (!glbState)
     {
         fs::path output_path = gltf_dir / "trial.glb";
-        ConvertMeshToGLB(collectedMeshes, output_path.string());
+        ConvertMeshToGLB(output_path.string());
+        glbState = true;
     }
 }
 
-void G4XrSceneHandler::ConvertMeshToGLB(const std::vector<MeshData>& meshList, const std::string& outputFile)
+void DecomposeTransform( const G4Transform3D& T, std::vector<double>& translation, std::vector<double>& rotation, std::vector<double>& scale) {
+    G4ThreeVector P = T.getTranslation();
+    G4RotationMatrix R = T.getRotation();
+
+    translation = { P.x(), P.y(), P.z() };
+    scale = { 1.0, 1.0, 1.0 };
+
+    double m00 = R.xx();
+    double m01 = R.xy();
+    double m02 = R.xz();
+    double m10 = R.yx();
+    double m11 = R.yy();
+    double m12 = R.yz();
+    double m20 = R.zx();
+    double m21 = R.zy();
+    double m22 = R.zz();
+
+    double qw, qx, qy, qz;
+
+    double trace = m00 + m11 + m22;
+
+    if (trace > 0.0) {
+        double s = 0.5 / std::sqrt(trace + 1.0);
+        qw = 0.25 / s;
+        qx = (m21 - m12) * s;
+        qy = (m02 - m20) * s;
+        qz = (m10 - m01) * s;
+    } else {
+        if (m00 > m11 && m00 > m22) {
+            double s = 2.0 * std::sqrt(1.0 + m00 - m11 - m22);
+            qw = (m21 - m12) / s;
+            qx = 0.25 * s;
+            qy = (m01 + m10) / s;
+            qz = (m02 + m20) / s;
+        } else if (m11 > m22) {
+            double s = 2.0 * std::sqrt(1.0 + m11 - m00 - m22);
+            qw = (m02 - m20) / s;
+            qx = (m01 + m10) / s;
+            qy = 0.25 * s;
+            qz = (m12 + m21) / s;
+        } else {
+            double s = 2.0 * std::sqrt(1.0 + m22 - m00 - m11);
+            qw = (m10 - m01) / s;
+            qx = (m02 + m20) / s;
+            qy = (m12 + m21) / s;
+            qz = 0.25 * s;
+        }
+    }
+
+    rotation = { qx, qy, qz, qw };
+}
+
+void G4XrSceneHandler::ConvertMeshToGLB(const std::string& outputFile)
 {
     tinygltf::Model model;
     tinygltf::Scene scene;
     scene.name = "G4Scene";
 
-    for (size_t meshIndex = 0; meshIndex < meshList.size(); ++meshIndex)
+    std::vector<int> gltfMeshIndices;
+
+    for (const auto& mesh : uniqueMeshes)
     {
-        const MeshData& mesh = meshList[meshIndex];
         std::vector<float> vertices;
-        for ( auto& v : mesh.positions)
+        for (auto& v : mesh.positions)
         {
-            vertices.push_back(static_cast<float>(v.x()));
-            vertices.push_back(static_cast<float>(v.y()));
-            vertices.push_back(static_cast<float>(v.z()));
+            vertices.push_back(v.x());
+            vertices.push_back(v.y());
+            vertices.push_back(v.z());
         }
-
-        std::vector<uint16_t> indices(mesh.indices.begin(), mesh.indices.end());
-
-
-        tinygltf::Buffer buffer;
-
-        int vertexBufferByteLength = vertices.size() * sizeof(float);
-        buffer.data.insert(buffer.data.end(),
-            reinterpret_cast<const unsigned char*>(vertices.data()),
-            reinterpret_cast<const unsigned char*>(vertices.data() + vertices.size()));
-
-        int alignedVertexByteLength = alignTo4(vertexBufferByteLength);
-        buffer.data.insert(buffer.data.end(), alignedVertexByteLength - vertexBufferByteLength, 0);
-
-        int indexBufferByteOffset = alignedVertexByteLength;
-        int indexBufferByteLength = indices.size() * sizeof(uint16_t);
-        buffer.data.insert(buffer.data.end(),
-            reinterpret_cast<const unsigned char*>(indices.data()),
-            reinterpret_cast<const unsigned char*>(indices.data() + indices.size()));
-
-        int bufferIndex = model.buffers.size();
-        model.buffers.push_back(buffer);
-
-        // position bufferViews
-        tinygltf::BufferView positionBufferView;
-        positionBufferView.buffer = bufferIndex;
-        positionBufferView.byteOffset = 0;
-        positionBufferView.byteLength = vertexBufferByteLength;
-        positionBufferView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
-
-        int positionBufferViewIndex = model.bufferViews.size();
-        model.bufferViews.push_back(positionBufferView);
-
-        // index bufferViews
-        tinygltf::BufferView indexBufferView;
-        indexBufferView.buffer = bufferIndex;
-        indexBufferView.byteOffset = indexBufferByteOffset;
-        indexBufferView.byteLength = indexBufferByteLength;
-        indexBufferView.target = TINYGLTF_TARGET_ELEMENT_ARRAY_BUFFER;
-
-        int indexBufferViewIndex = model.bufferViews.size();
-        model.bufferViews.push_back(indexBufferView);
-
-        // position accessors
-        tinygltf::Accessor positionAccessor;
-        positionAccessor.bufferView = positionBufferViewIndex;
-        positionAccessor.byteOffset = 0;
-        positionAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
-        positionAccessor.count = vertices.size() / 3;
-        positionAccessor.type = TINYGLTF_TYPE_VEC3;
 
         float minX = std::numeric_limits<float>::max();
         float minY = std::numeric_limits<float>::max();
@@ -297,55 +356,122 @@ void G4XrSceneHandler::ConvertMeshToGLB(const std::vector<MeshData>& meshList, c
             float x = vertices[i];
             float y = vertices[i + 1];
             float z = vertices[i + 2];
+
             minX = std::min(minX, x);
             minY = std::min(minY, y);
             minZ = std::min(minZ, z);
+
             maxX = std::max(maxX, x);
             maxY = std::max(maxY, y);
             maxZ = std::max(maxZ, z);
         }
 
-        positionAccessor.minValues = { minX, minY, minZ };
-        positionAccessor.maxValues = { maxX, maxY, maxZ };
+        std::vector<uint16_t> indices(mesh.indices.begin(), mesh.indices.end());
 
-        model.accessors.push_back(positionAccessor);
+        tinygltf::Buffer buffer;
 
-        // index accessors
-        tinygltf::Accessor indexAccessor;
-        indexAccessor.bufferView = model.bufferViews.size() - 1;
-        indexAccessor.byteOffset = 0;
-        indexAccessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT;
-        indexAccessor.count = indices.size();
-        indexAccessor.type = TINYGLTF_TYPE_SCALAR;
-        model.accessors.push_back(indexAccessor);
-        
-        // material matching
+        size_t vertexBytes = vertices.size() * sizeof(float);
+        buffer.data.insert(buffer.data.end(),
+            reinterpret_cast<unsigned char*>(vertices.data()),
+            reinterpret_cast<unsigned char*>(vertices.data()) + vertexBytes);
+
+        size_t alignedVertexBytes = alignTo4(vertexBytes);
+        buffer.data.insert(buffer.data.end(),
+            alignedVertexBytes - vertexBytes, 0);
+
+        size_t indexOffset = alignedVertexBytes;
+        size_t indexBytes = indices.size() * sizeof(uint16_t);
+
+        buffer.data.insert(buffer.data.end(),
+            reinterpret_cast<unsigned char*>(indices.data()),
+            reinterpret_cast<unsigned char*>(indices.data()) + indexBytes);
+
+        int bufferIndex = model.buffers.size();
+        model.buffers.push_back(buffer);
+
+        // BufferViews
+        tinygltf::BufferView posView;
+        posView.buffer = bufferIndex;
+        posView.byteOffset = 0;
+        posView.byteLength = vertexBytes;
+        posView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+
+        int posViewIndex = model.bufferViews.size();
+        model.bufferViews.push_back(posView);
+
+        tinygltf::BufferView idxView;
+        idxView.buffer = bufferIndex;
+        idxView.byteOffset = indexOffset;
+        idxView.byteLength = indexBytes;
+        idxView.target = TINYGLTF_TARGET_ELEMENT_ARRAY_BUFFER;
+
+        int idxViewIndex = model.bufferViews.size();
+        model.bufferViews.push_back(idxView);
+
+        // Accessors
+        tinygltf::Accessor posAccessor;
+        posAccessor.bufferView = posViewIndex;
+        posAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+        posAccessor.count = vertices.size() / 3;
+        posAccessor.type = TINYGLTF_TYPE_VEC3;
+        posAccessor.minValues = { minX, minY, minZ };
+        posAccessor.maxValues = { maxX, maxY, maxZ };
+        int posAccessorIndex = model.accessors.size();
+        model.accessors.push_back(posAccessor);
+
+        tinygltf::Accessor idxAccessor;
+        idxAccessor.bufferView = idxViewIndex;
+        idxAccessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT;
+        idxAccessor.count = indices.size();
+        idxAccessor.type = TINYGLTF_TYPE_SCALAR;
+
+        int idxAccessorIndex = model.accessors.size();
+        model.accessors.push_back(idxAccessor);
+
+        // Material
         tinygltf::Material material;
-        material.name = mesh.name + "_mat";
-        material.pbrMetallicRoughness.baseColorFactor = {mesh.lvColour.GetRed(), mesh.lvColour.GetGreen(), mesh.lvColour.GetBlue(), 0.1f}; // alpha specified here so G4VR doesn't have to manipulate the geometries further - BEN
-        material.alphaMode = "BLEND"; // to impose opacity.
-        material.pbrMetallicRoughness.metallicFactor = 0.0;
-        material.pbrMetallicRoughness.roughnessFactor = 0.0; // these are defaults - no physical meaning.
-        material.emissiveFactor = {mesh.lvColour.GetRed(), mesh.lvColour.GetGreen(), mesh.lvColour.GetBlue()};
-        
+        material.pbrMetallicRoughness.baseColorFactor = {
+            mesh.lvColour.GetRed(),
+            mesh.lvColour.GetGreen(),
+            mesh.lvColour.GetBlue(),
+            0.1f
+        };
+        material.alphaMode = "BLEND";
+
         int materialIndex = model.materials.size();
         model.materials.push_back(material);
 
         tinygltf::Primitive primitive;
-        primitive.attributes["POSITION"] = model.accessors.size() - 2;
-        primitive.indices = model.accessors.size() - 1;
+        primitive.attributes["POSITION"] = posAccessorIndex;
+        primitive.indices = idxAccessorIndex;
         primitive.material = materialIndex;
-        primitive.mode = TINYGLTF_MODE_TRIANGLES;
+        primitive.mode = TINYGLTF_MODE_TRIANGLES;  
 
         tinygltf::Mesh gltfMesh;
         gltfMesh.name = mesh.name;
         gltfMesh.primitives.push_back(primitive);
+
+        int gltfMeshIndex = model.meshes.size();
         model.meshes.push_back(gltfMesh);
 
+        gltfMeshIndices.push_back(gltfMeshIndex);
+    }
+
+    for (const auto& inst : instances)
+    {
         tinygltf::Node node;
-        node.mesh = model.meshes.size() - 1;
+        node.mesh = gltfMeshIndices[inst.uniqueMeshIndex];
+
+        std::vector<double> t, r, s;
+        DecomposeTransform(inst.transform, t, r, s);
+
+        node.translation = t;
+        node.rotation = r;
+        node.scale = s;
+
+        int nodeIndex = model.nodes.size();
         model.nodes.push_back(node);
-        scene.nodes.push_back(model.nodes.size() - 1);
+        scene.nodes.push_back(nodeIndex);
     }
 
     model.scenes.push_back(scene);
@@ -354,75 +480,76 @@ void G4XrSceneHandler::ConvertMeshToGLB(const std::vector<MeshData>& meshList, c
     tinygltf::TinyGLTF gltf;
     std::string err, warn;
 
-    bool write_status = gltf.WriteGltfSceneToFile(&model, outputFile, true, true, false, true); // glb file writing
-    
-    if(write_status) glbState = true;
-
+    gltf.WriteGltfSceneToFile(&model, outputFile, true, true, false, true);
 }
 
-void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj)
+void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, G4double r,G4double g,G4double b)
 {
-    G4String trackID = std::to_string(traj->GetTrackID());
-    G4String particleName = traj->GetParticleName();
-    G4double charge = traj->GetCharge();
-    
-    const G4RichTrajectory* rich_traj = dynamic_cast<const G4RichTrajectory*>(traj);
+    TrackData t;
 
-    G4int points = traj->GetPointEntries();
-    for (G4int i = 0; i < points; ++i)
+    t.trackID = traj->GetTrackID();
+    t.particleName = traj->GetParticleName();
+    t.charge = traj->GetCharge();
+
+    t.r=r; t.g=g; t.b=b;
+
+    const G4RichTrajectory* rich = dynamic_cast<const G4RichTrajectory*>(traj);
+    G4RichTrajectory* rich_nc = const_cast<G4RichTrajectory*>(rich);
+
+    double mass=0;
+    if(rich_nc && rich_nc->GetParticleDefinition())
+        mass = rich_nc->GetParticleDefinition()->GetPDGMass();
+
+    int N = traj->GetPointEntries();
+
+    for(int i=0;i<N;i++)
     {
-        const G4VTrajectoryPoint* point = traj->GetPoint(i);
-        if (!point) continue;
+        auto* p = traj->GetPoint(i);
+        if(!p) continue;
 
-        const G4ThreeVector& pos = point->GetPosition();
-        
-        TrackData td;
-        td.trackID = trackID;
-        td.particleName = particleName;
-        td.step = std::to_string(i);
-        td.x = std::to_string(pos.x()); td.y = std::to_string(pos.y());td.z = std::to_string(pos.z());
-        td.charge = charge;
+        auto pos = p->GetPosition();
 
-        std::vector<G4AttValue>* attValues = point->CreateAttValues();
-        
-        if (rich_traj)
+        t.x.push_back(pos.x());
+        t.y.push_back(pos.y());
+        t.z.push_back(pos.z());
+
+        if(rich)
         {
-            G4RichTrajectory* rich_traj_nc = const_cast<G4RichTrajectory*>(rich_traj);
-
-            const G4ParticleDefinition* pdef = rich_traj_nc->GetParticleDefinition();
-            G4double mass = pdef ? pdef->GetPDGMass() : 0.0;
-
-            const G4ThreeVector initMom = rich_traj_nc->GetInitialMomentum();
-            G4double p = initMom.mag();
-            td.px = std::to_string(initMom.x()/CLHEP::MeV);  // MeV/c
-            td.py = std::to_string(initMom.y()/CLHEP::MeV);
-            td.pz = std::to_string(initMom.z()/CLHEP::MeV);
-            G4double E = std::sqrt(p*p + mass*mass);
-
-            td.energy = std::to_string(E/CLHEP::MeV) + " MeV";
+            auto mom = rich_nc->GetInitialMomentum();
+            t.px.push_back(mom.x());
+            t.py.push_back(mom.y());
+            t.pz.push_back(mom.z());
+            double P = mom.mag();
+            t.energy.push_back(std::sqrt(P*P + mass*mass));
         }
 
-        if (attValues)
+        auto* atts = p->CreateAttValues();
+
+        float time=0,edep=0;
+        uint16_t procID=0;
+
+        if(atts)
         {
-            for (const auto& att : *attValues)
+            for(auto& a:*atts)
             {
-                if (att.GetName() == "PostT") {
-                    double timeNs = std::stod(att.GetValue()) / CLHEP::ns;
-                    td.time = std::to_string(timeNs) + " ns";
-                } else if (att.GetName() == "TED") { // total energy deposit
-                    td.edep = att.GetValue();
-                } else if (att.GetName() == "PDS") { // process defined step
-                    td.process = att.GetValue();
-                }
-            }
-            
-            delete attValues;
-        }
-        collectedTracks.push_back(td);
-        WriteToCSV((fs::current_path() / "GLTF" / ("run" + std::to_string(runno) + ".csv")).string(), td);
-    }
-}
+                if(a.GetName()=="PostT")
+                    time = std::stod(a.GetValue());
 
+                else if(a.GetName()=="TED")
+                    edep = std::stod(a.GetValue());
+
+                else if(a.GetName()=="PDS")
+                    procID = GetStringID(a.GetValue());
+            }
+            delete atts;
+        }
+
+        t.time.push_back(time);
+        t.edep.push_back(edep);
+        t.processID.push_back(procID);
+    }
+    WriteTrackBinary(t);
+}
 
 void G4XrSceneHandler::CollectHitData(const G4VHit* hit)
 {
@@ -453,20 +580,59 @@ void G4XrSceneHandler::CollectHitData(const G4VHit* hit)
         if (!hd.x.empty() && !hd.y.empty() && !hd.z.empty())
         {
             collectedHits.push_back(hd);
-            WriteToCSV((fs::current_path() / "GLTF" / ("run" + std::to_string(runno) + ".csv")).string(), hd);
+            //WriteToCSV((fs::current_path() / "GLTF" / ("run" + std::to_string(runno) + ".csv")).string(), hd);
         }
     }
 }
 
-
-void G4XrSceneHandler::WriteToCSV(const std::string& filename, const TrackData td) // called with every traj entry
+void G4XrSceneHandler::WriteTrackBinary(const TrackData& t)
 {
-    std::ofstream file(filename,std::ios::app);
-    file << "track,"<< td.trackID << ","<< td.particleName << "," << td.charge << ","<< td.step << ","<< td.x << ","<< td.y << ","<< td.z << ","<< td.time << ","<< td.edep<< "," << td.process << "," << td.px << ","<< td.py<< "," << td.pz << "," << td.energy << "\n";
-    
-    // the order is track, ID, pName, charge, step, x,y,z, time, edep, process, px, py, pz, energy.
-    file.close();
+    std::streampos writePos = out.tellp(); // remember where we are
+
+    header.trackCount++;
+
+    uint32_t n = t.x.size();
+    uint16_t nameID = GetStringID(t.particleName);
+
+    out.write((char*)&t.trackID,4);
+    out.write((char*)&nameID,2);
+    out.write((char*)&t.charge,8);
+
+    out.write((char*)&t.r,sizeof(float));
+    out.write((char*)&t.g,sizeof(float));
+    out.write((char*)&t.b,sizeof(float));
+
+    out.write((char*)&n,4);
+
+    out.write((char*)t.x.data(),sizeof(float)*n);
+    out.write((char*)t.y.data(),sizeof(float)*n);
+    out.write((char*)t.z.data(),sizeof(float)*n);
+
+    out.write((char*)t.time.data(),sizeof(float)*n);
+    out.write((char*)t.edep.data(),sizeof(float)*n);
+
+    out.write((char*)t.px.data(),sizeof(float)*n);
+    out.write((char*)t.py.data(),sizeof(float)*n);
+    out.write((char*)t.pz.data(),sizeof(float)*n);
+    out.write((char*)t.energy.data(),sizeof(float)*n);
+
+    out.write((char*)t.processID.data(),sizeof(uint16_t)*n);
+
+    // --- update header in file ---
+    std::streampos endPos = out.tellp();
+    out.seekp(0);
+
+    header.stringCount = stringTable.size();
+
+    out.write(header.magic,4);
+    out.write((char*)&header.version,4);
+    out.write((char*)&header.stringCount,4);
+    out.write((char*)&header.trackCount,4);
+
+    out.seekp(endPos); // return to end for next write
+    out.flush();
 }
+
 
 void G4XrSceneHandler::WriteToCSV(const std::string& filename, const HitData hd) // called with every hit entry
 {

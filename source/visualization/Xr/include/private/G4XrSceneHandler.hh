@@ -41,6 +41,7 @@
 #include "G4Polyhedron.hh"
 #include "G4Transform3D.hh"
 #include "G4ThreeVector.hh"
+#include "G4VisAttributes.hh"
 
 #include <map>
 #include <vector>
@@ -57,32 +58,49 @@ struct MeshData {
     G4Colour lvColour;
 };
 
-struct TrackData {
-    std::string trackID;
+struct TrackData
+{
+    int trackID;
     std::string particleName;
-    std::string step;
-    std::string x,y,z;
-    std::string px,py,pz;
-
-    std::string energy;
-    
-    std::string time;
-    std::string edep;
-    std::string process;
-    
     double charge;
+
+    float r,g,b;
+
+    std::vector<float> x,y,z;
+    std::vector<float> time;
+    std::vector<float> edep;
+
+    std::vector<float> px,py,pz;
+    std::vector<float> energy;
+
+    std::vector<uint16_t> processID;
 };
+
 
 struct HitData {
     std::string x,y,z;
     std::string edep = "0.0";
 };
 
+struct InstanceData {
+    int uniqueMeshIndex;
+    G4Transform3D transform;
+    G4Colour colour;
+};
+
+struct Header
+{
+    char magic[4] = {'G','4','T','K'};
+    uint32_t version = 1;
+    uint32_t stringCount = 0;
+    uint32_t trackCount = 0;
+}; 
+
 class G4XrSceneHandler : public G4VSceneHandler
 {
   public:
     G4XrSceneHandler(G4VGraphicsSystem& system, const G4String& name);
-    virtual ~G4XrSceneHandler() override; // BEN - MARKED VIRTUAL
+    virtual ~G4XrSceneHandler() override; 
 
     ////////////////////////////////////////////////////////////////
     // Required implementation of pure virtual functions...
@@ -94,14 +112,15 @@ class G4XrSceneHandler : public G4VSceneHandler
     void AddPrimitive(const G4Square&) override;
     void AddPrimitive(const G4Polyhedron&) override;
     
-    void CollectTrackData(const G4VTrajectory* traj);
+    void CollectTrackData(const G4VTrajectory* traj, G4double r, G4double g, G4double b);
     void CollectHitData(const G4VHit* hit);
     void EndModeling() override;
     
-    void ConvertMeshToGLB(const std::vector<MeshData>& meshList, const std::string& outputFile);
-    void WriteToJSON(const std::string& filename);
-    void WriteToCSV(const std::string& filename, const TrackData td);
+    void ConvertMeshToGLB(const std::string& outputFile);
+    void WriteTrackBinary(const TrackData& t);
     void WriteToCSV(const std::string& filename, const HitData hd);
+
+    void FinalizeBinary();
     
     std::vector<MeshData> GetCollectedMeshes(){return collectedMeshes;}
     std::vector<TrackData> GetCollectedTracks(){return collectedTracks;}
@@ -117,9 +136,22 @@ class G4XrSceneHandler : public G4VSceneHandler
     std::vector<TrackData> collectedTracks;
     std::vector<HitData> collectedHits;
     std::unordered_set<int> loggedIDs;
+
+    // instancing layers
+    std::vector<MeshData> uniqueMeshes;
+    std::vector<InstanceData> instances;
+    std::unordered_map<std::string, int> meshMap;
+
+    std::ofstream out;
+    std::vector<std::string> stringTable;
+    std::unordered_map<std::string,uint16_t> stringIndex;
+    Header header;
     
     bool glbState = false;
     G4int runno = -1;
+
+    void InitializeBinary();
+    uint16_t GetStringID(const std::string& s); 
 
 };
 
