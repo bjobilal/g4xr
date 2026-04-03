@@ -34,7 +34,7 @@
 #define G4XRSCENEHANDLER_HH
 
 #include "G4VSceneHandler.hh"
-#include "G4XrViewer.hh"
+//#include "G4XrViewer.hh"
 
 #include "G4UIManager.hh"
 
@@ -44,6 +44,10 @@
 
 #include <map>
 #include <vector>
+#include <unordered_set>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 struct MeshData {
     std::string name;

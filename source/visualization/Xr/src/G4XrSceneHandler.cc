@@ -83,11 +83,6 @@ G4XrSceneHandler::G4XrSceneHandler(G4VGraphicsSystem& system, const G4String& na
 
 G4XrSceneHandler::~G4XrSceneHandler()
 {
-    fs::path gltf = fs::current_path() / "GLTF";
-    fs::path uploads = fs::current_path() / "uploads";
-    fs::remove_all(gltf);
-    fs::remove_all(uploads);
-    std::cout << "G4Xr contents deleted." << std::endl;
 }
 
 void G4XrSceneHandler::AddPrimitive(const G4Polyline& polyline)

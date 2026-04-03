@@ -1,5 +1,6 @@
 #include "G4Xr.hh"
 #include "G4XrSceneHandler.hh"
+#include "G4XrViewer.hh"
 
 #include "G4UIQt.hh"
 #include "G4UIbatch.hh"
