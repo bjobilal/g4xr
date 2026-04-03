@@ -28,6 +28,8 @@
 
 #include "G4VGraphicsSystem.hh"
 
+class G4XrMessenger; 
+
 class G4Xr : public G4VGraphicsSystem
 {
   public:
@@ -36,6 +38,13 @@ class G4Xr : public G4VGraphicsSystem
     G4VSceneHandler* CreateSceneHandler(const G4String& name = "") override;
     G4VViewer* CreateViewer(G4VSceneHandler&, const G4String& name = "") override;
     G4bool IsUISessionCompatible() const override;
+
+    static void SetPendingSessionName(const G4String& name) { fPendingSessionName = name; }
+    static const G4String& GetPendingSessionName()          { return fPendingSessionName; }
+
+  private:
+      static G4String      fPendingSessionName;
+      G4XrMessenger*       fMessenger;
 };
 
 #endif

@@ -8,12 +8,14 @@ geant4_add_module(G4visXr
     G4XrViewer.hh
     G4XrQtViewer.hh
     G4XrSceneHandler.hh
+    G4XrMessenger.hh
   SOURCES
     G4Xr.cc
     G4XrQt.cc
     G4XrViewer.cc
     G4XrQtViewer.cc
-    G4XrSceneHandler.cc)
+    G4XrSceneHandler.cc
+    G4XrMessenger.cc)
 
 geant4_module_compile_definitions(G4visXr PUBLIC G4VIS_USE_XR)
 
