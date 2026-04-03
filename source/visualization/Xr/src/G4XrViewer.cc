@@ -65,7 +65,7 @@ void G4XrViewer::DrawView()
     
     FinishView();
 
-    auto* xr = dynamic_cast<G4XrSceneHandler*>(&sceneHandler);
+    auto* xr = dynamic_cast<G4XrSceneHandler*>(&fSceneHandler);
     if(xr)
         xr->FinalizeBinary();
     
