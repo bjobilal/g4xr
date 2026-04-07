@@ -250,6 +250,22 @@ void G4XrViewer::push_file(const std::string& dirname)
 
 void G4XrViewer::SaveSession()
 {
+    if (!fSessionName.empty()) 
+    { 
+        std::vector<fs::path> dirs = { fs::current_path() / "uploads", fs::current_path() / "GLTF" };
+        for (const auto& dir : dirs) {
+            if (!fs::exists(dir)) continue;
+            for (const auto& entry : fs::recursive_directory_iterator(dir)) 
+            {
+                if (entry.path().extension() == ".glb") 
+                {
+                    fs::path newPath = entry.path().parent_path() / (fSessionName + ".glb");
+                    fs::rename(entry.path(), newPath);
+                    break; 
+                }
+            }
+        }
+    }
     std::string zipName = fSessionName + ".zip";
 
     std::string cmd = "zip -r " + zipName + " " + UPLOAD_DIR;
@@ -352,6 +368,7 @@ void G4XrViewer::WriteLauncherScript(const std::string& zipName)
          "        self.send_response(404); self.end_headers()\n\n"
 
          "if __name__ == \"__main__\":\n"
+         "    import shutil\n"
          "    parser = argparse.ArgumentParser()\n"
          "    parser.add_argument(\"--zip\", type=str, required=True,\n"
          "                        help=\"G4Xr generated .zip file to view.\")\n"
@@ -368,7 +385,15 @@ void G4XrViewer::WriteLauncherScript(const std::string& zipName)
          "        print(f\"G4Xr session server running.\")\n"
          "        print(f\"Enter this address in G4VR: http://{ip}:{PORT}\")\n"
          "        print(\"Press Ctrl+C to stop.\")\n"
-         "        httpd.serve_forever()\n";
+         "        try:\n"
+         "            httpd.serve_forever()\n"
+         "        except KeyboardInterrupt:\n"
+         "            pass\n"
+         "        finally:\n"
+         "            httpd.server_close()\n"
+         "            if os.path.isdir(UDIR):\n"
+         "                shutil.rmtree(UDIR)\n"
+         "            print(\"\\nGoodbye ( ;´ - `;)\")\n";
 
     f.close();
     G4cout << "G4XrViewer: launcher written → " << scriptName << G4endl;
