@@ -66,12 +66,12 @@ void G4DeexPrecoParameters::Initialise()
 
   // preco parameters
   fPrecoLowEnergy = 0.1*CLHEP::MeV;
-  fPrecoHighEnergy = 30*CLHEP::MeV;
+  fPrecoHighEnergy = 15*CLHEP::MeV;
   fPhenoFactor = 1.0;
 
   fPrecoType = 1;
-  fMinZForPreco = 3;
-  fMinAForPreco = 5;
+  fMinZForPreco = 9;
+  fMinAForPreco = 17;
 
   fNeverGoBack = false;
   fUseSoftCutoff = false;
@@ -90,6 +90,8 @@ void G4DeexPrecoParameters::Initialise()
   fMinExPerNucleounForMF = 200*CLHEP::GeV;
 
   fDeexChannelType = fCombined;
+  fPreCompoundType = eDefault;
+  fFermiBreakUpType = bModelVI;
   fDeexType = 3;
   fTwoJMAX = 10;
 
@@ -299,22 +301,37 @@ void G4DeexPrecoParameters::SetDeexChannelsType(G4DeexChannelType val)
   fDeexChannelType = val;
 }
 
+void G4DeexPrecoParameters::SetPreCompoundType(G4PreCompoundType val)
+{
+  if(IsLocked()) { return; }
+  fPreCompoundType = val;
+}
+
+void G4DeexPrecoParameters::SetFermiBreakUpType(G4FermiBreakUpType val)
+{
+  if(IsLocked()) { return; }
+  fFermiBreakUpType = val;
+}
+
 std::ostream& G4DeexPrecoParameters::StreamInfo(std::ostream& os) const
 {
   static const G4String namm[5] = {"Evaporation","GEM","Evaporation+GEM","GEMVI","Dummy"};
-  static const G4int nmm[5] = {8, 68, 68, 31, 0};
+  static const G4int nmm[5] = {8, 68, 68, 83, 0};
+  static const G4String nfbu[3] = {"ModelVI", "ModelAN", "Dummy"};
   G4int idx = fDeexChannelType;
+  G4int jdx = fFermiBreakUpType;
 
   G4long prec = os.precision(5);
   os << "=======================================================================" << "\n";
   os << "======       Geant4 Native Pre-compound Model Parameters       ========" << "\n";
   os << "=======================================================================" << "\n";
+  os << "Type of pre-compound model                          " << fPreCompoundType << "\n";
   os << "Type of pre-compound inverse x-section              " << fPrecoType << "\n";
   os << "Pre-compound model active                           " << (!fPrecoDummy) << "\n";
-  os << "Pre-compound excitation low energy                  " 
-     << G4BestUnit(fPrecoLowEnergy, "Energy") << "\n";
-  os << "Pre-compound excitation high energy                 " 
-     << G4BestUnit(fPrecoHighEnergy, "Energy") << "\n";
+  os << "Pre-compound excitation low energy                  "
+     << fPrecoLowEnergy/CLHEP::MeV << " MeV \n";
+  os << "Pre-compound excitation high energy                 "
+     << fPrecoHighEnergy/CLHEP::MeV << " MeV \n";
   os << "Angular generator for pre-compound model            " << fUseAngularGen << "\n";
   os << "Use NeverGoBack option for pre-compound model       " << fNeverGoBack << "\n";
   os << "Use SoftCutOff option for pre-compound model        " << fUseSoftCutoff << "\n";
@@ -327,18 +344,17 @@ std::ostream& G4DeexPrecoParameters::StreamInfo(std::ostream& os) const
   os << "Type of de-excitation inverse x-section             " << fDeexType << "\n";
   os << "Type of de-excitation factory                       " << namm[idx] << "\n";
   os << "Number of de-excitation channels                    " << nmm[idx] << "\n";
-  os << "Min excitation energy                               " 
-     << G4BestUnit(fMinExcitation, "Energy") << "\n";
+  os << "Type of Fermi BreakUp model                         " << nfbu[jdx] << "\n";
+  os << "Min excitation energy                               "
+     << fMinExcitation/CLHEP::keV << " keV \n";
   os << "Min energy per nucleon for multifragmentation       " 
-     << G4BestUnit(fMinExPerNucleounForMF, "Energy") << "\n";
-  os << "Limit excitation energy for Fermi BreakUp           " 
-     << G4BestUnit(fFBUEnergyLimit, "Energy") << "\n";
+     << fMinExPerNucleounForMF/CLHEP::MeV << " MeV\n";
   os << "Level density (1/MeV)                               " 
      << fLevelDensity*CLHEP::MeV << "\n";
   os << "Use simple level density model                      " << fLD << "\n";
   os << "Use discrete excitation energy of the residual      " << fFD << "\n";
   os << "Time limit for long lived isomeres                  " 
-     << G4BestUnit(fMaxLifeTime, "Time") << "\n";
+     << fMaxLifeTime/CLHEP::ns << " ns \n";
   os << "Isomer production flag                              " << fIsomerFlag << "\n";
   os << "Internal e- conversion flag                         " 
      << fInternalConversion << "\n";

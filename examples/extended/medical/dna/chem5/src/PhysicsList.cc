@@ -23,6 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file PhysicsList.cc
+/// \brief Implementation of the PhysicsList class
+
 // This example is provided by the Geant4-DNA collaboration
 // Any report or published results obtained using the Geant4-DNA software
 // shall cite the following Geant4-DNA collaboration publication:
@@ -32,8 +35,6 @@
 // The Geant4-DNA web site is available at http://geant4-dna.org
 //
 //
-/// \file PhysicsList.cc
-/// \brief Implementation of the PhysicsList class
 
 #include "PhysicsList.hh"
 
@@ -51,28 +52,22 @@
 #include "G4EmDNAPhysics_option7.hh"
 #include "G4EmDNAPhysics_option8.hh"
 #include "G4EmParameters.hh"
-#include "G4PhysicsConstructorRegistry.hh"
 #include "G4SystemOfUnits.hh"
 
 using namespace G4DNAPARSER;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PhysicsList::PhysicsList()
-  : G4VModularPhysicsList(),
-    fEmDNAPhysicsList(nullptr),
-    fEmDNAChemistryList(nullptr),
-    fEmDNAChemistryList1(nullptr),
-    fPhysDNAName("")
+PhysicsList::PhysicsList(): G4VModularPhysicsList()
 {
-  G4double currentDefaultCut = 1. * nanometer;
+  auto currentDefaultCut = 1. * nanometer;
   // fixe lower limit for cut
   G4ProductionCutsTable::GetProductionCutsTable()->SetEnergyRange(100 * eV, 1 * GeV);
   SetDefaultCutValue(currentDefaultCut);
   SetVerboseLevel(1);
 
   RegisterConstructor("G4EmDNAPhysics_option8");
-  if (CommandLineParser::GetParser()->GetCommandIfActive("-chemOFF") == 0) {
+  if (CommandLineParser::GetParser()->GetCommandIfActive("-chemOFF") == nullptr) {
     RegisterConstructor("G4EmDNAChemistry_option1");
   }
   G4EmParameters::Instance()->SetDNAeSolvationSubType(fRitchie1994eSolvation);

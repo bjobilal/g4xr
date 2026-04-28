@@ -23,6 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file PhysicsList.cc
+/// \brief Implementation of the PhysicsList class
+
 // This example is provided by the Geant4-DNA collaboration
 // Any report or published results obtained using the Geant4-DNA software
 // shall cite the following Geant4-DNA collaboration publications:
@@ -33,8 +36,6 @@
 //
 // The Geant4-DNA web site is available at http://geant4-dna.org
 //
-/// \file medical/dna/range/src/PhysicsList.cc
-/// \brief Implementation of the PhysicsList class
 
 #include "PhysicsList.hh"
 
@@ -48,6 +49,7 @@
 #include "G4EmDNAPhysics_option5.hh"
 #include "G4EmDNAPhysics_option6.hh"
 #include "G4EmDNAPhysics_option7.hh"
+#include "G4EmDNAPhysics_option8.hh"
 #include "G4EmStandardPhysics_option4.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4UnitsTable.hh"
@@ -143,6 +145,11 @@ void PhysicsList::AddPhysicsList(const G4String& name)
     fEmName = name;
     delete fEmPhysicsList;
     fEmPhysicsList = new G4EmDNAPhysics_option7();
+  }
+  else if (name == "dna_opt8") {
+    fEmName = name;
+    delete fEmPhysicsList;
+    fEmPhysicsList = new G4EmDNAPhysics_option8();
   }
   else if (name == "std_opt4") {
     fEmName = name;

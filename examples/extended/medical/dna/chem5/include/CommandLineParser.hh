@@ -23,6 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file CommandLineParser.hh
+/// \brief Definition of the G4DNAPARSER::CommandLineParser class
+
 // This example is provided by the Geant4-DNA collaboration
 // Any report or published results obtained using the Geant4-DNA software
 // shall cite the following Geant4-DNA collaboration publication:
@@ -33,8 +36,6 @@
 // Author: Mathieu Karamitros
 //
 //
-/// \file CommandLineParser.hh
-/// \brief Definition of the CommandLineParser class
 
 #ifndef COMMANDLINEPARSER_HH
 #define COMMANDLINEPARSER_HH
@@ -80,20 +81,20 @@ class Command
 class CommandWithOption : public Command
 {
   public:
-    virtual const G4String& GetOption() { return fOption; }
-    virtual const G4String& GetOptionName() { return fOptionName; }
-    virtual const G4String& GetDefaultOption() { return fDefaultOption; }
+    const G4String& GetOption() override { return fOption; }
+    const G4String& GetOptionName() override { return fOptionName; }
+    const G4String& GetDefaultOption() override { return fDefaultOption; }
 
-    virtual void SetOption(const G4String& in_op) { fOption = in_op; }
-    virtual void SetOptionName(const G4String& in_op) { fOptionName = in_op; }
-    virtual void SetDefaultOption(const G4String& in_op) { fDefaultOption = in_op; }
+    void SetOption(const G4String& in_op) override { fOption = in_op; }
+    void SetOptionName(const G4String& in_op) override { fOptionName = in_op; }
+    void SetDefaultOption(const G4String& in_op) override { fDefaultOption = in_op; }
 
   private:
     friend class CommandLineParser;
     CommandWithOption(Type, const G4String& description = "", const G4String& defaultOption = "",
                       const G4String& optionName = "optionName");
 
-    virtual ~CommandWithOption() { ; }
+    ~CommandWithOption() override = default;
 
     G4String fOption;
     G4String fDefaultOption;
@@ -104,19 +105,19 @@ class CommandLineParser
 {
     static CommandLineParser* fpInstance;
     std::map<G4String, Command*> fCommandMap;
-    G4bool fOptionsWereSetup;
-    G4int fMaxMarkerLength;
-    G4int fMaxOptionNameLength;
-    G4int fVerbose;
+    G4bool fOptionsWereSetup = false;
+    G4int fMaxMarkerLength = 0;
+    G4int fMaxOptionNameLength = 0;
+    G4int fVerbose = 0;
 
   public:
     static CommandLineParser* GetParser();
     CommandLineParser();
     ~CommandLineParser();
     static void DeleteInstance();
-    int Parse(int& argc, char** argv);
+    G4int Parse(int& argc, char** argv);
     void PrintHelp();
-    bool CheckIfNotHandledOptionsExists(int& argc, char** argv);
+    G4bool CheckIfNotHandledOptionsExists(int& argc, char** argv);
     void CorrectRemainingOptions(int& argc, char** argv);
     void AddCommand(const G4String& marker, Command::Type, const G4String& description = "",
                     const G4String& defaultOption = "", const G4String& optionName = "");

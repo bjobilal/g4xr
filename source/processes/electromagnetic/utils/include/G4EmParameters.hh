@@ -303,6 +303,12 @@ public:
   void SetMaxEnergyFor5DMuPair(G4double val);
   G4double MaxEnergyFor5DMuPair() const;
 
+  void SetMaxDNAElectronEnergy(G4double val);
+  G4double MaxDNAElectronEnergy() const;
+
+  void SetMaxDNAIonEnergy(G4double val);
+  G4double MaxDNAIonEnergy() const;
+
   void SetStepFunction(G4double v1, G4double v2);
   void SetStepFunctionMuHad(G4double v1, G4double v2);
   void SetStepFunctionLightIons(G4double v1, G4double v2);
@@ -407,10 +413,14 @@ public:
   // create and access saturation class
   G4EmSaturation* GetEmSaturation();
 
+  // defined fluctuations per G4Region
+  void SetFluctuationsForRegion(const G4String& regionName, G4bool flag);
+
   // initialisation methods
   void DefineRegParamForLoss(G4VEnergyLossProcess*) const;
   void DefineRegParamForEM(G4VEmProcess*) const;
   void DefineRegParamForDeex(G4VAtomDeexcitation*) const;
+  void DefineFluctuationFlags(std::vector<G4bool>* theFluctFlags);
 
   const G4String& GetDirLEDATA() const;
 
@@ -499,6 +509,7 @@ private:
   G4PositronAtRestModelType fPositronium;
 
   G4String fDirLEDATA;
+  std::vector<std::pair<G4String, G4bool> > fluctRegions;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

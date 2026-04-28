@@ -23,6 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file Par04InferenceMessenger.hh
+/// \brief Definition of the Par04InferenceMessenger class
+
 #ifdef USE_INFERENCE
 #  ifndef PAR04INFERENCEMESSENGER_H
 #    define PAR04INFERENCEMESSENGER_H
@@ -70,6 +73,8 @@ class Par04InferenceMessenger : public G4UImessenger
     G4UIcmdWithAString* fInferenceLibraryCmd = nullptr;
     /// Command to set fModelPathNameCmd
     G4UIcmdWithAString* fModelPathNameCmd = nullptr;
+  /// Command to set fModelTypeCmd
+  G4UIcmdWithAString *fModelTypeCmd = nullptr;
     /// Command to set the fSizeLatentVectorCmd
     G4UIcmdWithAnInteger* fSizeLatentVectorCmd = nullptr;
     /// Command to set the fSizeConditionVectorCmd

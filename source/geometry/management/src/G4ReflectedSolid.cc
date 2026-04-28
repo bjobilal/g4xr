@@ -25,7 +25,7 @@
 //
 // Implementation for G4ReflectedSolid class
 //
-// Author: Vladimir Grichine, 23.07.01  (Vladimir.Grichine@cern.ch)
+// Author: Vladimir Grichine (CERN), 23.07.2001 - Created
 // --------------------------------------------------------------------
 
 #include "G4ReflectedSolid.hh"
@@ -454,16 +454,13 @@ G4ReflectedSolid::CreatePolyhedron () const
     polyhedron->Transform(*fDirectTransform3D);
     return polyhedron;
   }
-  else
-  {
-    std::ostringstream message;
-    message << "Solid - " << GetName()
-            << " - original solid has no" << G4endl
-            << "corresponding polyhedron. Returning NULL!";
-    G4Exception("G4ReflectedSolid::CreatePolyhedron()",
-                "GeomMgt1001", JustWarning, message);
-    return nullptr;
-  }
+  std::ostringstream message;
+  message << "Solid - " << GetName()
+          << " - original solid has no" << G4endl
+          << "corresponding polyhedron. Returning NULL!";
+  G4Exception("G4ReflectedSolid::CreatePolyhedron()",
+              "GeomMgt1001", JustWarning, message);
+  return nullptr;
 }
 
 /////////////////////////////////////////////////////////
@@ -476,9 +473,9 @@ G4ReflectedSolid::GetPolyhedron () const
   if ((fpPolyhedron == nullptr) || fRebuildPolyhedron ||
       (fpPolyhedron->GetNumberOfRotationStepsAtTimeOfCreation() !=
        fpPolyhedron->GetNumberOfRotationSteps()))
-    {
-      fpPolyhedron = CreatePolyhedron();
-      fRebuildPolyhedron = false;
-    }
+  {
+    fpPolyhedron = CreatePolyhedron();
+    fRebuildPolyhedron = false;
+  }
   return fpPolyhedron;
 }

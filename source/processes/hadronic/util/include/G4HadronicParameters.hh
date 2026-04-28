@@ -50,6 +50,10 @@ class G4HadronicParameters {
     static G4HadronicParameters* Instance();
     ~G4HadronicParameters();
 
+    // printing
+    void StreamInfo(std::ostream& os) const;
+    void Dump() const;
+
     inline G4double GetMaxEnergy() const;
     void SetMaxEnergy( const G4double val );
     // Getter/Setter for the upper limit for Geant4 hadronic physics, for any application.
@@ -203,7 +207,10 @@ class G4HadronicParameters {
     // the Geant4 version 11.2 is retrieved;
     // "False" means that the corresponding behavior of the Geant4 version
     // 11.3 is retrieved.
-  
+
+    inline G4bool UseRFilesForXS() const;
+    void SetUseRFilesForXS( G4bool val );
+
   private:
 
     G4HadronicParameters();
@@ -251,6 +258,7 @@ class G4HadronicParameters {
     G4bool fBinaryDebug = false;
     G4bool fBertiniAngularEmissionsAs11_2 = false;  // Keep the new G4 11.3 behavior
     G4bool fBertiniNucleiModelAs11_2 = false;       // Keep the new G4 11.3 behavior
+    G4bool fUseRFilesForXS = false;
 
     G4String fTypeTablePT = "";
     G4String fDirPARTICLEXS = "";
@@ -368,6 +376,10 @@ inline G4bool G4HadronicParameters::GetBinaryDebug() const {
   return fBinaryDebug;
 }
 
+inline G4bool G4HadronicParameters::UseRFilesForXS() const {
+  return fUseRFilesForXS;
+}
+
 inline G4double G4HadronicParameters::GetEPRelativeLevel() const {
   return fRelativeDiff;
 }
@@ -410,6 +422,12 @@ inline G4bool G4HadronicParameters::IsBertiniAngularEmissionsAs11_2() const {
   
 inline G4bool G4HadronicParameters::IsBertiniNucleiModelAs11_2() const {
   return fBertiniNucleiModelAs11_2;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const G4HadronicParameters& p)
+{
+  p.StreamInfo(os);
+  return os;
 }
 
 #endif

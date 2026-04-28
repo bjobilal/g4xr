@@ -11,7 +11,7 @@ Environment variable "G4FORCE_RUN_MANAGER_TYPE" enabled with value == Serial. Fo
 
 
 **************************************************************
- Geant4 version Name: geant4-11-03-patch-02    (25-April-2025)
+ Geant4 version Name: geant4-11-04-patch-01    (13-March-2026)
                        Copyright : Geant4 Collaboration
                       References : NIM A 506 (2003), 250-303
                                  : IEEE-TNS 53 (2006), 270-278
@@ -27,25 +27,24 @@ You have successfully registered the following graphics systems.
 Registered graphics systems are:
   ASCIITree (ATree)
   DAWNFILE (DAWNFILE)
-  G4HepRepFile (HepRepFile)
-  RayTracer (RayTracer)
+  RayTracer (RT)
   VRML2FILE (VRML2FILE)
   gMocrenFile (gMocrenFile)
   TOOLSSG_OFFSCREEN (TSG_OFFSCREEN, TSG_FILE)
   OpenGLImmediateQt (OGLIQt, OGLI)
-  OpenGLStoredQt (OGLSQt, OGL, OGLS)
+  OpenGLStoredQt (OGLSQt, OGLS)
   OpenGLImmediateXm (OGLIXm, OGLIQt_FALLBACK)
   OpenGLStoredXm (OGLSXm, OGLSQt_FALLBACK)
   OpenGLImmediateX (OGLIX, OGLIQt_FALLBACK, OGLIXm_FALLBACK)
   OpenGLStoredX (OGLSX, OGLSQt_FALLBACK, OGLSXm_FALLBACK)
-  RayTracerX (RayTracerX)
-  Qt3D (Qt3D)
+  RayTracerX (RTX)
+  RayTracerQt (RTQt)
   TOOLSSG_X11_GLES (TSG_X11_GLES, TSGX11, TSG_XT_GLES_FALLBACK)
   TOOLSSG_X11_ZB (TSG_X11_ZB, TSGX11ZB)
   TOOLSSG_XT_GLES (TSG_XT_GLES, TSGXt, TSG_QT_GLES_FALLBACK)
   TOOLSSG_XT_ZB (TSG_XT_ZB, TSGXtZB)
-  TOOLSSG_QT_GLES (TSG_QT_GLES, TSGQt, TSG)
-  TOOLSSG_QT_ZB (TSG_QT_ZB, TSGQtZB)
+  TOOLSSG_QT_GLES (TSG_QT_GLES, TSGQt, TSG, OGL)
+  TOOLSSG_QT_ZB (TSG_QT_ZB, TSGQtZB, TSGZB)
 You may choose a graphics system (driver) with a parameter of
 the command "/vis/open" or "/vis/sceneHandler/create",
 or you may omit the driver parameter and choose at run time:
@@ -128,7 +127,7 @@ Lowest triplet kinetic energy                      1 MeV
 Enable sampling of gamma linear polarisation       0
 5D gamma conversion model type                     0
 5D gamma conversion model on isolated ion          0
-Use Ricardo-Gerardo pair production model          0
+Use RiGe 5D e+e- pair production model by muons    0
 Livermore data directory                           epics_2017
 =======================================================================
 ======                 Ionisation Parameters                   ========
@@ -142,7 +141,7 @@ Lowest muon/hadron kinetic energy                  1 keV
 Use ICRU90 data                                    0
 Fluctuations of dE/dx are enabled                  1
 Type of fluctuation model for leptons and hadrons  Urban
-Use built-in Birks satuaration                     0
+Use built-in Birks saturation                      0
 Build CSDA range enabled                           0
 Use cut as a final range enabled                   0
 Enable angular generator interface                 0
@@ -279,7 +278,7 @@ hBrems:  for proton  XStype:1  SubType=3
 hPairProd:  for proton  XStype:1  SubType=4
       dE/dx and range tables from 100 eV  to 100 TeV in 84 bins
       Lambda tables from threshold to 100 TeV, 7 bins/decade, spline: 1
-      Sampling table 17x1001 from 7.50618 GeV to 100 TeV 
+      Sampling table 17x1001, from 7.50618 GeV to 100 TeV 
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
            hPairProd : Emin=    0 eV  Emax=  100 TeV  ModifiedMephi
 
@@ -337,7 +336,7 @@ hBrems:  for anti_proton  XStype:1  SubType=3
 hPairProd:  for anti_proton  XStype:1  SubType=4
       dE/dx and range tables from 100 eV  to 100 TeV in 84 bins
       Lambda tables from threshold to 100 TeV, 7 bins/decade, spline: 1
-      Sampling table 17x1001 from 7.50618 GeV to 100 TeV 
+      Sampling table 17x1001, from 7.50618 GeV to 100 TeV 
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
            hPairProd : Emin=    0 eV  Emax=  100 TeV  ModifiedMephi
 
@@ -369,7 +368,7 @@ hBrems:  for kaon+  XStype:1  SubType=3
 hPairProd:  for kaon+  XStype:1  SubType=4
       dE/dx and range tables from 100 eV  to 100 TeV in 84 bins
       Lambda tables from threshold to 100 TeV, 7 bins/decade, spline: 1
-      Sampling table 18x1001 from 3.94942 GeV to 100 TeV 
+      Sampling table 18x1001, from 3.94942 GeV to 100 TeV 
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
            hPairProd : Emin=    0 eV  Emax=  100 TeV  ModifiedMephi
 
@@ -401,7 +400,7 @@ hBrems:  for kaon-  XStype:1  SubType=3
 hPairProd:  for kaon-  XStype:1  SubType=4
       dE/dx and range tables from 100 eV  to 100 TeV in 84 bins
       Lambda tables from threshold to 100 TeV, 7 bins/decade, spline: 1
-      Sampling table 18x1001 from 3.94942 GeV to 100 TeV 
+      Sampling table 18x1001, from 3.94942 GeV to 100 TeV 
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
            hPairProd : Emin=    0 eV  Emax=  100 TeV  ModifiedMephi
 
@@ -433,7 +432,7 @@ muBrems:  for mu+  XStype:1  SubType=3
 muPairProd:  for mu+  XStype:1  SubType=4
       dE/dx and range tables from 100 eV  to 100 TeV in 84 bins
       Lambda tables from threshold to 100 TeV, 7 bins/decade, spline: 1
-      Sampling table 21x1001 from 0.85 GeV to 100 TeV 
+      Sampling table 21x1001, from 0.85 GeV to 100 TeV 
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
           muPairProd : Emin=    0 eV  Emax=  100 TeV  ModifiedMephi
 
@@ -465,7 +464,7 @@ muBrems:  for mu-  XStype:1  SubType=3
 muPairProd:  for mu-  XStype:1  SubType=4
       dE/dx and range tables from 100 eV  to 100 TeV in 84 bins
       Lambda tables from threshold to 100 TeV, 7 bins/decade, spline: 1
-      Sampling table 21x1001 from 0.85 GeV to 100 TeV 
+      Sampling table 21x1001, from 0.85 GeV to 100 TeV 
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
           muPairProd : Emin=    0 eV  Emax=  100 TeV  ModifiedMephi
 
@@ -497,7 +496,7 @@ hBrems:  for pi+  XStype:1  SubType=3
 hPairProd:  for pi+  XStype:1  SubType=4
       dE/dx and range tables from 100 eV  to 100 TeV in 84 bins
       Lambda tables from threshold to 100 TeV, 7 bins/decade, spline: 1
-      Sampling table 20x1001 from 1.11656 GeV to 100 TeV 
+      Sampling table 20x1001, from 1.11656 GeV to 100 TeV 
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
            hPairProd : Emin=    0 eV  Emax=  100 TeV  ModifiedMephi
 
@@ -529,7 +528,7 @@ hBrems:  for pi-  XStype:1  SubType=3
 hPairProd:  for pi-  XStype:1  SubType=4
       dE/dx and range tables from 100 eV  to 100 TeV in 84 bins
       Lambda tables from threshold to 100 TeV, 7 bins/decade, spline: 1
-      Sampling table 20x1001 from 1.11656 GeV to 100 TeV 
+      Sampling table 20x1001, from 1.11656 GeV to 100 TeV 
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
            hPairProd : Emin=    0 eV  Emax=  100 TeV  ModifiedMephi
 
@@ -551,7 +550,7 @@ CoulombScat:  for pi- XStype:1 SubType=1 BuildTable=1
         Model:                      FTFP: 3 GeV ---> 25 GeV
         Model:            BertiniCascade: 0 eV  ---> 6 GeV
      Cr_sctns:      G4NeutronInelasticXS: 0 eV  ---> 100 TeV
-  Process: nCapture
+  Process: nCaptureXS
         Model:               nRadCapture: 0 eV  ---> 100 TeV
      Cr_sctns:        G4NeutronCaptureXS: 0 eV  ---> 100 TeV
   Process: nKiller
@@ -792,10 +791,11 @@ CoulombScat:  for pi- XStype:1 SubType=1 BuildTable=1
 =======================================================================
 ======       Geant4 Native Pre-compound Model Parameters       ========
 =======================================================================
+Type of pre-compound model                          0
 Type of pre-compound inverse x-section              1
 Pre-compound model active                           1
-Pre-compound excitation low energy                  100 keV
-Pre-compound excitation high energy                 30 MeV
+Pre-compound excitation low energy                  0.1 MeV 
+Pre-compound excitation high energy                 15 MeV 
 Angular generator for pre-compound model            1
 Use NeverGoBack option for pre-compound model       0
 Use SoftCutOff option for pre-compound model        0
@@ -808,9 +808,9 @@ Use HETC submodel for pre-compound model            0
 Type of de-excitation inverse x-section             3
 Type of de-excitation factory                       Evaporation+GEM
 Number of de-excitation channels                    68
-Min excitation energy                               10 eV 
-Min energy per nucleon for multifragmentation       200 GeV
-Limit excitation energy for Fermi BreakUp           20 MeV
+Type of Fermi BreakUp model                         ModelVI
+Min excitation energy                               0.01 keV 
+Min energy per nucleon for multifragmentation       2e+05 MeV
 Level density (1/MeV)                               0.075
 Use simple level density model                      1
 Use discrete excitation energy of the residual      0
@@ -915,546 +915,587 @@ Primary particle PDG=2 deltaMass(MeV)=5.6 is larger than the tolerance(MeV)=1
 
 Tracks in tracking region have been processed. -- Stage 0 over.
 
-Source track ID 6623 (gamma,3.8465780030405[GeV]) at (140.50971005937,479.85104082312,-280.91213101867)
+Source track ID 1358 (gamma,2.1834516517837[GeV]) at (140.36743503412,479.89267881678,-280.93489363356)
 Original primary track ID 1 (unknown,305.48142430119[GeV])
-Cell[8,9]    3.5534533520064 [GeV]
-Cell[8,10]    0.23385719860468 [GeV]
-Cell[8,8]    0.0091086583751989 [GeV]
-Cell[7,9]    0.023894233943512 [GeV]
-Cell[7,8]    0.0015901045389493 [GeV]
-Cell[8,7]    0.00083691817895267 [GeV]
-Cell[8,11]    0.0077029539405665 [GeV]
-Cell[7,10]    0.0024308494348004 [GeV]
-Cell[7,11]    0.00019728582479839 [GeV]
-Cell[5,46]    0.0012231039047852 [GeV]
-Cell[3,36]    0.0033211317430961 [GeV]
-Cell[8,6]    0.0001157710482763 [GeV]
-Cell[9,8]    0.00024943645449412 [GeV]
-Cell[9,11]    0.0005079990382268 [GeV]
-###  Total energy deposition in calorimeter by a source track in 14 cells : 3.8384889970367 (GeV)
+Cell[8,9]    2.0493199904843 [GeV]
+Cell[8,8]    0.0036112226627928 [GeV]
+Cell[8,10]    0.10885331724041 [GeV]
+Cell[8,12]    0.00037946196437191 [GeV]
+Cell[8,11]    0.0017017064632733 [GeV]
+Cell[7,11]    0.0020281863192206 [GeV]
+Cell[7,10]    0.00073860929300428 [GeV]
+Cell[4,42]    0.0010590209554722 [GeV]
+Cell[7,8]    0.00026597153912354 [GeV]
+Cell[7,7]    0.00061024372272612 [GeV]
+Cell[9,38]    0.00057452734827668 [GeV]
+Cell[7,9]    0.0098382178581205 [GeV]
+Cell[8,7]    0.00051099891 [GeV]
+Cell[9,35]    0.00051099891 [GeV]
+Cell[9,10]    0.0011481873016327 [GeV]
+Cell[6,38]    0.00016952280908108 [GeV]
+Cell[9,15]    0.0003397068460324 [GeV]
+Cell[9,1]    0.00082283305401163 [GeV]
+Cell[15,7]    0.00032979483247542 [GeV]
+###  Total energy deposition in calorimeter by a source track in 19 cells : 2.1828125185143 (GeV)
 
-Source track ID 6554 (e+,69.719268978598[GeV]) at (140.74944194875,479.7807776382,-280.93497653188)
+Source track ID 1359 (gamma,2.6236888246096[GeV]) at (140.52666893237,479.84607461015,-280.93932872606)
 Original primary track ID 1 (unknown,305.48142430119[GeV])
-Cell[8,9]    64.050334552484 [GeV]
-Cell[8,10]    3.6599782456493 [GeV]
-Cell[8,8]    0.36554721725559 [GeV]
-Cell[7,9]    0.72496017318244 [GeV]
-Cell[7,8]    0.053906742182318 [GeV]
-Cell[8,7]    0.022944016376224 [GeV]
-Cell[8,11]    0.080548867932673 [GeV]
-Cell[7,10]    0.32524265205565 [GeV]
-Cell[7,11]    0.025926481591876 [GeV]
-Cell[8,6]    0.0034463895609718 [GeV]
-Cell[9,8]    0.0079355535143937 [GeV]
-Cell[9,11]    0.0096526875960894 [GeV]
-Cell[7,20]    0.00069947612537943 [GeV]
-Cell[4,41]    0.00051779406308269 [GeV]
-Cell[9,10]    0.010538602796034 [GeV]
-Cell[7,41]    0.0018533557464783 [GeV]
-Cell[9,34]    0.00051099891 [GeV]
-Cell[7,35]    0.00079789905275333 [GeV]
-Cell[5,33]    0.00088802736854914 [GeV]
-Cell[4,34]    0.0011645646773668 [GeV]
-Cell[5,44]    0.0011879119446397 [GeV]
-Cell[5,43]    0.00049866443301155 [GeV]
-Cell[7,13]    0.0034851457250303 [GeV]
-Cell[7,12]    0.0038487043173177 [GeV]
-Cell[7,32]    0.00051099891 [GeV]
-Cell[2,41]    0.00066619599110062 [GeV]
-Cell[3,42]    0.00054309104857699 [GeV]
-Cell[8,12]    0.0047109660558629 [GeV]
-Cell[1,20]    0.0016553813424519 [GeV]
-Cell[5,34]    0.00085786889377824 [GeV]
-Cell[9,36]    0.0044069620561346 [GeV]
-Cell[10,11]    0.00086116721551743 [GeV]
-Cell[8,23]    0.004125233700472 [GeV]
-Cell[7,29]    0.00061357610370401 [GeV]
-Cell[5,35]    0.0024023916674633 [GeV]
-Cell[10,25]    0.0013676503667821 [GeV]
-Cell[6,36]    0.0017858045485646 [GeV]
-Cell[8,35]    0.00051099891 [GeV]
-Cell[3,35]    0.011122079806793 [GeV]
-Cell[2,44]    0.00051099891 [GeV]
-Cell[12,23]    0.00091913094921269 [GeV]
-Cell[7,7]    0.01261069864535 [GeV]
-Cell[12,34]    0.00046082577520398 [GeV]
-Cell[8,32]    0.0032673590756706 [GeV]
-Cell[8,30]    0.0037135323887394 [GeV]
-Cell[10,3]    0.00017458637549689 [GeV]
-Cell[7,38]    0.00051099891 [GeV]
-Cell[1,10]    0.0004722396983188 [GeV]
-Cell[14,25]    0.00026812578427133 [GeV]
-Cell[9,3]    0.00049964552594286 [GeV]
-Cell[0,41]    0.0026612226782053 [GeV]
-Cell[9,46]    6.4033007087005e-05 [GeV]
-Cell[9,47]    0.0017374796135451 [GeV]
-Cell[8,47]    1.6041431808844e-07 [GeV]
-Cell[8,0]    1.7891065065328e-05 [GeV]
-Cell[9,0]    8.75688939459e-08 [GeV]
-Cell[5,41]    0.00046327284974913 [GeV]
-Cell[15,33]    0.0011194377461195 [GeV]
-Cell[6,12]    0.0023489397662309 [GeV]
-Cell[9,9]    0.0087182756613751 [GeV]
-Cell[11,35]    0.0013006895454615 [GeV]
-Cell[9,21]    0.00097280978665895 [GeV]
-Cell[13,40]    0.0022427492548755 [GeV]
-Cell[8,44]    0.0004983813566426 [GeV]
-Cell[11,38]    0.0072147586574105 [GeV]
-Cell[8,25]    0.00051099891 [GeV]
-Cell[7,43]    0.00033632302109265 [GeV]
-Cell[11,29]    0.00090916532998569 [GeV]
-Cell[8,27]    0.0013183217393611 [GeV]
-Cell[6,35]    0.00012187631014277 [GeV]
-Cell[3,38]    0.003069070120452 [GeV]
-Cell[8,16]    0.0021859079547358 [GeV]
-Cell[9,16]    0.00028591831359302 [GeV]
-Cell[9,17]    0.0011164054833085 [GeV]
-Cell[8,18]    0.00078024810390207 [GeV]
-Cell[8,19]    0.0031195139982978 [GeV]
-Cell[7,18]    3.8434930615949e-08 [GeV]
-Cell[5,23]    0.0036655287208555 [GeV]
-Cell[8,13]    0.0079882723794694 [GeV]
-Cell[9,22]    0.0015064566138524 [GeV]
-Cell[9,23]    0.00076109550772885 [GeV]
-Cell[9,45]    0.000599519265224 [GeV]
-Cell[13,13]    0.00036187701547071 [GeV]
-Cell[0,0]    0.00098436633435069 [GeV]
-Cell[8,42]    0.00056984193177024 [GeV]
-Cell[10,9]    0.00046252792908598 [GeV]
-Cell[1,31]    0.0012543392067266 [GeV]
-Cell[5,30]    0.00074471013480283 [GeV]
-Cell[8,36]    0.001762459956268 [GeV]
-Cell[8,5]    0.0020587975830726 [GeV]
-Cell[8,14]    0.00072472846970924 [GeV]
-Cell[8,28]    0.0032423272230255 [GeV]
-Cell[8,26]    0.0050044851226431 [GeV]
-Cell[7,22]    0.00073274475713681 [GeV]
-Cell[9,1]    0.0001312670666304 [GeV]
-Cell[10,47]    0.00081445360977364 [GeV]
-Cell[7,16]    0.0010577397517573 [GeV]
-Cell[7,15]    0.00023642941211061 [GeV]
-Cell[9,18]    0.00094778405835887 [GeV]
-Cell[4,39]    0.00073401157921687 [GeV]
-Cell[9,20]    0.00051031528636034 [GeV]
-Cell[10,20]    0.00066259730185244 [GeV]
-Cell[11,46]    0.00051099891 [GeV]
-Cell[9,7]    0.00047525938882548 [GeV]
-Cell[7,6]    0.00074714486845564 [GeV]
-Cell[6,9]    9.5456477993139e-09 [GeV]
-Cell[10,4]    0.00018039448116633 [GeV]
-Cell[9,4]    1.8026383941105e-09 [GeV]
-Cell[10,13]    0.0020556692748318 [GeV]
-Cell[10,12]    0.00070266820958292 [GeV]
-Cell[7,23]    2.6225825713482e-06 [GeV]
-Cell[2,45]    2.3913562472444e-06 [GeV]
-Cell[5,24]    9.6466054674238e-07 [GeV]
-Cell[3,0]    4.9923421320386e-05 [GeV]
-Cell[4,0]    2.3089267176601e-07 [GeV]
-Cell[4,32]    0.0025973627063884 [GeV]
-Cell[3,30]    0.003226271928774 [GeV]
-Cell[8,22]    1.03584204453e-07 [GeV]
-Cell[12,36]    0.0032642236361808 [GeV]
-Cell[1,26]    0.0014260298933404 [GeV]
-Cell[5,22]    0.0004691605368917 [GeV]
-Cell[6,10]    0.00051099891 [GeV]
-Cell[12,38]    0.00094464782859872 [GeV]
-Cell[10,37]    0.0003285230873427 [GeV]
-Cell[4,19]    0.00067707198294957 [GeV]
-Cell[9,12]    0.00051479901124133 [GeV]
-Cell[12,2]    0.0011343436733802 [GeV]
-Cell[9,29]    0.00013712014653068 [GeV]
-###  Total energy deposition in calorimeter by a source track in 128 cells : 69.516554822425 (GeV)
+Cell[8,9]    2.4260521000558 [GeV]
+Cell[8,8]    0.023069548696961 [GeV]
+Cell[8,10]    0.14093740193414 [GeV]
+Cell[8,11]    0.0020816505719893 [GeV]
+Cell[7,11]    0.00088373806495333 [GeV]
+Cell[7,10]    0.018504602685151 [GeV]
+Cell[7,9]    0.0021643629016985 [GeV]
+Cell[8,7]    0.00090128481293173 [GeV]
+Cell[2,38]    0.00040554638270468 [GeV]
+Cell[2,37]    0.00055346122625599 [GeV]
+Cell[7,46]    0.0015559569704435 [GeV]
+Cell[9,8]    0.00035083822200736 [GeV]
+Cell[6,31]    0.0036481183337797 [GeV]
+Cell[9,9]    0.00037369078910232 [GeV]
+Cell[13,22]    0.00041450180333043 [GeV]
+Cell[5,37]    0.00081028173469301 [GeV]
+Cell[5,38]    0.00040759214446202 [GeV]
+Cell[4,37]    0.00051099891 [GeV]
+###  Total energy deposition in calorimeter by a source track in 18 cells : 2.6236256762404 (GeV)
 
-Source track ID 6518 (mu+,97.449344601546[GeV]) at (421.3757939956,269.15133333234,1659.0683118854)
+Source track ID 1282 (e+,68.768542490865[GeV]) at (140.81257786382,479.76225144893,-280.92566176248)
 Original primary track ID 1 (unknown,305.48142430119[GeV])
-Cell[18,4]    0.2165993923155 [GeV]
-Cell[19,4]    0.9813211064088 [GeV]
-Cell[19,3]    0.01752855857036 [GeV]
-Cell[19,2]    0.0027351741786362 [GeV]
-Cell[19,5]    0.0088981099726522 [GeV]
-Cell[18,5]    0.00038678244109962 [GeV]
-Cell[18,3]    0.00088998805409817 [GeV]
-###  Total energy deposition in calorimeter by a source track in 7 cells : 1.2283591119411 (GeV)
+Cell[8,9]    63.396775889405 [GeV]
+Cell[8,8]    0.33618056197607 [GeV]
+Cell[8,10]    3.8307592303659 [GeV]
+Cell[8,12]    0.0084086051446576 [GeV]
+Cell[8,11]    0.07320338161989 [GeV]
+Cell[7,11]    0.02819923768475 [GeV]
+Cell[7,10]    0.2218690262651 [GeV]
+Cell[7,8]    0.062878534062784 [GeV]
+Cell[7,7]    0.0093245231933728 [GeV]
+Cell[7,9]    0.47496734348171 [GeV]
+Cell[8,7]    0.012741607476298 [GeV]
+Cell[9,10]    0.014577332007364 [GeV]
+Cell[9,8]    0.0072490359289747 [GeV]
+Cell[9,9]    0.021415125130978 [GeV]
+Cell[5,38]    0.00016177613880251 [GeV]
+Cell[4,37]    0.00020492215582763 [GeV]
+Cell[7,27]    0.00027105529516616 [GeV]
+Cell[2,27]    0.0052144670493233 [GeV]
+Cell[5,40]    0.0048783368899489 [GeV]
+Cell[5,41]    0.00043895671198153 [GeV]
+Cell[8,5]    0.0020453975744828 [GeV]
+Cell[8,13]    0.0025767811139134 [GeV]
+Cell[6,10]    0.00067206231117631 [GeV]
+Cell[6,9]    0.0017465446499693 [GeV]
+Cell[7,16]    0.0023389529696038 [GeV]
+Cell[7,23]    0.0007612395263698 [GeV]
+Cell[7,40]    0.00051099891 [GeV]
+Cell[9,11]    0.0016290075609588 [GeV]
+Cell[7,42]    0.00069909418860794 [GeV]
+Cell[13,36]    0.00038398118477436 [GeV]
+Cell[14,42]    0.00085070405895998 [GeV]
+Cell[10,36]    0.0015570593370613 [GeV]
+Cell[10,41]    0.00066360052918362 [GeV]
+Cell[7,12]    0.0024538066900268 [GeV]
+Cell[7,38]    0.00052862549178293 [GeV]
+Cell[7,20]    0.00072154976381099 [GeV]
+Cell[6,12]    0.0025159015251823 [GeV]
+Cell[7,6]    0.00032572340346525 [GeV]
+Cell[16,33]    0.0011792489731411 [GeV]
+Cell[7,29]    0.0024940868853833 [GeV]
+Cell[11,37]    0.00015513457362363 [GeV]
+Cell[10,32]    0.0004259752898397 [GeV]
+Cell[9,46]    0.00017921019460451 [GeV]
+Cell[13,23]    0.00018482956971465 [GeV]
+Cell[9,28]    0.0010030650122442 [GeV]
+Cell[6,26]    0.0023326535031215 [GeV]
+Cell[7,43]    0.0033080453922054 [GeV]
+Cell[9,5]    0.0019791605585509 [GeV]
+Cell[9,3]    0.00049157135934411 [GeV]
+Cell[9,4]    0.00012775293297022 [GeV]
+Cell[8,4]    0.0011598975961386 [GeV]
+Cell[9,12]    0.00017242599956103 [GeV]
+Cell[8,18]    0.00020586482589828 [GeV]
+Cell[11,33]    0.0029617321594473 [GeV]
+Cell[8,29]    0.0011379607771275 [GeV]
+Cell[7,14]    0.0023796447373122 [GeV]
+Cell[7,15]    0.0011258665256897 [GeV]
+Cell[1,18]    0.00016327644859376 [GeV]
+Cell[10,35]    0.00051099891 [GeV]
+Cell[0,24]    0.0024230719518708 [GeV]
+Cell[8,0]    4.9940152093768e-06 [GeV]
+Cell[9,42]    0.0001279742954215 [GeV]
+Cell[9,43]    1.8777619698085e-07 [GeV]
+Cell[9,44]    1.1322641512379e-07 [GeV]
+Cell[10,5]    2.5562872178853e-07 [GeV]
+Cell[6,7]    0.0006439663017041 [GeV]
+Cell[3,40]    1.1136239568941e-05 [GeV]
+Cell[9,33]    0.00045044299262541 [GeV]
+Cell[9,32]    0.0004675419293027 [GeV]
+Cell[10,21]    0.0022615491660007 [GeV]
+Cell[8,26]    0.004341107101594 [GeV]
+Cell[7,13]    0.0033586477133672 [GeV]
+Cell[10,17]    0.0028158977590682 [GeV]
+Cell[10,16]    0.00051099891 [GeV]
+Cell[6,39]    0.0011211795946612 [GeV]
+Cell[13,40]    0.00060281536106311 [GeV]
+Cell[7,31]    0.0005779168303283 [GeV]
+Cell[8,23]    0.0040901919325704 [GeV]
+Cell[5,27]    0.0010003048779125 [GeV]
+Cell[7,26]    0.00016095414200409 [GeV]
+Cell[13,32]    7.7367184567265e-06 [GeV]
+Cell[17,43]    9.0297824644949e-06 [GeV]
+Cell[17,42]    4.7688253398519e-06 [GeV]
+Cell[12,27]    0.00025306310050553 [GeV]
+Cell[12,26]    1.0692412672597e-07 [GeV]
+Cell[11,26]    3.2479874789715e-11 [GeV]
+Cell[11,28]    0.001436746149753 [GeV]
+Cell[8,1]    0.00028067714948618 [GeV]
+Cell[4,32]    0.0012209540656013 [GeV]
+Cell[8,14]    0.00030162135061786 [GeV]
+Cell[6,11]    0.00037792978545092 [GeV]
+Cell[6,14]    0.00051099891 [GeV]
+Cell[8,20]    0.00019130162910113 [GeV]
+Cell[8,15]    0.00027255591275188 [GeV]
+Cell[7,33]    0.0038669745346486 [GeV]
+Cell[6,37]    5.2106980583631e-06 [GeV]
+Cell[11,16]    0.00026255519491053 [GeV]
+Cell[12,16]    4.1111867176369e-08 [GeV]
+Cell[6,6]    4.5298194777388e-08 [GeV]
+Cell[8,39]    0.00096198914589612 [GeV]
+Cell[16,24]    0.00021279081086279 [GeV]
+Cell[9,16]    0.00033622340011549 [GeV]
+Cell[8,32]    0.00071257130075975 [GeV]
+Cell[3,32]    0.00020808968008833 [GeV]
+Cell[6,29]    0.0017652850004297 [GeV]
+Cell[8,2]    0.006861424835213 [GeV]
+Cell[3,35]    0.0015240823320815 [GeV]
+Cell[8,31]    0.00056865585658136 [GeV]
+Cell[9,31]    6.1194004956633e-09 [GeV]
+Cell[8,30]    5.3981949156423e-07 [GeV]
+Cell[5,34]    0.0016579275137515 [GeV]
+Cell[7,0]    0.001036603910484 [GeV]
+Cell[8,45]    0.00097617375128016 [GeV]
+Cell[6,23]    0.00052398599453438 [GeV]
+Cell[6,22]    0.0018260015288347 [GeV]
+Cell[9,14]    0.0024006085529191 [GeV]
+Cell[6,47]    0.00083947206168421 [GeV]
+Cell[3,33]    7.6319876825437e-07 [GeV]
+Cell[7,4]    0.00066368996649817 [GeV]
+Cell[7,3]    0.0012950147920939 [GeV]
+Cell[6,2]    1.5474959964195e-06 [GeV]
+Cell[6,3]    8.9776017262011e-08 [GeV]
+###  Total energy deposition in calorimeter by a source track in 122 cells : 68.61472548276 (GeV)
 
-Source track ID 6519 (mu-,49.166679704381[GeV]) at (-250.07082424008,-432.97180377466,234.27840045436)
+Source track ID 1254 (mu+,97.44941385898[GeV]) at (421.34117450922,269.20552494923,1659.1265973404)
 Original primary track ID 1 (unknown,305.48142430119[GeV])
-Cell[11,31]    0.18760074220434 [GeV]
-Cell[11,32]    0.4596491664581 [GeV]
-Cell[12,32]    0.7810631460444 [GeV]
-Cell[13,32]    0.69154288511634 [GeV]
-Cell[14,32]    0.58022255917757 [GeV]
-Cell[15,32]    0.81280022353079 [GeV]
-Cell[16,32]    0.7589476537431 [GeV]
-Cell[17,32]    0.024272589676169 [GeV]
-Cell[16,31]    0.0076055052816986 [GeV]
-Cell[15,31]    0.025300919257646 [GeV]
-Cell[14,31]    0.0085891970223694 [GeV]
-Cell[13,31]    0.025332153732844 [GeV]
-Cell[14,34]    0.0047942181951865 [GeV]
-Cell[12,31]    0.057530920977088 [GeV]
-Cell[13,33]    0.00051099891 [GeV]
-Cell[11,33]    0.00051099891 [GeV]
-Cell[11,30]    0.0025668051576796 [GeV]
-###  Total energy deposition in calorimeter by a source track in 17 cells : 4.4288406833953 (GeV)
+Cell[18,4]    0.20413492925996 [GeV]
+Cell[19,4]    0.61971702037704 [GeV]
+Cell[19,3]    0.0065571208779315 [GeV]
+Cell[19,5]    0.00029114124534202 [GeV]
+Cell[18,3]    0.0052655286010956 [GeV]
+###  Total energy deposition in calorimeter by a source track in 5 cells : 0.83596574036137 (GeV)
 
-Source track ID 6515 (gamma,0.17435926984906[GeV]) at (-435.61886517745,245.43065069692,445.72703260998)
-Original primary track ID 41 (unknown,2.6699951779791[GeV])
-Cell[12,20]    0.15253807295169 [GeV]
-Cell[12,19]    0.0072358115036947 [GeV]
-Cell[11,45]    0.00045484822495325 [GeV]
-Cell[13,38]    0.012328725462865 [GeV]
-Cell[12,29]    0.00021894577887175 [GeV]
-###  Total energy deposition in calorimeter by a source track in 5 cells : 0.17277640392207 (GeV)
+Source track ID 1255 (mu-,49.167079992799[GeV]) at (-250.01069624685,-433.00652623507,234.23628055323)
+Original primary track ID 1 (unknown,305.48142430119[GeV])
+Cell[13,32]    0.52688845738161 [GeV]
+Cell[11,31]    0.011120594688568 [GeV]
+Cell[11,32]    0.40102604549317 [GeV]
+Cell[12,32]    0.82791970743432 [GeV]
+Cell[14,32]    0.48414113049007 [GeV]
+Cell[15,32]    0.70638685163703 [GeV]
+Cell[16,32]    0.55946746243029 [GeV]
+Cell[17,32]    0.011218371184331 [GeV]
+Cell[16,31]    0.0070456770335272 [GeV]
+Cell[15,31]    0.0019228305204565 [GeV]
+Cell[14,31]    0.0023306140193298 [GeV]
+Cell[13,31]    0.011696183978538 [GeV]
+Cell[12,31]    0.090958054672893 [GeV]
+Cell[12,33]    0.0038750752535645 [GeV]
+###  Total energy deposition in calorimeter by a source track in 14 cells : 3.6459970562177 (GeV)
 
-Source track ID 939 (pi+,0.27484672788792[GeV]) at (293.31690001895,404.92616137176,16.35346740117)
+Source track ID 1251 (gamma,0.17435926984906[GeV]) at (-435.61886373265,245.43065326131,445.72700190816)
 Original primary track ID 41 (unknown,2.6699951779791[GeV])
-Cell[10,7]    0.022720170102628 [GeV]
-Cell[10,6]    0.14743034461029 [GeV]
-###  Total energy deposition in calorimeter by a source track in 2 cells : 0.17015051471291 (GeV)
+Cell[12,20]    0.1416242896271 [GeV]
+Cell[12,19]    0.032734980221959 [GeV]
+###  Total energy deposition in calorimeter by a source track in 2 cells : 0.17435926984906 (GeV)
 
-Source track ID 6438 (gamma,0.12620965025075[GeV]) at (-487.28250034958,-112.05250935639,703.88980977326)
+Source track ID 978 (pi+,0.27833373541665[GeV]) at (242.19300445326,437.4271923348,11.036468991664)
 Original primary track ID 41 (unknown,2.6699951779791[GeV])
-Cell[15,32]    0.00051099891 [GeV]
-Cell[13,25]    0.11780695069028 [GeV]
-Cell[17,9]    0.0017370996602276 [GeV]
-Cell[13,24]    0.0056436020802422 [GeV]
-Cell[13,26]    0.00051099891 [GeV]
-###  Total energy deposition in calorimeter by a source track in 5 cells : 0.12620965025075 (GeV)
+Cell[10,8]    0.01255007168936 [GeV]
+Cell[10,7]    0.086067409140138 [GeV]
+Cell[9,7]    0.001521464506561 [GeV]
+Cell[9,6]    0.045999599778503 [GeV]
+Cell[10,6]    0.034008696577302 [GeV]
+Cell[18,26]    0.00043580050911093 [GeV]
+###  Total energy deposition in calorimeter by a source track in 6 cells : 0.18058304220098 (GeV)
 
-Source track ID 6439 (gamma,0.088297327870564[GeV]) at (61.272146773217,-496.23152260795,76.525352610031)
+Source track ID 1167 (gamma,0.12620965025075[GeV]) at (-487.28249080485,-112.0525508635,703.8898101186)
 Original primary track ID 41 (unknown,2.6699951779791[GeV])
-Cell[10,37]    0.014004008520953 [GeV]
-Cell[10,36]    0.073907921512596 [GeV]
-Cell[10,35]    0.00038539783701608 [GeV]
+Cell[13,25]    0.10629876675393 [GeV]
+Cell[14,25]    0.012789304198625 [GeV]
+Cell[19,8]    0.00090557887596714 [GeV]
+Cell[13,26]    0.004283148179045 [GeV]
+Cell[16,3]    0.0010842123003442 [GeV]
+Cell[16,4]    0.00084863994284185 [GeV]
+###  Total energy deposition in calorimeter by a source track in 6 cells : 0.12620965025075 (GeV)
+
+Source track ID 1168 (gamma,0.088297327870564[GeV]) at (61.272111377026,-496.23152697849,76.525402521714)
+Original primary track ID 41 (unknown,2.6699951779791[GeV])
+Cell[10,36]    0.069420503973163 [GeV]
+Cell[7,17]    0.000704075958635 [GeV]
+Cell[10,37]    0.018172747938767 [GeV]
 ###  Total energy deposition in calorimeter by a source track in 3 cells : 0.088297327870564 (GeV)
 
-Source track ID 1204 (neutron,0.94192352976[GeV]) at (-688.70907760583,-1944.9878455368,2000)
+Source track ID 983 (pi+,0.88675114109579[GeV]) at (3.9935535212572,499.98405127591,750.99897712308)
 Original primary track ID 41 (unknown,2.6699951779791[GeV])
-Cell[19,33]    0.0023581529577287 [GeV]
-Cell[18,33]    1.6580677993261e-08 [GeV]
-###  Total energy deposition in calorimeter by a source track in 2 cells : 0.0023581695384067 (GeV)
+Cell[13,11]    0.069742745182416 [GeV]
+Cell[14,11]    0.22880366514722 [GeV]
+Cell[15,11]    0.017202378641333 [GeV]
+Cell[15,10]    0.38882922156261 [GeV]
+Cell[15,12]    0.0008783899121888 [GeV]
+Cell[15,13]    0.0015354995149671 [GeV]
+Cell[15,9]    0.0053929303013124 [GeV]
+Cell[16,9]    0.0014617142291969 [GeV]
+Cell[16,8]    3.0932981005435e-05 [GeV]
+Cell[15,8]    4.6651625780214e-09 [GeV]
+Cell[14,10]    0.0020890242129163 [GeV]
+Cell[13,10]    0.0011238426979759 [GeV]
+Cell[16,11]    0.0024198383148945 [GeV]
+Cell[16,10]    0.002071890034989 [GeV]
+Cell[16,12]    7.9161235356651e-06 [GeV]
+Cell[12,10]    3.5948453878518e-06 [GeV]
+Cell[12,11]    2.5943780838134e-06 [GeV]
+Cell[12,8]    0.0026103387350368 [GeV]
+Cell[12,9]    0.00070638934448925 [GeV]
+Cell[15,14]    0.0040819629966044 [GeV]
+Cell[14,14]    0.00013969848468855 [GeV]
+Cell[14,12]    4.3966581381483e-07 [GeV]
+Cell[14,13]    2.4913042127992e-05 [GeV]
+###  Total energy deposition in calorimeter by a source track in 23 cells : 0.72915992501395 (GeV)
 
-Source track ID 1206 (gamma,0.00022507342824232[GeV]) at (1328.7582180439,465.88206592059,2000)
+Source track ID 1060 (mu-,0.54171954749454[GeV]) at (-92.622454702108,-491.34619250072,1168.3858202745)
 Original primary track ID 41 (unknown,2.6699951779791[GeV])
-Cell[19,2]    0.00022507342824232 [GeV]
-###  Total energy deposition in calorimeter by a source track in 1 cells : 0.00022507342824232 (GeV)
+Cell[15,34]    0.039191936610192 [GeV]
+Cell[16,34]    0.072477106703194 [GeV]
+Cell[16,35]    0.1152441700825 [GeV]
+Cell[17,35]    0.20530954915394 [GeV]
+Cell[17,36]    0.025501164609854 [GeV]
+###  Total energy deposition in calorimeter by a source track in 5 cells : 0.45772392715969 (GeV)
 
-Source track ID 944 (pi+,0.88628388833403[GeV]) at (5.3091400234856,499.97181223766,749.93786349223)
-Original primary track ID 41 (unknown,2.6699951779791[GeV])
-Cell[13,11]    0.069560364102971 [GeV]
-Cell[14,11]    0.19089785232347 [GeV]
-Cell[14,10]    0.071903925881724 [GeV]
-Cell[15,10]    0.21310963830312 [GeV]
-Cell[16,10]    0.28205269399599 [GeV]
-Cell[17,10]    0.00051099891 [GeV]
-Cell[16,9]    0.00060825616025795 [GeV]
-###  Total energy deposition in calorimeter by a source track in 7 cells : 0.82864372967753 (GeV)
-
-Source track ID 1016 (pi-,0.65414730827215[GeV]) at (-90.418467554931,-491.75654619437,1128.4625779548)
-Original primary track ID 41 (unknown,2.6699951779791[GeV])
-Cell[15,34]    0.10996104153776 [GeV]
-Cell[16,34]    0.002332951282721 [GeV]
-Cell[16,35]    0.13060384757152 [GeV]
-Cell[12,10]    0.0010487536000952 [GeV]
-Cell[17,35]    0.11008570367996 [GeV]
-Cell[17,36]    0.00069503637783103 [GeV]
-Cell[18,35]    3.0879164114594e-11 [GeV]
-Cell[19,19]    0.067180465222053 [GeV]
-Cell[19,18]    0.000259941066999 [GeV]
-###  Total energy deposition in calorimeter by a source track in 9 cells : 0.42216774036983 (GeV)
-
-Source track ID 935 (gamma,0.23818895051853[GeV]) at (-24.111052240173,-499.41831880686,-17.911064377671)
+Source track ID 949 (gamma,0.23818895051853[GeV]) at (-24.111052240173,-499.41831880686,-17.911064377671)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[9,36]    1.9208691532689e-05 [GeV]
-Cell[10,37]    0.0018234255154654 [GeV]
-Cell[10,7]    0.00051099891 [GeV]
-Cell[10,36]    0.0024788711388328 [GeV]
-Cell[10,35]    0.0017909780686192 [GeV]
-Cell[9,35]    0.23089737749961 [GeV]
-Cell[10,34]    0.00026363319822951 [GeV]
-Cell[9,37]    0.00040445749623723 [GeV]
-###  Total energy deposition in calorimeter by a source track in 8 cells : 0.23818895051853 (GeV)
+Cell[9,35]    0.22316048167462 [GeV]
+Cell[10,36]    0.00051099891 [GeV]
+Cell[10,35]    0.0075431659244977 [GeV]
+Cell[9,36]    0.0069743040094095 [GeV]
+###  Total energy deposition in calorimeter by a source track in 4 cells : 0.23818895051853 (GeV)
 
-Source track ID 936 (gamma,0.33413532464401[GeV]) at (245.8933673121,435.35784351717,97.500310757389)
+Source track ID 975 (gamma,0.026380955920972[GeV]) at (244.80731568907,435.96946932682,97.272496463756)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[5,33]    0.00061753632306828 [GeV]
-Cell[10,9]    0.00066992656177912 [GeV]
-Cell[10,7]    0.041327104379567 [GeV]
-Cell[10,6]    0.0017404289581889 [GeV]
-Cell[10,8]    0.28052723543081 [GeV]
-Cell[11,8]    0.0046929415822484 [GeV]
-Cell[11,6]    0.00084354880769046 [GeV]
-Cell[16,17]    0.0030486678367191 [GeV]
-###  Total energy deposition in calorimeter by a source track in 8 cells : 0.33346738988007 (GeV)
+Cell[10,8]    0.019784046401535 [GeV]
+Cell[10,7]    0.0065969095194379 [GeV]
+###  Total energy deposition in calorimeter by a source track in 2 cells : 0.026380955920972 (GeV)
 
-Source track ID 828 (pi-,1.7949214868522[GeV]) at (442.59574259039,-232.61343177224,-1861.3605430156)
+Source track ID 951 (e-,0.26584625079758[GeV]) at (241.34795514629,437.89401063123,97.887560476838)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[7,11]    0.00037375240594645 [GeV]
-Cell[3,36]    0.00036965814389317 [GeV]
-Cell[1,20]    0.0012663466817622 [GeV]
-Cell[0,41]    2.04661804446e-07 [GeV]
-Cell[9,47]    4.1603878489695e-06 [GeV]
-Cell[8,47]    0.0021351607370275 [GeV]
-Cell[8,0]    0.00012389246529347 [GeV]
-Cell[3,38]    3.5612084730019e-09 [GeV]
-Cell[9,18]    0.0021434471111224 [GeV]
-Cell[4,32]    4.077143385075e-07 [GeV]
-Cell[4,19]    1.3623322813601e-06 [GeV]
-Cell[0,44]    0.42699455837514 [GeV]
-Cell[0,43]    0.0085573005523306 [GeV]
-Cell[0,45]    0.0059757053490134 [GeV]
-Cell[0,42]    0.0029621944837486 [GeV]
-Cell[1,17]    1.826643710956e-09 [GeV]
-Cell[2,17]    3.4162073870903e-07 [GeV]
-Cell[5,16]    2.8213328885613e-05 [GeV]
-Cell[6,11]    1.7239075305042e-09 [GeV]
-Cell[0,46]    0.0045168476090297 [GeV]
-Cell[1,43]    0.0026500975447641 [GeV]
-Cell[0,36]    0.0017014631853574 [GeV]
-Cell[0,35]    0.0047403691667764 [GeV]
-Cell[0,38]    1.3976449583424e-05 [GeV]
-Cell[1,9]    0.00028801488048646 [GeV]
-Cell[2,9]    0.0027810640182769 [GeV]
-Cell[2,10]    0.00036003089577684 [GeV]
-Cell[1,11]    5.9416342458007e-07 [GeV]
-Cell[2,8]    1.6043422192524e-08 [GeV]
-Cell[1,46]    2.6007390043787e-06 [GeV]
-Cell[0,28]    0.00090146667793044 [GeV]
-Cell[1,29]    0.00040078237815806 [GeV]
-Cell[1,28]    5.7749388215598e-06 [GeV]
-Cell[2,20]    0.00014318999555462 [GeV]
-Cell[2,21]    0.0014296703152374 [GeV]
-Cell[2,22]    1.4269988241722e-08 [GeV]
-Cell[3,19]    9.1300142230466e-08 [GeV]
-Cell[4,18]    1.3435052100476e-05 [GeV]
-Cell[4,21]    0.0022230387447528 [GeV]
-Cell[1,42]    0.0065361618473956 [GeV]
-Cell[0,47]    5.6190946213974e-05 [GeV]
-Cell[1,35]    0.0011805642450255 [GeV]
-Cell[1,34]    7.1185885417435e-08 [GeV]
-Cell[2,34]    0.0022230608412412 [GeV]
-Cell[1,41]    4.1183769225768e-05 [GeV]
-Cell[1,21]    0.0049968039518294 [GeV]
-Cell[2,19]    0.00057817173959177 [GeV]
-Cell[1,19]    0.00087804060992323 [GeV]
-Cell[3,26]    0.0057110663538039 [GeV]
-Cell[3,24]    5.4283174016746e-05 [GeV]
-Cell[3,23]    0.0012288922452688 [GeV]
-Cell[3,22]    0.00037517795028009 [GeV]
-Cell[2,18]    7.9519101541337e-06 [GeV]
-Cell[0,2]    1.1895474744961e-07 [GeV]
-Cell[3,15]    2.194719039835e-06 [GeV]
-Cell[3,16]    5.3134901099838e-07 [GeV]
-Cell[4,20]    2.3817156616133e-06 [GeV]
-Cell[2,36]    6.5432044502813e-06 [GeV]
-Cell[2,37]    7.2129368132551e-05 [GeV]
-Cell[2,38]    6.7493586107048e-07 [GeV]
-Cell[0,33]    4.5762981200824e-05 [GeV]
-Cell[0,32]    0.0018327661043287 [GeV]
-Cell[1,44]    1.0619308000059e-08 [GeV]
-Cell[0,39]    0.0009016569870053 [GeV]
-###  Total energy deposition in calorimeter by a source track in 64 cells : 0.49984164354013 (GeV)
+Cell[10,8]    0.23828445819694 [GeV]
+Cell[10,7]    0.01725863289425 [GeV]
+Cell[10,6]    0.0014870786813174 [GeV]
+Cell[10,0]    0.00019529515273909 [GeV]
+Cell[11,35]    0.0021560301350167 [GeV]
+###  Total energy deposition in calorimeter by a source track in 5 cells : 0.25938149506027 (GeV)
 
-Source track ID 684 (gamma,0.59980090891317[GeV]) at (255.70125327728,-429.67065186306,-1133.303820694)
+Source track ID 954 (gamma,0.0007023656933511[GeV]) at (179.65684304547,-466.60842121305,31.14686585149)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[4,41]    0.002545591015112 [GeV]
-Cell[4,39]    0.047621040252696 [GeV]
-Cell[6,9]    0.0010786222371745 [GeV]
-Cell[1,26]    0.00051099891 [GeV]
-Cell[6,10]    0.0004115399894048 [GeV]
-Cell[2,8]    0.00051099891 [GeV]
-Cell[4,40]    0.49837392625259 [GeV]
-Cell[3,39]    0.026182158548232 [GeV]
-Cell[3,40]    0.01058502233427 [GeV]
-Cell[0,5]    0.0021645326866285 [GeV]
-Cell[6,22]    0.00051099891 [GeV]
-Cell[10,17]    0.0010100013268937 [GeV]
-Cell[4,33]    0.0013609049051925 [GeV]
-Cell[4,38]    0.00080755269705299 [GeV]
-Cell[0,16]    0.0004813449783437 [GeV]
-Cell[1,25]    0.00042781373754118 [GeV]
-Cell[0,13]    0.00043292632281203 [GeV]
-Cell[4,5]    0.0010723963441677 [GeV]
-Cell[2,29]    0.00093314833973471 [GeV]
-Cell[4,11]    0.00030783135390124 [GeV]
-Cell[3,6]    0.00050802037121581 [GeV]
-###  Total energy deposition in calorimeter by a source track in 21 cells : 0.59783737042296 (GeV)
+Cell[10,38]    0.0007023656933511 [GeV]
+###  Total energy deposition in calorimeter by a source track in 1 cells : 0.0007023656933511 (GeV)
 
-Source track ID 685 (gamma,0.053266099197347[GeV]) at (183.99446413148,464.91508597697,-1027.4557021808)
+Source track ID 955 (gamma,0.0011928774369156[GeV]) at (-306.42261091243,-395.10148509163,-75.805528400102)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[3,38]    0.00041492874320582 [GeV]
-Cell[3,39]    0.0009283199770906 [GeV]
-Cell[4,9]    0.050898260220886 [GeV]
-Cell[4,8]    0.00051359134616495 [GeV]
-Cell[4,43]    0.00051099891 [GeV]
-###  Total energy deposition in calorimeter by a source track in 5 cells : 0.053266099197347 (GeV)
+Cell[9,31]    0.00068119390602481 [GeV]
+Cell[9,30]    0.00051168353089083 [GeV]
+###  Total energy deposition in calorimeter by a source track in 2 cells : 0.0011928774369156 (GeV)
 
-Source track ID 682 (gamma,0.39597382458922[GeV]) at (-372.59429924259,-333.42688579646,-1802.38518998)
+Source track ID 961 (gamma,0.0009440976735025[GeV]) at (284.90906763951,410.88541368219,36.189409292169)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[1,9]    0.00051559173950169 [GeV]
-Cell[0,28]    0.0006368602080598 [GeV]
-Cell[1,29]    0.0017564646538241 [GeV]
-Cell[1,28]    0.00050307579060895 [GeV]
-Cell[4,40]    0.00023747907790277 [GeV]
-Cell[0,16]    0.00050772611477281 [GeV]
-Cell[0,29]    0.3830618460093 [GeV]
-Cell[2,14]    0.0013540192352079 [GeV]
-Cell[2,46]    0.00037549034975464 [GeV]
-Cell[0,30]    0.0013616457915531 [GeV]
-Cell[0,12]    0.00039337925555304 [GeV]
-Cell[0,31]    0.0025546970281212 [GeV]
-###  Total energy deposition in calorimeter by a source track in 12 cells : 0.39325827525416 (GeV)
+Cell[10,7]    0.0009440976735025 [GeV]
+###  Total energy deposition in calorimeter by a source track in 1 cells : 0.0009440976735025 (GeV)
 
-Source track ID 683 (gamma,0.02130681471934[GeV]) at (476.42903752248,151.70818107603,-84.417601490281)
+Source track ID 962 (gamma,0.00011538949223998[GeV]) at (275.18715812633,417.45901355984,140.3299494706)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[9,2]    0.018365773679676 [GeV]
-Cell[2,31]    0.0029410410396638 [GeV]
+Cell[10,7]    0.00011538949223998 [GeV]
+###  Total energy deposition in calorimeter by a source track in 1 cells : 0.00011538949223998 (GeV)
+
+Source track ID 963 (gamma,0.00031564388054375[GeV]) at (-488.00743624672,-108.85192771792,-572.54335264871)
+Original primary track ID 43 (unknown,52.984237098069[GeV])
+Cell[7,25]    0.00031564388054375 [GeV]
+###  Total energy deposition in calorimeter by a source track in 1 cells : 0.00031564388054375 (GeV)
+
+Source track ID 964 (gamma,0.00061430118130513[GeV]) at (-399.62881309227,-300.49427905779,-647.83848987204)
+Original primary track ID 43 (unknown,52.984237098069[GeV])
+Cell[6,29]    0.00045805073369964 [GeV]
+Cell[6,28]    0.00015625044760549 [GeV]
+###  Total energy deposition in calorimeter by a source track in 2 cells : 0.00061430118130513 (GeV)
+
+Source track ID 965 (gamma,0.0097463092484482[GeV]) at (275.55669147315,417.21518402902,-41.763526517343)
+Original primary track ID 43 (unknown,52.984237098069[GeV])
+Cell[9,7]    0.0097463092484482 [GeV]
+###  Total energy deposition in calorimeter by a source track in 1 cells : 0.0097463092484482 (GeV)
+
+Source track ID 966 (gamma,0.00013043619231534[GeV]) at (152.12913611242,476.29478891301,-96.590907006234)
+Original primary track ID 43 (unknown,52.984237098069[GeV])
+Cell[9,9]    0.00013043619231534 [GeV]
+###  Total energy deposition in calorimeter by a source track in 1 cells : 0.00013043619231534 (GeV)
+
+Source track ID 967 (gamma,0.00051099891[GeV]) at (212.51474967103,452.58974930091,-183.69641891248)
+Original primary track ID 43 (unknown,52.984237098069[GeV])
+Cell[9,8]    0.00051099891 [GeV]
+###  Total energy deposition in calorimeter by a source track in 1 cells : 0.00051099891 (GeV)
+
+Source track ID 968 (gamma,0.00051099891[GeV]) at (498.87849837914,-33.470044143591,751.77609879049)
+Original primary track ID 43 (unknown,52.984237098069[GeV])
+Cell[13,47]    0.00051099891 [GeV]
+###  Total energy deposition in calorimeter by a source track in 1 cells : 0.00051099891 (GeV)
+
+Source track ID 827 (pi-,1.7949532168514[GeV]) at (442.56972084414,-232.66293686777,-1864.0872967441)
+Original primary track ID 43 (unknown,52.984237098069[GeV])
+Cell[6,31]    2.5463968631811e-06 [GeV]
+Cell[7,27]    0.00012774426164151 [GeV]
+Cell[10,36]    3.181048668921e-10 [GeV]
+Cell[9,12]    0.00060731685447151 [GeV]
+Cell[1,18]    0.00028256505882075 [GeV]
+Cell[10,5]    3.8747434737161e-06 [GeV]
+Cell[3,40]    0.00011694300196757 [GeV]
+Cell[9,32]    1.3822584878653e-06 [GeV]
+Cell[9,14]    0.001259260543689 [GeV]
+Cell[10,37]    3.5919650031246e-08 [GeV]
+Cell[9,36]    5.9465712098699e-05 [GeV]
+Cell[10,38]    5.3999538067728e-09 [GeV]
+Cell[0,44]    0.44611101049851 [GeV]
+Cell[0,43]    0.18167867285919 [GeV]
+Cell[0,42]    0.0019639834870637 [GeV]
+Cell[0,45]    0.063284576880667 [GeV]
+Cell[0,46]    0.0031383345515842 [GeV]
+Cell[1,47]    7.0704907875552e-07 [GeV]
+Cell[0,47]    5.8583504714534e-05 [GeV]
+Cell[1,44]    0.009620589358667 [GeV]
+Cell[1,43]    0.00092214669538419 [GeV]
+Cell[2,11]    0.00067859594584509 [GeV]
+Cell[2,12]    0.002247260566704 [GeV]
+Cell[9,13]    0.00052094144395505 [GeV]
+Cell[2,13]    5.9084475826239e-05 [GeV]
+Cell[3,13]    1.2235215021065e-05 [GeV]
+Cell[5,47]    0.0030832022874985 [GeV]
+Cell[5,46]    1.3710312487092e-08 [GeV]
+Cell[3,12]    0.00058008871654215 [GeV]
+Cell[2,24]    0.0010835685959337 [GeV]
+Cell[1,7]    0.0011532157765057 [GeV]
+Cell[1,6]    3.950525063442e-05 [GeV]
+Cell[1,8]    0.0016703133625068 [GeV]
+Cell[0,7]    0.00059441559358493 [GeV]
+Cell[3,39]    0.0040858806480458 [GeV]
+Cell[5,11]    6.9928938877638e-05 [GeV]
+Cell[5,9]    2.4642149510328e-06 [GeV]
+Cell[7,28]    3.547505343704e-09 [GeV]
+Cell[2,4]    7.0237397449091e-07 [GeV]
+Cell[8,28]    1.0820275638252e-06 [GeV]
+Cell[10,4]    3.131473029498e-06 [GeV]
+Cell[9,37]    6.7576314756934e-07 [GeV]
+Cell[1,3]    0.0012838867494316 [GeV]
+Cell[1,2]    0.00051099891 [GeV]
+Cell[0,41]    0.069665096028107 [GeV]
+Cell[0,1]    0.00027105236373557 [GeV]
+Cell[0,20]    9.8658598246857e-05 [GeV]
+Cell[1,19]    5.5583311430837e-05 [GeV]
+Cell[4,10]    1.2660606094869e-05 [GeV]
+Cell[4,11]    2.81408081064e-05 [GeV]
+Cell[4,47]    0.00022072475383573 [GeV]
+Cell[4,0]    1.0274230817231e-09 [GeV]
+Cell[0,40]    2.8657586022746e-05 [GeV]
+Cell[1,41]    0.0013656583494011 [GeV]
+Cell[1,42]    5.2586449214687e-08 [GeV]
+Cell[1,46]    2.1330444097657e-05 [GeV]
+Cell[1,45]    7.5087882578373e-11 [GeV]
+Cell[0,30]    0.00041552480628069 [GeV]
+Cell[0,35]    0.002981825264029 [GeV]
+Cell[0,36]    0.00024466808247733 [GeV]
+###  Total energy deposition in calorimeter by a source track in 60 cells : 0.80233057563231 (GeV)
+
+Source track ID 692 (gamma,0.59980090891317[GeV]) at (255.70125682303,-429.67064975295,-1133.3038386186)
+Original primary track ID 43 (unknown,52.984237098069[GeV])
+Cell[7,8]    0.00051099891 [GeV]
+Cell[3,40]    0.021283340477947 [GeV]
+Cell[3,39]    0.0046694859731404 [GeV]
+Cell[4,40]    0.53776541749197 [GeV]
+Cell[1,21]    0.00051099891 [GeV]
+Cell[4,39]    0.019003264694671 [GeV]
+Cell[5,4]    0.00089655702082596 [GeV]
+Cell[1,24]    0.0013819539136584 [GeV]
+Cell[3,36]    0.0039736939397993 [GeV]
+Cell[4,31]    0.00057876490787889 [GeV]
+Cell[4,22]    0.00051099891 [GeV]
+Cell[1,27]    0.00051099891 [GeV]
+Cell[2,23]    0.0017831374025801 [GeV]
+Cell[5,17]    0.00067992957073968 [GeV]
+###  Total energy deposition in calorimeter by a source track in 14 cells : 0.59405954103322 (GeV)
+
+Source track ID 693 (gamma,0.053266099197347[GeV]) at (183.99450398366,464.91507020509,-1027.4558928295)
+Original primary track ID 43 (unknown,52.984237098069[GeV])
+Cell[4,9]    0.045400898449351 [GeV]
+Cell[5,19]    0.00051099891 [GeV]
+Cell[4,8]    0.0034321215464085 [GeV]
+Cell[1,38]    0.00045272798936811 [GeV]
+Cell[3,28]    0.0010654261232691 [GeV]
+Cell[3,29]    0.001860550121205 [GeV]
+###  Total energy deposition in calorimeter by a source track in 6 cells : 0.052722723139601 (GeV)
+
+Source track ID 690 (gamma,0.39597382458922[GeV]) at (-372.59430012837,-333.42688480663,-1802.3851787588)
+Original primary track ID 43 (unknown,52.984237098069[GeV])
+Cell[0,47]    2.5784522012405e-05 [GeV]
+Cell[1,19]    0.0010641727428502 [GeV]
+Cell[1,42]    0.00051099891 [GeV]
+Cell[0,30]    0.0010697159669596 [GeV]
+Cell[0,29]    0.37039100184461 [GeV]
+Cell[0,0]    0.0004852143879876 [GeV]
+Cell[0,22]    0.00061398153812597 [GeV]
+Cell[1,0]    0.00030284476175064 [GeV]
+Cell[1,31]    0.00041503891752218 [GeV]
+Cell[1,29]    0.000710066295018 [GeV]
+Cell[4,14]    0.00077855172089429 [GeV]
+###  Total energy deposition in calorimeter by a source track in 11 cells : 0.37636737160774 (GeV)
+
+Source track ID 691 (gamma,0.02130681471934[GeV]) at (476.42903549195,151.70818745277,-84.417540034317)
+Original primary track ID 43 (unknown,52.984237098069[GeV])
+Cell[9,3]    0.0010770126404929 [GeV]
+Cell[9,2]    0.020229802078847 [GeV]
 ###  Total energy deposition in calorimeter by a source track in 2 cells : 0.02130681471934 (GeV)
 
-Source track ID 681 (gamma,0.19239638056034[GeV]) at (-414.65189432954,279.39900953462,-1130.2072849692)
+Source track ID 689 (gamma,0.19239638056034[GeV]) at (-414.65189179906,279.39901329006,-1130.2072663309)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[4,19]    0.13685430902834 [GeV]
-Cell[3,19]    0.042014603756006 [GeV]
-Cell[4,20]    0.010646684911011 [GeV]
-Cell[3,20]    0.0010425857483212 [GeV]
-Cell[3,18]    0.0013423770918827 [GeV]
-Cell[2,27]    0.00049582002477516 [GeV]
-###  Total energy deposition in calorimeter by a source track in 6 cells : 0.19239638056034 (GeV)
+Cell[4,19]    0.15946430274701 [GeV]
+Cell[3,18]    0.0022956687077786 [GeV]
+Cell[3,19]    0.029370597656135 [GeV]
+Cell[12,45]    0.0012658114494133 [GeV]
+###  Total energy deposition in calorimeter by a source track in 4 cells : 0.19239638056034 (GeV)
 
-Source track ID 675 (gamma,0.25162621009879[GeV]) at (499.02634667799,-31.188224079301,957.00760450311)
+Source track ID 683 (gamma,0.25162621009879[GeV]) at (499.02634665386,-31.188224465416,957.00761078074)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[12,23]    0.0005155755368154 [GeV]
-Cell[14,47]    0.2179645741778 [GeV]
-Cell[16,42]    0.0027659211256653 [GeV]
-Cell[11,19]    0.00051099891 [GeV]
-Cell[15,47]    0.01013243353862 [GeV]
-Cell[16,14]    0.0014514227428402 [GeV]
-Cell[15,45]    0.0014897458347399 [GeV]
-Cell[14,46]    0.0096429185184953 [GeV]
-Cell[15,0]    0.0052605608506809 [GeV]
-Cell[14,0]    0.00087006104313166 [GeV]
-Cell[13,20]    0.00051099891 [GeV]
-###  Total energy deposition in calorimeter by a source track in 11 cells : 0.25111521118879 (GeV)
+Cell[13,23]    0.0024595687434398 [GeV]
+Cell[14,32]    0.002522915269336 [GeV]
+Cell[14,47]    0.21149505679202 [GeV]
+Cell[14,7]    0.00097279471065629 [GeV]
+Cell[15,47]    0.021537280697189 [GeV]
+Cell[12,28]    0.0023188035139523 [GeV]
+Cell[18,32]    0.00051099891 [GeV]
+Cell[14,46]    0.001383310922711 [GeV]
+Cell[15,46]    0.0035968324246285 [GeV]
+Cell[15,15]    0.0010088412549216 [GeV]
+Cell[12,5]    0.00051099891 [GeV]
+Cell[17,40]    0.00043769316408301 [GeV]
+###  Total energy deposition in calorimeter by a source track in 12 cells : 0.24875509531294 (GeV)
 
-Source track ID 620 (gamma,0.23940053141976[GeV]) at (-378.30991455717,-326.92752797485,1067.9855949372)
+Source track ID 626 (gamma,0.23940053141976[GeV]) at (-378.30991304726,-326.92752972207,1067.9855851714)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[10,35]    0.00011190032779548 [GeV]
-Cell[15,34]    0.00051099891 [GeV]
-Cell[15,29]    0.23474365335267 [GeV]
-Cell[16,15]    0.00051099891 [GeV]
-Cell[15,28]    0.00072885738971372 [GeV]
-Cell[18,12]    0.0010757598934142 [GeV]
-Cell[14,19]    0.00067431201684406 [GeV]
-Cell[15,30]    0.00075253132608087 [GeV]
-###  Total energy deposition in calorimeter by a source track in 8 cells : 0.23910901212652 (GeV)
+Cell[13,10]    0.00036263021696384 [GeV]
+Cell[15,29]    0.23438200260949 [GeV]
+Cell[15,30]    0.0009376462253557 [GeV]
+Cell[18,41]    0.00051099891 [GeV]
+Cell[16,16]    0.0004690358268441 [GeV]
+Cell[10,42]    0.00055289967648099 [GeV]
+Cell[17,1]    0.00051099891 [GeV]
+###  Total energy deposition in calorimeter by a source track in 7 cells : 0.23772621237513 (GeV)
 
-Source track ID 366 (e-,0.2126275228085[GeV]) at (-466.23708194769,180.61833632525,167.06497412647)
+Source track ID 358 (gamma,0.41164872010706[GeV]) at (-456.42208397931,204.15406255077,168.67818602361)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[10,9]    0.00024619549907321 [GeV]
-Cell[10,20]    0.00051099891 [GeV]
-Cell[11,30]    0.00064523434344906 [GeV]
-Cell[10,21]    0.18221323999868 [GeV]
-Cell[11,21]    0.016660335159383 [GeV]
-Cell[11,22]    0.011231565811885 [GeV]
-Cell[10,22]    0.00060895417603091 [GeV]
-###  Total energy deposition in calorimeter by a source track in 7 cells : 0.2121165238985 (GeV)
+Cell[10,21]    0.01081760052313 [GeV]
+Cell[10,37]    0.0031568419370693 [GeV]
+Cell[10,20]    0.36753464798842 [GeV]
+Cell[11,20]    0.0083963221161285 [GeV]
+Cell[11,21]    0.019351414309903 [GeV]
+Cell[9,39]    0.0018791235444208 [GeV]
+###  Total energy deposition in calorimeter by a source track in 6 cells : 0.41113595041907 (GeV)
 
-Source track ID 367 (e+,0.19335657045858[GeV]) at (-444.44827726544,229.05398672754,171.69446548141)
+Source track ID 359 (gamma,0.17556583448629[GeV]) at (-370.26452143871,336.01217859441,-37.728261351246)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[10,20]    0.16197886534168 [GeV]
-Cell[11,19]    0.010674277932598 [GeV]
-Cell[11,21]    0.0019575774542643 [GeV]
-Cell[11,20]    0.015156378575914 [GeV]
-Cell[10,19]    0.0037136068158413 [GeV]
-Cell[11,5]    0.00038686324828199 [GeV]
-###  Total energy deposition in calorimeter by a source track in 6 cells : 0.19386756936858 (GeV)
+Cell[9,18]    0.17455970870065 [GeV]
+Cell[9,17]    0.00086995973267489 [GeV]
+Cell[9,19]    0.00013616605297234 [GeV]
+###  Total energy deposition in calorimeter by a source track in 3 cells : 0.17556583448629 (GeV)
 
-Source track ID 355 (gamma,0.00013012212321756[GeV]) at (-390.83587743918,311.84502065345,-42.262617068866)
+Source track ID 357 (gamma,0.41324573943274[GeV]) at (303.44001238969,-397.39672731534,976.47730315274)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[9,18]    0.00013012212321756 [GeV]
-###  Total energy deposition in calorimeter by a source track in 1 cells : 0.00013012212321756 (GeV)
+Cell[14,31]    0.002055032030701 [GeV]
+Cell[14,40]    0.1619991503705 [GeV]
+Cell[14,41]    0.034299574451801 [GeV]
+Cell[15,41]    0.069511375504733 [GeV]
+Cell[14,39]    0.0025719675584967 [GeV]
+Cell[15,40]    0.13995936100773 [GeV]
+Cell[15,4]    0.0011024495739967 [GeV]
+###  Total energy deposition in calorimeter by a source track in 7 cells : 0.41149891049796 (GeV)
 
-Source track ID 350 (e-,0.16990503221102[GeV]) at (-410.13026194408,285.99504932373,-43.692611852756)
-Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[9,18]    0.0020109142814934 [GeV]
-Cell[9,20]    0.035664735184756 [GeV]
-Cell[10,20]    0.0013903383895445 [GeV]
-Cell[10,19]    0.000659175982878 [GeV]
-Cell[9,19]    0.1207269172777 [GeV]
-Cell[9,31]    0.0086286633310833 [GeV]
-Cell[6,32]    0.00031328885356299 [GeV]
-###  Total energy deposition in calorimeter by a source track in 7 cells : 0.16939403330102 (GeV)
-
-Source track ID 349 (gamma,0.00020625855055821[GeV]) at (-390.0924459549,312.77449321983,1.547899289119)
-Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[10,18]    0.00020625855055821 [GeV]
-###  Total energy deposition in calorimeter by a source track in 1 cells : 0.00020625855055821 (GeV)
-
-Source track ID 347 (gamma,0.41324573943274[GeV]) at (303.44001238969,-397.39672731534,976.47730315274)
-Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[12,19]    0.00016864400576726 [GeV]
-Cell[14,40]    0.09358047468647 [GeV]
-Cell[14,41]    0.022446751493745 [GeV]
-Cell[15,41]    0.14735089095849 [GeV]
-Cell[15,40]    0.13915854943881 [GeV]
-Cell[16,41]    0.004023266430466 [GeV]
-Cell[15,42]    0.0012366345704611 [GeV]
-Cell[15,4]    0.00071491025782558 [GeV]
-Cell[12,18]    0.0041589194716075 [GeV]
-Cell[13,19]    8.824592001968e-06 [GeV]
-Cell[13,18]    0.00039787352709601 [GeV]
-###  Total energy deposition in calorimeter by a source track in 11 cells : 0.41324573943274 (GeV)
-
-Source track ID 306 (gamma,0.00048969154015137[GeV]) at (-322.52983188736,382.06610362961,-252.65755529257)
+Source track ID 306 (gamma,0.00048969154015137[GeV]) at (-322.52983188736,382.06610362961,-252.65755529258)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
 Cell[8,17]    0.00048969154015137 [GeV]
 ###  Total energy deposition in calorimeter by a source track in 1 cells : 0.00048969154015137 (GeV)
 
 Source track ID 307 (neutron,1.0143763312966[GeV]) at (-451.39383360382,215.04326770315,222.90888235516)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[11,29]    8.0009717703433e-07 [GeV]
-Cell[12,2]    1.936650427524e-06 [GeV]
-Cell[11,30]    8.7703645738202e-05 [GeV]
-Cell[12,29]    8.5494743639174e-06 [GeV]
-Cell[13,20]    0.0045528282995109 [GeV]
-Cell[14,19]    2.3195458147484e-05 [GeV]
-Cell[11,20]    4.2069731571246e-06 [GeV]
-Cell[13,19]    0.0092225361156542 [GeV]
-Cell[13,18]    0.0029212345737533 [GeV]
-Cell[13,21]    0.0013969495267084 [GeV]
-Cell[14,20]    0.00013019837211425 [GeV]
-Cell[14,17]    0.0015871260939463 [GeV]
-Cell[13,15]    1.2432229123078e-06 [GeV]
-Cell[12,30]    3.0754283898204e-08 [GeV]
-Cell[13,23]    0.0012821993062546 [GeV]
-Cell[13,17]    0.00075819837911035 [GeV]
-Cell[13,16]    1.4395670211798e-07 [GeV]
-Cell[14,18]    0.00046259544135353 [GeV]
-###  Total energy deposition in calorimeter by a source track in 18 cells : 0.022441676341315 (GeV)
+Cell[13,23]    8.558433764847e-06 [GeV]
+Cell[12,20]    0.005131435086533 [GeV]
+Cell[12,19]    0.0036412154533254 [GeV]
+Cell[13,25]    9.6042640507221e-13 [GeV]
+Cell[11,20]    0.00072585168837361 [GeV]
+Cell[11,19]    0.00019644426649279 [GeV]
+Cell[11,18]    1.1401450914036e-05 [GeV]
+Cell[12,18]    0.00072300769374533 [GeV]
+Cell[12,17]    1.2832725301223e-05 [GeV]
+Cell[13,17]    6.5601594440068e-07 [GeV]
+Cell[12,21]    0.005459792751446 [GeV]
+Cell[12,22]    0.00048537542014913 [GeV]
+Cell[12,23]    0.00042824811649621 [GeV]
+Cell[12,24]    1.0463784425269e-05 [GeV]
+Cell[13,21]    9.4666403856536e-07 [GeV]
+Cell[13,20]    2.5232541815967e-08 [GeV]
+###  Total energy deposition in calorimeter by a source track in 16 cells : 0.016836254784452 (GeV)
 
-Source track ID 310 (neutron,0.94133480521796[GeV]) at (-129.42497864457,-482.95877143174,-330.45296106824)
+Source track ID 308 (neutron,0.95449841692733[GeV]) at (-487.73363969883,110.07223403808,-96.350976778912)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[8,32]    3.5353343059796e-06 [GeV]
-Cell[8,34]    0.0017549592527225 [GeV]
-Cell[8,33]    1.0950216180504e-05 [GeV]
-###  Total energy deposition in calorimeter by a source track in 3 cells : 0.001769444803209 (GeV)
+Cell[10,21]    0.00027948992854544 [GeV]
+Cell[9,22]    0.006524788186018 [GeV]
+Cell[10,22]    2.0405513350852e-06 [GeV]
+Cell[9,21]    4.4028035961219e-07 [GeV]
+Cell[9,23]    0.00070776875768825 [GeV]
+###  Total energy deposition in calorimeter by a source track in 5 cells : 0.0075145277039464 (GeV)
 
-Source track ID 311 (gamma,0.0002049990694925[GeV]) at (-498.63750176487,-36.886878882418,-178.14004503128)
+Source track ID 310 (gamma,0.0036781810765127[GeV]) at (-449.87554943967,218.2017186375,-181.79609073164)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[9,24]    0.0002049990694925 [GeV]
-###  Total energy deposition in calorimeter by a source track in 1 cells : 0.0002049990694925 (GeV)
+Cell[9,20]    0.0036781810765127 [GeV]
+###  Total energy deposition in calorimeter by a source track in 1 cells : 0.0036781810765127 (GeV)
+
+Source track ID 311 (gamma,0.0011935886015807[GeV]) at (-499.29442492567,26.553290533246,-300.91182194265)
+Original primary track ID 43 (unknown,52.984237098069[GeV])
+Cell[8,23]    0.0011935886015807 [GeV]
+###  Total energy deposition in calorimeter by a source track in 1 cells : 0.0011935886015807 (GeV)
+
+Source track ID 312 (gamma,0.00059638310754378[GeV]) at (499.99803448338,-1.4019674580659,-436.28586731348)
+Original primary track ID 43 (unknown,52.984237098069[GeV])
+Cell[7,47]    0.00059638310754378 [GeV]
+###  Total energy deposition in calorimeter by a source track in 1 cells : 0.00059638310754378 (GeV)
+
+Source track ID 313 (gamma,0.00038396296086521[GeV]) at (-195.95310817699,460.00258629249,327.95984795549)
+Original primary track ID 43 (unknown,52.984237098069[GeV])
+Cell[11,15]    0.00038396296086521 [GeV]
+###  Total energy deposition in calorimeter by a source track in 1 cells : 0.00038396296086521 (GeV)
 
 Source track ID 251 (gamma,0.0056427967396733[GeV]) at (494.13049068219,76.38755250811,1188.4412261799)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[16,1]    0.0007942153385643 [GeV]
-Cell[15,1]    0.004848581401109 [GeV]
-###  Total energy deposition in calorimeter by a source track in 2 cells : 0.0056427967396733 (GeV)
+Cell[16,1]    0.0056427967396733 [GeV]
+###  Total energy deposition in calorimeter by a source track in 1 cells : 0.0056427967396733 (GeV)
 
 Source track ID 252 (gamma,0.0052219633887345[GeV]) at (-442.96417515312,231.91105952696,-491.2134629091)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[7,20]    0.0047109644787345 [GeV]
-Cell[9,35]    0.00051099891 [GeV]
-###  Total energy deposition in calorimeter by a source track in 2 cells : 0.0052219633887345 (GeV)
+Cell[7,20]    0.0052219633887345 [GeV]
+###  Total energy deposition in calorimeter by a source track in 1 cells : 0.0052219633887345 (GeV)
 
 Source track ID 253 (gamma,0.0013327477574231[GeV]) at (-308.41678190003,393.54680616469,-407.02105335374)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
@@ -1463,117 +1504,142 @@ Cell[7,16]    0.0013327477574231 [GeV]
 
 Source track ID 241 (gamma,0.0043968335052791[GeV]) at (-474.56634209732,157.43820041008,-287.52369011308)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[8,22]    0.0043968335052791 [GeV]
+Cell[8,21]    0.0043968335052791 [GeV]
 ###  Total energy deposition in calorimeter by a source track in 1 cells : 0.0043968335052791 (GeV)
 
-Source track ID 243 (gamma,0.0017508924093049[GeV]) at (-493.63572910471,-79.522116114067,-140.91877154224)
+Source track ID 243 (gamma,0.0017508924093049[GeV]) at (-493.63572910471,-79.522116114068,-140.91877154223)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
 Cell[9,25]    0.0017508924093049 [GeV]
 ###  Total energy deposition in calorimeter by a source track in 1 cells : 0.0017508924093049 (GeV)
 
 Source track ID 215 (pi+,1.0808886954416[GeV]) at (389.82820998448,-313.10376347194,505.54462039611)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[13,40]    6.5172209695447e-05 [GeV]
-Cell[10,20]    0.00061311580736196 [GeV]
-Cell[13,38]    0.0002811344629489 [GeV]
-Cell[17,9]    4.8604366020299e-07 [GeV]
-Cell[13,20]    3.2413896929029e-07 [GeV]
-Cell[13,19]    1.156098041065e-06 [GeV]
-Cell[13,18]    2.541211909886e-05 [GeV]
-Cell[12,42]    0.24741785975021 [GeV]
-Cell[13,42]    0.65988479451906 [GeV]
-Cell[13,41]    0.015303973016671 [GeV]
-Cell[18,9]    6.7283941676578e-05 [GeV]
-Cell[18,8]    4.463295581445e-07 [GeV]
-Cell[12,40]    0.0018564139851561 [GeV]
-Cell[12,41]    0.062463535579025 [GeV]
-Cell[12,43]    5.6902469422084e-06 [GeV]
-Cell[13,39]    0.0011292176491281 [GeV]
-Cell[13,43]    0.016090659247578 [GeV]
-Cell[14,42]    0.0090670766400779 [GeV]
-Cell[14,43]    0.0049926739652739 [GeV]
-###  Total energy deposition in calorimeter by a source track in 19 cells : 1.0192664257501 (GeV)
+Cell[14,42]    0.0053475520397149 [GeV]
+Cell[13,40]    0.036253466185668 [GeV]
+Cell[11,16]    0.00021893153362362 [GeV]
+Cell[14,40]    0.033488609853766 [GeV]
+Cell[14,41]    0.027358876249589 [GeV]
+Cell[15,41]    0.00014731397718265 [GeV]
+Cell[14,39]    0.0074476216701963 [GeV]
+Cell[15,40]    2.6629867246584e-05 [GeV]
+Cell[16,1]    6.8256757222116e-06 [GeV]
+Cell[12,42]    0.12654770331617 [GeV]
+Cell[13,42]    0.069691103945208 [GeV]
+Cell[13,41]    0.40780510546488 [GeV]
+Cell[13,39]    0.0035636918264003 [GeV]
+Cell[13,43]    4.5865267915133e-05 [GeV]
+Cell[15,39]    0.00066469969531238 [GeV]
+Cell[14,38]    0.0014301972047652 [GeV]
+Cell[15,38]    0.00032097028817964 [GeV]
+Cell[15,42]    1.5350348083302e-05 [GeV]
+Cell[19,13]    2.5198391638696e-05 [GeV]
+Cell[17,26]    0.00022135118264055 [GeV]
+Cell[16,26]    0.00014769713068199 [GeV]
+Cell[17,27]    2.0237854681909e-05 [GeV]
+Cell[11,0]    9.6852354251723e-05 [GeV]
+Cell[10,47]    4.8430095193908e-07 [GeV]
+Cell[13,24]    4.4491241477544e-05 [GeV]
+Cell[12,39]    7.2263771624421e-05 [GeV]
+Cell[15,44]    0.0068014720844054 [GeV]
+Cell[15,43]    0.00012809417640964 [GeV]
+Cell[14,44]    0.0023302168203708 [GeV]
+Cell[14,43]    0.00067715210003291 [GeV]
+Cell[12,40]    0.00029684301764348 [GeV]
+Cell[12,41]    0.003730768317029 [GeV]
+###  Total energy deposition in calorimeter by a source track in 32 cells : 0.73497363715346 (GeV)
 
 Source track ID 212 (gamma,0.028595474656773[GeV]) at (328.1859462591,377.21874910722,-300.64113703351)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[8,7]    0.0022317963700302 [GeV]
-Cell[8,6]    0.026363678286743 [GeV]
-###  Total energy deposition in calorimeter by a source track in 2 cells : 0.028595474656773 (GeV)
+Cell[8,6]    0.028351742370847 [GeV]
+Cell[11,24]    0.0001461693431146 [GeV]
+###  Total energy deposition in calorimeter by a source track in 2 cells : 0.028497911713962 (GeV)
 
 Source track ID 213 (gamma,0.46372847760985[GeV]) at (-465.99474696938,181.24264342847,-913.38295933636)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[4,19]    9.3146639809238e-05 [GeV]
-Cell[1,11]    0.00049062335462267 [GeV]
-Cell[4,21]    0.009530164695601 [GeV]
-Cell[4,20]    0.004629171130998 [GeV]
-Cell[9,2]    0.0010681114401677 [GeV]
-Cell[5,21]    0.43377558807646 [GeV]
-Cell[5,20]    0.012374839770864 [GeV]
-Cell[7,31]    0.00042209551068558 [GeV]
-Cell[4,22]    0.0006147327326068 [GeV]
-###  Total energy deposition in calorimeter by a source track in 9 cells : 0.46299847335181 (GeV)
+Cell[7,7]    0.00051099891 [GeV]
+Cell[5,47]    0.00047637010207917 [GeV]
+Cell[4,22]    0.0021368220770116 [GeV]
+Cell[5,21]    0.41856342862378 [GeV]
+Cell[6,42]    0.0003630099198133 [GeV]
+Cell[5,20]    0.013749521660746 [GeV]
+Cell[4,21]    0.025789763449493 [GeV]
+Cell[5,22]    0.0021385628669338 [GeV]
+###  Total energy deposition in calorimeter by a source track in 8 cells : 0.46372847760985 (GeV)
 
 Source track ID 210 (gamma,0.21067608644927[GeV]) at (-247.62061538533,-434.37775131352,-1046.3393876227)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[4,32]    0.17854831324934 [GeV]
-Cell[3,19]    0.00048232670062254 [GeV]
-Cell[1,44]    0.0010152873093943 [GeV]
-Cell[4,33]    0.0011567257851051 [GeV]
-Cell[4,31]    0.029473433404806 [GeV]
-###  Total energy deposition in calorimeter by a source track in 5 cells : 0.21067608644927 (GeV)
+Cell[4,32]    0.14390305752151 [GeV]
+Cell[4,31]    0.059192850432436 [GeV]
+Cell[1,17]    0.0028573270321425 [GeV]
+Cell[13,46]    0.00086045553777805 [GeV]
+###  Total energy deposition in calorimeter by a source track in 4 cells : 0.20681369052386 (GeV)
 
 Source track ID 208 (gamma,0.06726801612498[GeV]) at (-461.11390251385,-193.32348255824,-562.35052722159)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[7,27]    0.057469559451214 [GeV]
-Cell[7,26]    0.0022762416470576 [GeV]
-Cell[6,27]    0.0075222150267081 [GeV]
-###  Total energy deposition in calorimeter by a source track in 3 cells : 0.06726801612498 (GeV)
+Cell[7,27]    0.055504861311938 [GeV]
+Cell[6,26]    0.0036725470941329 [GeV]
+Cell[7,26]    0.0029040998144191 [GeV]
+Cell[6,27]    0.00415229357821 [GeV]
+Cell[12,2]    0.00103421432628 [GeV]
+###  Total energy deposition in calorimeter by a source track in 5 cells : 0.06726801612498 (GeV)
 
 Source track ID 209 (gamma,1.2213291054873[GeV]) at (-495.81010252032,64.593670268736,-1525.2871340715)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[0,41]    0.00079730273778333 [GeV]
-Cell[1,31]    0.00066412042705423 [GeV]
-Cell[4,32]    0.00051099891 [GeV]
-Cell[3,30]    0.00057002947185793 [GeV]
-Cell[2,10]    0.00051099891 [GeV]
-Cell[2,21]    0.0038101294347327 [GeV]
-Cell[2,22]    0.5198322791657 [GeV]
-Cell[1,41]    0.00020154151931011 [GeV]
-Cell[2,36]    0.0016825282670577 [GeV]
-Cell[2,23]    0.57341127604101 [GeV]
-Cell[1,16]    0.001063464343294 [GeV]
-Cell[6,6]    0.00076922107168026 [GeV]
-Cell[4,15]    0.00030616342124997 [GeV]
-Cell[1,22]    0.052610841688001 [GeV]
-Cell[1,23]    0.044909028090773 [GeV]
-Cell[3,31]    0.0020286904532975 [GeV]
-Cell[1,8]    0.0033036895135469 [GeV]
-Cell[8,39]    0.00084540935138706 [GeV]
-Cell[2,6]    0.00096652610168626 [GeV]
-Cell[3,4]    0.00097678581350825 [GeV]
-Cell[1,47]    0.00034827085911107 [GeV]
-Cell[1,37]    0.00051099891 [GeV]
-Cell[1,1]    0.00064869064216774 [GeV]
-###  Total energy deposition in calorimeter by a source track in 23 cells : 1.2112789851442 (GeV)
+Cell[8,1]    0.0034357016635831 [GeV]
+Cell[0,43]    0.00048971989242918 [GeV]
+Cell[2,11]    0.00049143625339582 [GeV]
+Cell[2,24]    0.0021975159302655 [GeV]
+Cell[0,1]    0.0016480695018611 [GeV]
+Cell[1,42]    0.0014056759935544 [GeV]
+Cell[1,46]    7.9526756331177e-05 [GeV]
+Cell[1,21]    0.0011974180408671 [GeV]
+Cell[1,24]    0.002579314614293 [GeV]
+Cell[2,23]    0.54448146141382 [GeV]
+Cell[1,0]    0.00056164376647519 [GeV]
+Cell[1,29]    0.0030982437650434 [GeV]
+Cell[6,42]    0.00097564239858997 [GeV]
+Cell[2,22]    0.54117484515398 [GeV]
+Cell[1,22]    0.041357151537314 [GeV]
+Cell[2,21]    0.0024180882185069 [GeV]
+Cell[2,44]    0.00028937306088451 [GeV]
+Cell[1,36]    0.0072325593779585 [GeV]
+Cell[1,37]    0.0010786553653034 [GeV]
+Cell[4,43]    0.0042250331439661 [GeV]
+Cell[0,9]    0.0013730401098592 [GeV]
+Cell[1,34]    0.0031773983480753 [GeV]
+Cell[0,16]    0.00023348808688708 [GeV]
+Cell[1,23]    0.014193895533831 [GeV]
+Cell[2,35]    0.0039756145473003 [GeV]
+Cell[2,34]    0.00051099891 [GeV]
+Cell[0,31]    1.0858437250135e-05 [GeV]
+Cell[1,11]    6.2221366388258e-06 [GeV]
+Cell[2,0]    0.001587097053429 [GeV]
+Cell[3,47]    0.00047820631250152 [GeV]
+Cell[1,25]    0.0010945616899607 [GeV]
+Cell[2,29]    0.00064730300677186 [GeV]
+Cell[3,7]    0.00051099891 [GeV]
+Cell[6,5]    0.00026266779941311 [GeV]
+Cell[0,4]    0.00074183816023355 [GeV]
+###  Total energy deposition in calorimeter by a source track in 35 cells : 1.1892212648906 (GeV)
 
 Source track ID 93 (proton,1.0787784795135[GeV]) at (346.96497473307,-360.02125813412,-1899.6771592578)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
 Cell[0,41]    0.14050646651355 [GeV]
 ###  Total energy deposition in calorimeter by a source track in 1 cells : 0.14050646651355 (GeV)
 
-Source track ID 95 (gamma,0.00028999105909401[GeV]) at (433.86188770913,-248.52336387846,-1813.4551067917)
+Source track ID 95 (gamma,0.00028999105909403[GeV]) at (433.86188770914,-248.52336387844,-1813.4551067916)
 Original primary track ID 43 (unknown,52.984237098069[GeV])
-Cell[0,44]    0.00028999105909401 [GeV]
-###  Total energy deposition in calorimeter by a source track in 1 cells : 0.00028999105909401 (GeV)
+Cell[0,44]    0.00028999105909403 [GeV]
+###  Total energy deposition in calorimeter by a source track in 1 cells : 0.00028999105909403 (GeV)
 
 >>> Summary of Event 0
 
 Tracker hits --------------------------------------------------------------
-382 hits are stored in RE01TrackerHitsCollection.
+370 hits are stored in RE01TrackerHitsCollection.
 
 Calorimeter hits --------------------------------------------------------------
-361 hits are stored in RE01CalorimeterHitsCollection.
-     Total energy deposition in calorimeter : 87.815950583255 (GeV)
+389 hits are stored in RE01CalorimeterHitsCollection.
+     Total energy deposition in calorimeter : 86.602397125506 (GeV)
 
 Trajectories in tracker --------------------------------------------------------------
 

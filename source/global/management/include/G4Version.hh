@@ -28,7 +28,7 @@
 // Author: K.Murakami, 26.09.2005 - Created
 // --------------------------------------------------------------------
 #ifndef G4VERSION_HH
-#define G4VERSION_HH 1
+#define G4VERSION_HH
 
 /// @def G4VERSION_NUMBER
 /// @brief Integral value representing the current Geant4 version
@@ -43,7 +43,7 @@
 ///     |--> patch number (single digit)
 ///
 #ifndef G4VERSION_NUMBER
-  #define G4VERSION_NUMBER 1132
+  #define G4VERSION_NUMBER 1141
 #endif
 
 /// @def G4VERSION_REFERENCE_TAG
@@ -55,11 +55,11 @@
 /// (taking December as 0, the start of new development of the next major/minor release).
 ///
 #ifndef G4VERSION_REFERENCE_TAG
-  #define G4VERSION_REFERENCE_TAG -1
+  #define G4VERSION_REFERENCE_TAG 00
 #endif
 
 #ifndef G4VERSION_TAG
-  #define G4VERSION_TAG "$Name: geant4-11-03-patch-02 $"
+  #define G4VERSION_TAG "$Name: geant4-11-04-patch-01 $"
 #endif
 
 // as variables
@@ -68,10 +68,10 @@
 #include "G4Types.hh"
 
 #ifdef G4MULTITHREADED
-static const G4String G4Version = "$Name: geant4-11-03-patch-02 [MT]$";
+static const G4String G4Version = "$Name: geant4-11-04-patch-01 [MT]$";
 #else
-static const G4String G4Version = "$Name: geant4-11-03-patch-02 $";
+static const G4String G4Version = "$Name: geant4-11-04-patch-01 $";
 #endif
-static const G4String G4Date = "(25-April-2025)";
+static const G4String G4Date = "(13-March-2026)";
 
 #endif

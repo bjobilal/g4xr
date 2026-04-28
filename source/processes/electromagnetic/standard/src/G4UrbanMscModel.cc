@@ -26,7 +26,6 @@
 // -------------------------------------------------------------------
 //   
 // GEANT4 Class file
-//    
 //
 // File name:   G4UrbanMscModel
 //
@@ -97,7 +96,7 @@ G4UrbanMscModel::G4UrbanMscModel(const G4String& nam)
   tlimitmin     = 10.*tlimitminfix;            
   tgeom         = 1.e50*CLHEP::mm;
   geombig       = tgeom;
-  geommin       = 1.e-3*CLHEP::mm;
+  geommin       = 1.e-6*CLHEP::mm;
   geomlimit     = geombig;
   presafety     = 0.;
 
@@ -464,8 +463,7 @@ G4double G4UrbanMscModel::ComputeTruePathLengthLimit(
               : ComputeSafety(sp->GetPosition(), tPathLength);
   
   // stop here if small step or range is less than safety
-  if((tPathLength == currentRange && tPathLength < presafety) ||
-     tPathLength < tlimitminfix) { 
+  if(tPathLength == currentRange && tPathLength < presafety) { 
     latDisplasment = false;   
     return ConvertTrueToGeom(tPathLength, currentMinimalStep); 
   }
@@ -522,7 +520,9 @@ G4double G4UrbanMscModel::ComputeTruePathLengthLimit(
                  << geomlimit <<G4endl;
         */
         }
+
       // constraint from the geometry
+      // tgeom is upper limit for the step size
       if((geomlimit < geombig) && (geomlimit > geommin))
         {
           // geomlimit is a geometrical step length
@@ -533,13 +533,23 @@ G4double G4UrbanMscModel::ComputeTruePathLengthLimit(
           tgeom = (stepStatus == fGeomBoundary) ? geomlimit/facgeom
 	    : facrange*rangeinit + stepmin;
         }
+      else if(geomlimit > geombig) {
+         // range smaller than distance to boundary  
+         // here tgeom is the true path length
+         tgeom = currentRange;
+        }
+      else if((geomlimit < geommin) && (geomlimit > 0.)) {
+         // geomlimit small (smaller than geommin=1 um)
+         // here true pathlength ~ geom path length
+         tgeom = geomlimit;
+        } 
 
       //step limit 
-      tlimit = (currentRange > presafety) ?
-        std::max(facrange*rangeinit, facsafety*presafety) : currentRange;
+      tlimit = (currentRange > presafety) ? facrange*rangeinit : currentRange;
 
       //lower limit for tlimit
-      tlimit = std::min(std::max(tlimit,tlimitmin), tgeom);
+      tlimit = std::max(tlimit, tlimitmin);
+      tlimit = std::min(tlimit, tgeom);
       /*
       G4cout << "tgeom= " << tgeom << " geomlimit= " << geomlimit  
             << " tlimit= " << tlimit << " presafety= " << presafety << G4endl;

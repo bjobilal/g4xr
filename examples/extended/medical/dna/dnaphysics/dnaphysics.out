@@ -11,7 +11,7 @@ Environment variable "G4FORCE_RUN_MANAGER_TYPE" enabled with value == Serial. Fo
 
 
 **************************************************************
- Geant4 version Name: geant4-11-03-patch-02    (25-April-2025)
+ Geant4 version Name: geant4-11-04-patch-01    (13-March-2026)
                        Copyright : Geant4 Collaboration
                       References : NIM A 506 (2003), 250-303
                                  : IEEE-TNS 53 (2006), 270-278
@@ -19,7 +19,7 @@ Environment variable "G4FORCE_RUN_MANAGER_TYPE" enabled with value == Serial. Fo
                              WWW : http://geant4.org/
 **************************************************************
 
-##### Create analysis manager   0x15985e0
+##### Create analysis manager   0x217fe90
 Using  analysis manager
 #
 # MT
@@ -114,7 +114,7 @@ Lowest triplet kinetic energy                      1 MeV
 Enable sampling of gamma linear polarisation       0
 5D gamma conversion model type                     0
 5D gamma conversion model on isolated ion          0
-Use Ricardo-Gerardo pair production model          0
+Use RiGe 5D e+e- pair production model by muons    0
 Livermore data directory                           epics_2017
 =======================================================================
 ======                 Ionisation Parameters                   ========
@@ -128,7 +128,7 @@ Lowest muon/hadron kinetic energy                  1 keV
 Use ICRU90 data                                    1
 Fluctuations of dE/dx are enabled                  1
 Type of fluctuation model for leptons and hadrons  Universal
-Use built-in Birks satuaration                     0
+Use built-in Birks saturation                      0
 Build CSDA range enabled                           0
 Use cut as a final range enabled                   0
 Enable angular generator interface                 1
@@ -172,6 +172,8 @@ Type of PIXE cross section for e+-                 Livermore
 =======================================================================
 ======                 DNA Physics Parameters                  ========
 =======================================================================
+Max DNA electron energy                            1 MeV
+Max DNA ion energy                                 300 MeV
 Use fast sampling in DNA models                    1
 Use Stationary option in DNA models                0
 Use DNA with multiple scattering of e-             0
@@ -320,7 +322,9 @@ DNARPWBAIonisationModel : Emin=  100 MeV Emax=  300 MeV  deltaBorn Fluo
 
 proton_G4DNAChargeDecrease:  for proton SubType=56 BuildTable=0
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
-DNADingfelderChargeDecreaseModel : Emin=    0 eV  Emax=    1 GeV
+DNADingfelderChargeDecreaseModel : Emin=    0 eV  Emax=  100 MeV
+          DummyModel : Emin=  100 MeV Emax=    1 GeV
+          StepLim=UseSafety Rfact=0.04 Gfact=2.5 Sfact=0.6 DispFlag:1 Skin=1 Llim=1 mm
 
 msc:  for GenericIon  SubType= 10
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
@@ -336,7 +340,7 @@ ionIoni:  for GenericIon  XStype:3  SubType=2
 
 GenericIon_G4DNAIonisation:  for GenericIon SubType=53 BuildTable=0
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
-DNARuddIonisationExtendedModel : Emin=    0 eV  Emax=  300 MeV  deltaRudd Fluo
+DNAIonIonisationModel : Emin=    0 eV  Emax=  300 MeV
           DummyModel : Emin=  300 MeV Emax=    1 GeV
           StepLim=UseSafety Rfact=0.04 Gfact=2.5 Sfact=0.6 DispFlag:1 Skin=1 Llim=1 mm
 
@@ -346,8 +350,8 @@ nuclearStopping:  for GenericIon SubType=8 BuildTable=0
 ======================================================================
 ======          Radioactive Decay Physics Parameters           =======
 ======================================================================
-min MeanLife (from G4NuclideTable)                1 ns 
-Max life time (from G4DeexPrecoParameters)        1000 ps 
+min MeanLife (from G4NuclideTable)                0.14427 ps 
+Max life time (from G4DeexPrecoParameters)        0.14427 ps 
 Internal e- conversion flag                       1
 Stored internal conversion coefficients           1
 Enabled atomic relaxation mode                    1
@@ -387,19 +391,21 @@ alpha_G4DNAElastic:  for alpha SubType=51 BuildTable=0
 
 alpha_G4DNAExcitation:  for alpha SubType=52 BuildTable=0
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
-DNAMillerGreenExcitationModel : Emin=    0 eV  Emax=  400 MeV
-          DummyModel : Emin=  400 MeV Emax=    1 GeV
+DNAMillerGreenExcitationModel : Emin=    0 eV  Emax=  300 MeV
+          DummyModel : Emin=  300 MeV Emax=    1 GeV
           StepLim=UseSafety Rfact=0.04 Gfact=2.5 Sfact=0.6 DispFlag:1 Skin=1 Llim=1 mm
 
 alpha_G4DNAIonisation:  for alpha SubType=53 BuildTable=0
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
-DNARuddIonisationExtendedModel : Emin=    0 eV  Emax=  400 MeV  deltaRudd Fluo
-          DummyModel : Emin=  400 MeV Emax=    1 GeV
+DNARuddIonisationExtendedModel : Emin=    0 eV  Emax=  300 MeV  deltaRudd Fluo
+          DummyModel : Emin=  300 MeV Emax=    1 GeV
           StepLim=UseSafety Rfact=0.04 Gfact=2.5 Sfact=0.6 DispFlag:1 Skin=1 Llim=1 mm
 
 alpha_G4DNAChargeDecrease:  for alpha SubType=56 BuildTable=0
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
-DNADingfelderChargeDecreaseModel : Emin=    0 eV  Emax=    1 GeV
+DNADingfelderChargeDecreaseModel : Emin=    0 eV  Emax=  300 MeV
+          DummyModel : Emin=  300 MeV Emax=    1 GeV
+          StepLim=UseSafety Rfact=0.04 Gfact=2.5 Sfact=0.6 DispFlag:1 Skin=1 Llim=1 mm
 
 msc:  for alpha+  SubType= 10
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
@@ -421,23 +427,27 @@ alpha+_G4DNAElastic:  for alpha+ SubType=51 BuildTable=0
 
 alpha+_G4DNAExcitation:  for alpha+ SubType=52 BuildTable=0
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
-DNAMillerGreenExcitationModel : Emin=    0 eV  Emax=  400 MeV
-          DummyModel : Emin=  400 MeV Emax=    1 GeV
+DNAMillerGreenExcitationModel : Emin=    0 eV  Emax=  300 MeV
+          DummyModel : Emin=  300 MeV Emax=    1 GeV
           StepLim=UseSafety Rfact=0.04 Gfact=2.5 Sfact=0.6 DispFlag:1 Skin=1 Llim=1 mm
 
 alpha+_G4DNAIonisation:  for alpha+ SubType=53 BuildTable=0
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
-DNARuddIonisationExtendedModel : Emin=    0 eV  Emax=  400 MeV  deltaRudd Fluo
-          DummyModel : Emin=  400 MeV Emax=    1 GeV
+DNARuddIonisationExtendedModel : Emin=    0 eV  Emax=  300 MeV  deltaRudd Fluo
+          DummyModel : Emin=  300 MeV Emax=    1 GeV
           StepLim=UseSafety Rfact=0.04 Gfact=2.5 Sfact=0.6 DispFlag:1 Skin=1 Llim=1 mm
 
 alpha+_G4DNAChargeIncrease:  for alpha+ SubType=57 BuildTable=0
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
-DNADingfelderChargeIncreaseModel : Emin=    0 eV  Emax=    1 GeV
+DNADingfelderChargeIncreaseModel : Emin=    0 eV  Emax=  300 MeV
+          DummyModel : Emin=  300 MeV Emax=    1 GeV
+          StepLim=UseSafety Rfact=0.04 Gfact=2.5 Sfact=0.6 DispFlag:1 Skin=1 Llim=1 mm
 
 alpha+_G4DNAChargeDecrease:  for alpha+ SubType=56 BuildTable=0
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
-DNADingfelderChargeDecreaseModel : Emin=    0 eV  Emax=    1 GeV
+DNADingfelderChargeDecreaseModel : Emin=    0 eV  Emax=  300 MeV
+          DummyModel : Emin=  300 MeV Emax=    1 GeV
+          StepLim=UseSafety Rfact=0.04 Gfact=2.5 Sfact=0.6 DispFlag:1 Skin=1 Llim=1 mm
 
 msc:  for anti_proton  SubType= 10
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
@@ -460,19 +470,21 @@ helium_G4DNAElastic:  for helium SubType=51 BuildTable=0
 
 helium_G4DNAExcitation:  for helium SubType=52 BuildTable=0
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
-DNAMillerGreenExcitationModel : Emin=    0 eV  Emax=  400 MeV
-          DummyModel : Emin=  400 MeV Emax=    1 GeV
+DNAMillerGreenExcitationModel : Emin=    0 eV  Emax=  300 MeV
+          DummyModel : Emin=  300 MeV Emax=    1 GeV
           StepLim=UseSafety Rfact=0.04 Gfact=2.5 Sfact=0.6 DispFlag:1 Skin=1 Llim=1 mm
 
 helium_G4DNAIonisation:  for helium SubType=53 BuildTable=0
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
-DNARuddIonisationExtendedModel : Emin=    0 eV  Emax=  400 MeV  deltaRudd Fluo
-          DummyModel : Emin=  400 MeV Emax=    1 GeV
+DNARuddIonisationExtendedModel : Emin=    0 eV  Emax=  300 MeV  deltaRudd Fluo
+          DummyModel : Emin=  300 MeV Emax=    1 GeV
           StepLim=UseSafety Rfact=0.04 Gfact=2.5 Sfact=0.6 DispFlag:1 Skin=1 Llim=1 mm
 
 helium_G4DNAChargeIncrease:  for helium SubType=57 BuildTable=0
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
-DNADingfelderChargeIncreaseModel : Emin=    0 eV  Emax=    1 GeV
+DNADingfelderChargeIncreaseModel : Emin=    0 eV  Emax=  300 MeV
+          DummyModel : Emin=  300 MeV Emax=    1 GeV
+          StepLim=UseSafety Rfact=0.04 Gfact=2.5 Sfact=0.6 DispFlag:1 Skin=1 Llim=1 mm
 
 hydrogen_G4DNAElastic:  for hydrogen SubType=51 BuildTable=0
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
@@ -482,19 +494,21 @@ hydrogen_G4DNAElastic:  for hydrogen SubType=51 BuildTable=0
 
 hydrogen_G4DNAExcitation:  for hydrogen SubType=52 BuildTable=0
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
-DNAMillerGreenExcitationModel : Emin=    0 eV  Emax=  300 MeV
-          DummyModel : Emin=  300 MeV Emax=    1 GeV
+DNAMillerGreenExcitationModel : Emin=    0 eV  Emax=  500 keV
+          DummyModel : Emin=  500 keV Emax=    1 GeV
           StepLim=UseSafety Rfact=0.04 Gfact=2.5 Sfact=0.6 DispFlag:1 Skin=1 Llim=1 mm
 
 hydrogen_G4DNAIonisation:  for hydrogen SubType=53 BuildTable=0
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
-DNARuddIonisationExtendedModel : Emin=    0 eV  Emax=  300 MeV  deltaRudd Fluo
-          DummyModel : Emin=  300 MeV Emax=    1 GeV
+DNARuddIonisationExtendedModel : Emin=    0 eV  Emax=  100 MeV  deltaRudd Fluo
+          DummyModel : Emin=  100 MeV Emax=    1 GeV
           StepLim=UseSafety Rfact=0.04 Gfact=2.5 Sfact=0.6 DispFlag:1 Skin=1 Llim=1 mm
 
 hydrogen_G4DNAChargeIncrease:  for hydrogen SubType=57 BuildTable=0
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
-DNADingfelderChargeIncreaseModel : Emin=    0 eV  Emax=    1 GeV
+DNADingfelderChargeIncreaseModel : Emin=    0 eV  Emax=  100 MeV
+          DummyModel : Emin=  100 MeV Emax=    1 GeV
+          StepLim=UseSafety Rfact=0.04 Gfact=2.5 Sfact=0.6 DispFlag:1 Skin=1 Llim=1 mm
 
 msc:  for kaon+  SubType= 10
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
@@ -600,7 +614,7 @@ Index : 0     used in the geometry : Yes
 
 Start closing geometry.
 --------------------------------------------------------------------------------
-G4GeometryManager::ReportVoxelStats -- Voxel Statistics
+G4VoxelisationHelper::ReportVoxelStats -- Voxel Statistics
 
     Total memory consumed for geometry optimisation:   0 kByte
     Total CPU time elapsed for geometry optimisation: 0 seconds
@@ -623,14 +637,14 @@ Setting was ignored.
  Run terminated.
 Run Summary
   Number of events processed : 2
-  User=1.850000s Real=1.897355s Sys=0.040000s
+  User=1.710000s Real=1.762543s Sys=0.050000s
 ... write file : dna.root - done
 ... close file : dna.root - done
 G4 kernel has come to Quit state.
 Deleting G4Run (id:0) 
-UserDetectorConstruction deleted 0x1429780
-UserPhysicsList deleted 0x13c7070
-UserActionInitialization deleted 0x158d160
+UserDetectorConstruction deleted 0x1ab2140
+UserPhysicsList deleted 0x1d129b0
+UserActionInitialization deleted 0x2174640
 UserWorkerInitialization deleted 0
 UserWorkerThreadInitialization deleted 0
 UserRunAction deleted.

@@ -11,7 +11,7 @@ Environment variable "G4FORCE_RUN_MANAGER_TYPE" enabled with value == Serial. Fo
 
 
 **************************************************************
- Geant4 version Name: geant4-11-03-patch-02    (25-April-2025)
+ Geant4 version Name: geant4-11-04-patch-01    (13-March-2026)
                        Copyright : Geant4 Collaboration
                       References : NIM A 506 (2003), 250-303
                                  : IEEE-TNS 53 (2006), 270-278
@@ -130,7 +130,7 @@ Lowest triplet kinetic energy                      1 MeV
 Enable sampling of gamma linear polarisation       0
 5D gamma conversion model type                     0
 5D gamma conversion model on isolated ion          0
-Use Ricardo-Gerardo pair production model          0
+Use RiGe 5D e+e- pair production model by muons    0
 Livermore data directory                           epics_2017
 =======================================================================
 ======                 Ionisation Parameters                   ========
@@ -144,7 +144,7 @@ Lowest muon/hadron kinetic energy                  1 keV
 Use ICRU90 data                                    0
 Fluctuations of dE/dx are enabled                  1
 Type of fluctuation model for leptons and hadrons  Urban
-Use built-in Birks satuaration                     0
+Use built-in Birks saturation                      0
 Build CSDA range enabled                           0
 Use cut as a final range enabled                   0
 Enable angular generator interface                 0
@@ -281,7 +281,7 @@ hBrems:  for proton  XStype:1  SubType=3
 hPairProd:  for proton  XStype:1  SubType=4
       dE/dx and range tables from 100 eV  to 100 TeV in 84 bins
       Lambda tables from threshold to 100 TeV, 7 bins/decade, spline: 1
-      Sampling table 17x1001 from 7.50618 GeV to 100 TeV 
+      Sampling table 17x1001, from 7.50618 GeV to 100 TeV 
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
            hPairProd : Emin=    0 eV  Emax=  100 TeV  ModifiedMephi
 
@@ -339,7 +339,7 @@ hBrems:  for anti_proton  XStype:1  SubType=3
 hPairProd:  for anti_proton  XStype:1  SubType=4
       dE/dx and range tables from 100 eV  to 100 TeV in 84 bins
       Lambda tables from threshold to 100 TeV, 7 bins/decade, spline: 1
-      Sampling table 17x1001 from 7.50618 GeV to 100 TeV 
+      Sampling table 17x1001, from 7.50618 GeV to 100 TeV 
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
            hPairProd : Emin=    0 eV  Emax=  100 TeV  ModifiedMephi
 
@@ -371,7 +371,7 @@ hBrems:  for kaon+  XStype:1  SubType=3
 hPairProd:  for kaon+  XStype:1  SubType=4
       dE/dx and range tables from 100 eV  to 100 TeV in 84 bins
       Lambda tables from threshold to 100 TeV, 7 bins/decade, spline: 1
-      Sampling table 18x1001 from 3.94942 GeV to 100 TeV 
+      Sampling table 18x1001, from 3.94942 GeV to 100 TeV 
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
            hPairProd : Emin=    0 eV  Emax=  100 TeV  ModifiedMephi
 
@@ -403,7 +403,7 @@ hBrems:  for kaon-  XStype:1  SubType=3
 hPairProd:  for kaon-  XStype:1  SubType=4
       dE/dx and range tables from 100 eV  to 100 TeV in 84 bins
       Lambda tables from threshold to 100 TeV, 7 bins/decade, spline: 1
-      Sampling table 18x1001 from 3.94942 GeV to 100 TeV 
+      Sampling table 18x1001, from 3.94942 GeV to 100 TeV 
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
            hPairProd : Emin=    0 eV  Emax=  100 TeV  ModifiedMephi
 
@@ -435,7 +435,7 @@ muBrems:  for mu+  XStype:1  SubType=3
 muPairProd:  for mu+  XStype:1  SubType=4
       dE/dx and range tables from 100 eV  to 100 TeV in 84 bins
       Lambda tables from threshold to 100 TeV, 7 bins/decade, spline: 1
-      Sampling table 21x1001 from 0.85 GeV to 100 TeV 
+      Sampling table 21x1001, from 0.85 GeV to 100 TeV 
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
           muPairProd : Emin=    0 eV  Emax=  100 TeV  ModifiedMephi
 
@@ -467,7 +467,7 @@ muBrems:  for mu-  XStype:1  SubType=3
 muPairProd:  for mu-  XStype:1  SubType=4
       dE/dx and range tables from 100 eV  to 100 TeV in 84 bins
       Lambda tables from threshold to 100 TeV, 7 bins/decade, spline: 1
-      Sampling table 21x1001 from 0.85 GeV to 100 TeV 
+      Sampling table 21x1001, from 0.85 GeV to 100 TeV 
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
           muPairProd : Emin=    0 eV  Emax=  100 TeV  ModifiedMephi
 
@@ -499,7 +499,7 @@ hBrems:  for pi+  XStype:1  SubType=3
 hPairProd:  for pi+  XStype:1  SubType=4
       dE/dx and range tables from 100 eV  to 100 TeV in 84 bins
       Lambda tables from threshold to 100 TeV, 7 bins/decade, spline: 1
-      Sampling table 20x1001 from 1.11656 GeV to 100 TeV 
+      Sampling table 20x1001, from 1.11656 GeV to 100 TeV 
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
            hPairProd : Emin=    0 eV  Emax=  100 TeV  ModifiedMephi
 
@@ -531,7 +531,7 @@ hBrems:  for pi-  XStype:1  SubType=3
 hPairProd:  for pi-  XStype:1  SubType=4
       dE/dx and range tables from 100 eV  to 100 TeV in 84 bins
       Lambda tables from threshold to 100 TeV, 7 bins/decade, spline: 1
-      Sampling table 20x1001 from 1.11656 GeV to 100 TeV 
+      Sampling table 20x1001, from 1.11656 GeV to 100 TeV 
       ===== EM models for the G4Region  DefaultRegionForTheWorld ======
            hPairProd : Emin=    0 eV  Emax=  100 TeV  ModifiedMephi
 
@@ -783,10 +783,11 @@ CoulombScat:  for pi- XStype:1 SubType=1 BuildTable=1
 =======================================================================
 ======       Geant4 Native Pre-compound Model Parameters       ========
 =======================================================================
+Type of pre-compound model                          0
 Type of pre-compound inverse x-section              1
 Pre-compound model active                           1
-Pre-compound excitation low energy                  100 keV
-Pre-compound excitation high energy                 30 MeV
+Pre-compound excitation low energy                  0.1 MeV 
+Pre-compound excitation high energy                 15 MeV 
 Angular generator for pre-compound model            1
 Use NeverGoBack option for pre-compound model       0
 Use SoftCutOff option for pre-compound model        0
@@ -799,9 +800,9 @@ Use HETC submodel for pre-compound model            0
 Type of de-excitation inverse x-section             3
 Type of de-excitation factory                       Evaporation+GEM
 Number of de-excitation channels                    68
-Min excitation energy                               10 eV 
-Min energy per nucleon for multifragmentation       200 GeV
-Limit excitation energy for Fermi BreakUp           20 MeV
+Type of Fermi BreakUp model                         ModelVI
+Min excitation energy                               0.01 keV 
+Min energy per nucleon for multifragmentation       2e+05 MeV
 Level density (1/MeV)                               0.075
 Use simple level density model                      1
 Use discrete excitation energy of the residual      0
@@ -829,24 +830,24 @@ Max 2J for sampling of angular correlations         10
 =============================================================
 =============================================================
         Volume |   Tr.Entering |    Population |    Collisions |      Coll*WGT |     NumWGTedE |    FluxWGTedE |     Av.Tr.WGT |            SL |           SLW |         SLW_v |          SLWE |        SLWE_v |
-       cell_00 |            38 |           132 |            38 |            38 |     0.0195807 |        2.2907 |             1 |        5887.6 |        5887.6 |       26929.1 |       13486.7 |       527.292 |
-       cell_01 |           153 |           176 |           528 |           528 |     0.0206121 |       4.58323 |             1 |       24923.5 |       24923.5 |        154872 |        114230 |       3192.24 |
-       cell_02 |           194 |           306 |          1397 |         698.5 |     0.0126136 |       2.78591 |           0.5 |       51975.5 |       25987.7 |        186162 |       72399.6 |       2348.17 |
-       cell_03 |           254 |           396 |          2232 |           558 |    0.00665346 |       1.92875 |          0.25 |       73299.7 |       18324.9 |        194161 |       35344.2 |       1291.84 |
-       cell_04 |           275 |           403 |          2747 |       343.375 |    0.00495462 |       1.41524 |         0.125 |       82413.9 |       10301.7 |        116333 |       14579.4 |       576.387 |
-       cell_05 |           278 |           390 |          2598 |       162.375 |    0.00285599 |       1.19123 |        0.0625 |       73414.1 |       4588.38 |       76703.2 |        5465.8 |       219.063 |
-       cell_06 |           282 |           420 |          2491 |       77.8438 |    0.00304019 |       1.25847 |       0.03125 |       73240.4 |       2288.76 |       36773.6 |       2880.35 |       111.799 |
-       cell_07 |           266 |           395 |          2499 |       39.0469 |    0.00352251 |       1.25171 |      0.015625 |       73379.7 |       1146.56 |       16647.4 |       1435.16 |       58.6406 |
-       cell_08 |           229 |           334 |          2263 |       17.6797 |     0.0032296 |       1.27901 |     0.0078125 |       67169.9 |       524.765 |       8421.69 |       671.181 |       27.1987 |
-       cell_09 |           203 |           307 |          1816 |       7.09375 |    0.00318909 |       1.38137 |    0.00390625 |       58857.8 |       229.913 |       4043.34 |       317.597 |       12.8946 |
-       cell_10 |           198 |           280 |          1772 |       3.46094 |    0.00259236 |       1.15025 |    0.00195312 |         54845 |       107.119 |       2092.22 |       123.214 |       5.42377 |
-       cell_11 |           192 |           278 |          1783 |       1.74121 |    0.00229474 |      0.847057 |   0.000976562 |       49172.1 |       48.0197 |       811.749 |       40.6754 |       1.86275 |
-       cell_12 |           153 |           230 |          1520 |      0.742188 |    0.00246858 |      0.916844 |   0.000488281 |       42084.6 |       20.5491 |       352.963 |       18.8403 |      0.871318 |
-       cell_13 |           115 |           169 |           975 |      0.238037 |    0.00341274 |         1.235 |   0.000244141 |       30944.6 |       7.55484 |       115.636 |       9.33021 |      0.394636 |
-       cell_14 |            88 |           143 |           868 |      0.105957 |     0.0045414 |       1.40224 |    0.00012207 |       27317.2 |       3.33462 |       44.1532 |       4.67593 |      0.200517 |
-       cell_15 |            78 |           131 |           760 |     0.0463867 |    0.00286164 |       1.11449 |   6.10352e-05 |         23461 |       1.43195 |       23.0511 |       1.59589 |     0.0659639 |
-       cell_16 |            75 |           101 |           618 |     0.0188599 |    0.00234611 |       1.24366 |   3.05176e-05 |       18928.1 |      0.577641 |       12.8038 |       0.71839 |     0.0300392 |
-       cell_17 |            60 |            90 |           618 |    0.00942993 |    0.00364854 |        1.1418 |   1.52588e-05 |       17680.8 |      0.269787 |       3.50852 |      0.308043 |      0.012801 |
-       cell_18 |            36 |            68 |           508 |    0.00387573 |     0.0025067 |       1.34519 |   7.62939e-06 |       14744.2 |      0.112489 |        2.4427 |       0.15132 |    0.00612312 |
-       cell_19 |            29 |            29 |            29 |   0.000221252 |    0.00873769 |       1.51082 |   7.62939e-06 |       5298.78 |     0.0404265 |       0.30787 |     0.0610771 |    0.00269008 |
+       cell_00 |            40 |           133 |            40 |            40 |    0.00628713 |       2.54522 |             1 |       7355.94 |       7355.94 |        102964 |       18722.5 |       647.349 |
+       cell_01 |           148 |           180 |           553 |           553 |      0.022019 |       4.07377 |             1 |         24136 |         24136 |        126247 |       98324.4 |       2779.82 |
+       cell_02 |           171 |           269 |          1219 |         609.5 |     0.0101564 |       2.92717 |           0.5 |       43863.3 |       21931.6 |        196196 |       64197.6 |       1992.65 |
+       cell_03 |           244 |           348 |          1993 |        498.25 |    0.00874641 |       2.32458 |          0.25 |       68675.5 |       17168.9 |        153847 |       39910.4 |       1345.61 |
+       cell_04 |           303 |           428 |          2662 |        332.75 |    0.00438652 |       1.73713 |         0.125 |       82742.9 |       10342.9 |        145233 |       17966.9 |       637.068 |
+       cell_05 |           283 |           436 |          2514 |       157.125 |    0.00541765 |       1.75899 |        0.0625 |       80795.6 |       5049.72 |       59417.6 |       8882.41 |       321.904 |
+       cell_06 |           276 |           422 |          2334 |       72.9375 |    0.00447875 |       1.70771 |       0.03125 |       72813.1 |       2275.41 |       31552.5 |       3885.73 |       141.316 |
+       cell_07 |           268 |           400 |          2355 |       36.7969 |    0.00408544 |       1.42063 |      0.015625 |       72342.8 |       1130.36 |       15494.3 |       1605.82 |       63.3009 |
+       cell_08 |           305 |           416 |          2649 |       20.6953 |    0.00308342 |       1.20965 |     0.0078125 |       80371.2 |         627.9 |       9958.12 |       759.538 |        30.705 |
+       cell_09 |           301 |           411 |          2758 |       10.7734 |     0.0026896 |       1.17607 |    0.00390625 |         80913 |       316.066 |       5419.98 |       371.716 |       14.5776 |
+       cell_10 |           259 |           397 |          2241 |       4.37695 |    0.00319436 |       1.29461 |    0.00195312 |       67229.3 |       131.307 |       2081.79 |       169.991 |       6.64996 |
+       cell_11 |           230 |           333 |          2286 |       2.23242 |    0.00376063 |       1.26679 |   0.000976562 |       66590.8 |       65.0301 |       861.415 |       82.3796 |       3.23946 |
+       cell_12 |           211 |           322 |          1905 |      0.930176 |    0.00303332 |       1.32032 |   0.000488281 |       59363.2 |       28.9859 |       500.507 |       38.2707 |        1.5182 |
+       cell_13 |           237 |           305 |          2170 |      0.529785 |    0.00252692 |       1.07062 |   0.000244141 |       62061.2 |       15.1517 |       263.524 |       16.2217 |      0.665903 |
+       cell_14 |           204 |           309 |          1832 |      0.223633 |     0.0027156 |       1.20307 |    0.00012207 |       53016.4 |       6.47173 |       113.816 |       7.78597 |      0.309079 |
+       cell_15 |           159 |           239 |          1385 |     0.0845337 |    0.00368774 |       1.41128 |   6.10352e-05 |       42251.3 |       2.57882 |       37.6593 |       3.63944 |      0.138878 |
+       cell_16 |           156 |           231 |          1577 |     0.0481262 |    0.00328176 |       1.14984 |   3.05176e-05 |       45682.6 |       1.39412 |        20.198 |       1.60302 |     0.0662851 |
+       cell_17 |           126 |           205 |          1074 |     0.0163879 |     0.0034846 |       1.44949 |   1.52588e-05 |       34621.5 |      0.528282 |       8.57894 |      0.765738 |     0.0298942 |
+       cell_18 |            81 |           168 |           876 |    0.00668335 |    0.00483233 |       1.28996 |   7.62939e-06 |       27794.2 |      0.212053 |       2.41642 |       0.27354 |      0.011677 |
+       cell_19 |            68 |            68 |            68 |   0.000518799 |     0.0132767 |       1.72024 |   7.62939e-06 |       10955.9 |      0.083587 |      0.433585 |       0.14379 |    0.00575657 |
 =============================================

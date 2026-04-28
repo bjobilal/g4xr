@@ -23,7 +23,6 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
 /// \file GB05SD.hh
 /// \brief Definition of the GB05SD class
 
@@ -36,10 +35,10 @@ class GB05SD : public G4VSensitiveDetector
 {
   public:
     GB05SD(G4String name);
-    virtual ~GB05SD() {}
+    ~GB05SD() override = default;
 
-    virtual void Initialize(G4HCofThisEvent*) {}
-    virtual G4bool ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist);
+    void Initialize(G4HCofThisEvent*) override {}
+    G4bool ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist) override;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

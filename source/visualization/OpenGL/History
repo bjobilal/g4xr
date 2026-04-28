@@ -6,9 +6,104 @@ It must **not** be used as a substitute for writing good git commit messages!
 
 -------------------------------------------------------------------------------
 
-## 2025-04-07 Gabriele Cosmo (opengl-V11-02-10)
+## 2026-02-01 John Allison (opengl-V11-03-10)
+- G4OpenGLViewer.cc:
+  - Remove archaic and unnecessary 20th-century #include statements. The first
+    raises a warning on some platforms.
+    - #include "G4ios.hh"
+    - #include <CLHEP/Units/SystemOfUnits.h>
+
+## 2025-12-26 John Allison
+- G4OpenGLQtViewer.cc: Fix bug 2688: 
+  - In G4OpenGLQtViewer::G4wheelEvent:
+    - Fix for Qt version < 5.14.
+
+## 2025-10-31 Andrea Barresi (opengl-V11-03-09)
+- G4OpenGLQtViewer
+  - Improved context menu behavior for picking
+  - Added condition to avoid picking with rigth mouse button
+
+## 2025-10-01 John Allison (opengl-V11-03-08)
+- Implement policy for dotsSize and dotsSmooth.
+- G4OpenGLSceneHandler.cc:
+  - BeginPrimitives() and BeginPrimitives2D():
+    - Set OpenGL states to default values:
+      - glClearColor (0.0, 0.0, 0.0, 0.0);
+      - glClearDepth (1.0);
+      - glDisable (GL_LINE_SMOOTH);
+      - glDisable (GL_POLYGON_SMOOTH);
+      - glDisable (GL_POINT_SMOOTH);
+  - AddPrimitive(G4Polymarker):
+    - For dots and circles, glEnable (GL_POINT_SMOOTH);
+- G4OpenGLStoredViewer.cc and G4OpenGLStoredQtViewer.cc:
+  - CompareForKernelVisit():
+    - Include dotsSize and dotsSmooth for decision on kernel visit.
+- G4OpenGLViewer.cc:
+  - InitializeGLView():
+    - Add glDisable (GL_POINT_SMOOTH).
+
+## 2025-06-18 Andrea Barresi (opengl-V11-03-07)
+- G4OpenGLQtViewer
+  - Implemented new virtual methods of G4VViewer: GetWindowSize and GetRenderAreaSize
+  - Modified wheel_rotate function to call ZoomFromMouseWheel of G4VViewer
+  - Updated the moveScene method to work correctly in perspective mode with dolly zoom.
+-G4OpenGLWin32Viewer:
+  - Implemented new virtual methods of G4VViewer: GetWindowSize and GetRenderAreaSize
+  - Modified SetZoom function to call ZoomFromMouseWheel of G4VViewer
+
+## 2025-05-23 Andrea Barresi (opengl-V11-03-06)
+- G4OpenGLWin32Viewer:
+  - Added SwitchToMasterThread method to draw trajectories at the end of run in MT mode.
+
+## 2025-05-12 Andrea Barresi (opengl-V11-03-05)
+- G4OpenGLQtViewer.cc:
+  - Fixed the original pick feature to show pick info window and removed the workaround. 
+
+## 2025-04-29 John Allison (opengl-V11-03-04)
+- G4OpenGLQtViewer.cc:
+  - Restore pick information window (workaround) in the OGLSQt driver.
+    - For some reason - maybe recent "improvements" - the current pick feature
+      does not work. Investigation shows that information is picked, as designed,
+      but the pick information window does not show. So far, we have not
+      been able to find the problem - hence this workaround.
+    - This workaround is a single block of code, ll.4630-4661, that can easily
+      be removed if the original problem is understood and fixed.
+    - In this workaround, each picked object causes a window of information
+      to pop up. They are standalone windows, and may be kept or deleted. They
+      are cleaned up by Qt at end of job.
+  - Remove some commented out statements left over from the previous tag.
+    - With the introduction of the new scene tree, there should never be a
+      reason to use /vis/touchable/set commands. In fact to do so interferes
+      with the new scene tree.
+
+## 2025-04-09 John Allison (opengl-V11-03-03)
+- G4OpenGLQtViewer.cc:
+  - Comment out calls to TouchableSetVisibility/Colour.
+    - No longer needed since the introduction of the new scene tree.
+    - Actually interferes with the new scene tree.
+  - Comment out some debug printing to std::cout.
+
+## 2025-04-07 Gabriele Cosmo (opengl-V11-03-02)
 - Fixed compilation errors on Windows in G4OpenGLWin32Viewer, triggered when
   enabling GL WIN32 support, as reported in problem report #2599.
+
+## 2025-02-01 John Allison (opengl-V11-03-01)
+- Co-works: visman-V11-03-02.
+- G4OpenGLStoredViewer.cc:
+  - Follow changes in G4ViewParameters.
+
+## 2025-01-06 John Allison (opengl-V11-03-00)
+- Co-works: visman-V11-03-00, interfaces-V11-03-00, modeling-V11-03-00,
+  visQt3D-V11-03-00, vis_toolssg-V11-03-00, openinventor-V11-03-00,
+  greps-V11-03-00.
+- Re-instate the transparency slider (see lengthy explanation in management/History).
+- G4OpenGLImmediateSceneHandler:
+  - Minor improvement to comment.
+- G4OpenGLStoredViewer:
+  - Initiate kernel visit if TransparencyByDepth or its options change.
+- G4OpenGLStoredQtViewer:
+  - Initiate kernel visit if TransparencyByDepth or its options change.
+  - (Not sure the Qt viewer needs its own compare function.)
 
 ## 2024-09-13 John Allison (opengl-V11-02-09)
 - G4OpenGLStoredQtSceneHandler.cc:

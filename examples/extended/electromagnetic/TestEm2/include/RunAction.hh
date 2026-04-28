@@ -23,19 +23,15 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file electromagnetic/TestEm2/include/RunAction.hh
+/// \file RunAction.hh
 /// \brief Definition of the RunAction class
-//
-//
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #ifndef RunAction_h
 #define RunAction_h 1
 
-#include "G4AnalysisManager.hh"
-#include "G4ThreeVector.hh"
 #include "G4UserRunAction.hh"
+#include "G4ThreeVector.hh"
+#include "G4AnalysisManager.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

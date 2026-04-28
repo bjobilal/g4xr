@@ -25,6 +25,8 @@
 //
 // G4AffineTransformation Inline implementation
 //
+// Author: Paul R C Kent (CERN), 06.08.1996 - Initial version
+//         E.Tcherniaev (CERN), 19.09.1996, 06.05.2018 - Revised
 // --------------------------------------------------------------------
 
 inline G4AffineTransform::G4AffineTransform()
@@ -393,7 +395,7 @@ G4double G4AffineTransform::operator [] (const G4int n) const
 inline
 G4bool G4AffineTransform::IsRotated() const
 {
-  return !(rxx==1.0 && ryy==1.0 && rzz==1.0);
+  return rxx!=1.0 || ryy!=1.0 || rzz!=1.0;
 }
 
 inline 

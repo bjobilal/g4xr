@@ -23,22 +23,18 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file electromagnetic/TestEm2/include/DetectorConstruction.hh
+/// \file DetectorConstruction.hh
 /// \brief Definition of the DetectorConstruction class
-//
-//
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #ifndef DetectorConstruction_h
 #define DetectorConstruction_h 1
 
-#include "G4Cache.hh"
 #include "G4Material.hh"
 #include "G4ThreeVector.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4VUserDetectorConstruction.hh"
 #include "globals.hh"
+#include "G4Threading.hh"
 
 class G4Tubs;
 class G4LogicalVolume;
@@ -57,8 +53,8 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
   public:
     void SetMaterial(const G4String&);
-    void SetLBining(G4ThreeVector);
-    void SetRBining(G4ThreeVector);
+    void SetLBining(const G4ThreeVector&);
+    void SetRBining(const G4ThreeVector&);
 
     G4VPhysicalVolume* Construct() override;
 
@@ -96,7 +92,9 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
     DetectorMessenger* fDetectorMessenger = nullptr;  // pointer to the Messenger
 
-    G4Cache<G4GlobalMagFieldMessenger*> fFieldMessenger = nullptr;
+    // global field manager
+    static G4ThreadLocal G4GlobalMagFieldMessenger* fMagFieldMessenger;
+
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

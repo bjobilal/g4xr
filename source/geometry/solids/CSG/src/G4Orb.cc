@@ -35,16 +35,19 @@
 #include "G4TwoVector.hh"
 #include "G4VoxelLimits.hh"
 #include "G4AffineTransform.hh"
-#include "G4GeometryTolerance.hh"
 #include "G4BoundingEnvelope.hh"
+#include "G4QuickRand.hh"
 
 #include "G4VPVParameterisation.hh"
 
-#include "G4RandomDirection.hh"
-#include "Randomize.hh"
-
 #include "G4VGraphicsScene.hh"
 #include "G4VisExtent.hh"
+#include "G4AutoLock.hh"
+
+namespace
+{
+  G4Mutex orbMutex = G4MUTEX_INITIALIZER;
+}
 
 using namespace CLHEP;
 
@@ -67,18 +70,6 @@ G4Orb::G4Orb( __void__& a )
   : G4CSGSolid(a)
 {
 }
-
-//////////////////////////////////////////////////////////////////////////
-//
-// Destructor
-
-G4Orb::~G4Orb() = default;
-
-//////////////////////////////////////////////////////////////////////////
-//
-// Copy constructor
-
-G4Orb::G4Orb(const G4Orb&) = default;
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -106,7 +97,7 @@ G4Orb& G4Orb::operator = (const G4Orb& rhs)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Check radius and initialize dada members
+// Check radius and initialize data members
 
 void G4Orb::Initialize()
 {
@@ -216,7 +207,7 @@ G4bool G4Orb::CalculateExtent(const EAxis pAxis,
     sinCurPhi = sinCurPhi*cosStepPhi + cosCurPhi*sinStepPhi;
     cosCurPhi = cosCurPhi*cosStepPhi - sinTmpPhi*sinStepPhi;
   }
-  
+
   // set bounding circles
   G4ThreeVectorList circles[NTHETA];
   for (auto & circle : circles) { circle.resize(NPHI); }
@@ -253,7 +244,7 @@ G4bool G4Orb::CalculateExtent(const EAxis pAxis,
 EInside G4Orb::Inside( const G4ThreeVector& p ) const
 {
   G4double rr = p.mag2();
-  if (rr > sqrRmaxPlusTol) return kOutside;
+  if (rr > sqrRmaxPlusTol) { return kOutside; }
   return (rr > sqrRmaxMinusTol) ? kSurface : kInside;
 }
 
@@ -279,7 +270,7 @@ G4double G4Orb::DistanceToIn( const G4ThreeVector& p,
   //
   G4double rr = p.mag2();
   G4double pv = p.dot(v);
-  if (rr >= sqrRmaxMinusTol && pv >= 0) return kInfinity;
+  if (rr >= sqrRmaxMinusTol && pv >= 0) { return kInfinity; }
 
   // Find intersection
   //
@@ -290,7 +281,7 @@ G4double G4Orb::DistanceToIn( const G4ThreeVector& p,
   //    => tmin = -(p.v) - Sqrt((p.v)^2 - (r^2 - R^2))
   //
   G4double D  = pv*pv - rr + fRmax*fRmax;
-  if (D < 0) return kInfinity; // no intersection
+  if (D < 0) { return kInfinity; } // no intersection
 
   G4double sqrtD = std::sqrt(D);
   G4double dist = -pv - sqrtD;
@@ -298,7 +289,7 @@ G4double G4Orb::DistanceToIn( const G4ThreeVector& p,
   // Avoid rounding errors due to precision issues seen on 64 bits systems.
   // Split long distances and recompute
   //
-  G4double Dmax = 32*fRmax; 
+  G4double Dmax = 32*fRmax;
   if (dist > Dmax)
   {
     dist  = dist - 1.e-8*dist - fRmax; // to stay outside after the move
@@ -306,7 +297,8 @@ G4double G4Orb::DistanceToIn( const G4ThreeVector& p,
     return (dist >= kInfinity) ? kInfinity : dist;
   }
 
-  if (sqrtD*2 <= halfRmaxTol) return kInfinity; // touch
+  if (sqrtD*2 <= halfRmaxTol) { return kInfinity; } // touch
+
   return (dist < halfRmaxTol) ? 0. : dist;
 }
 
@@ -357,7 +349,7 @@ G4double G4Orb::DistanceToOut( const G4ThreeVector& p,
   //
   G4double D  = pv*pv - rr + fRmax*fRmax;
   G4double tmax = (D <= 0) ? 0. : std::sqrt(D) - pv;
-  if (tmax < halfRmaxTol) tmax = 0.;
+  if (tmax < halfRmaxTol) { tmax = 0.; }
   if (calcNorm)
   {
     *validNorm = true;
@@ -431,13 +423,50 @@ std::ostream& G4Orb::StreamInfo( std::ostream& os ) const
 
 //////////////////////////////////////////////////////////////////////////
 //
-// GetPointOnSurface
+// Pick random point on the surface
 
 G4ThreeVector G4Orb::GetPointOnSurface() const
 {
-  return fRmax * G4RandomDirection();
+  G4double u, v, b;
+  do
+  {
+    u = 2.*G4QuickRand() - 1.;
+    v = 2.*G4QuickRand() - 1.;
+    b = sqr(u) + sqr(v);
+  } while(b > 1.);
+  G4double a = 2.*std::sqrt(1. - b);
+  return { fRmax*a*u, fRmax*a*v, fRmax*(2.*b - 1.) };
 }
 
+//////////////////////////////////////////////////////////////////////////
+//
+// Computes/returns volume capacity
+
+G4double G4Orb::GetCubicVolume()
+{
+  if (fCubicVolume == 0)
+  {
+    G4AutoLock l(&orbMutex);
+    fCubicVolume = 4*CLHEP::pi*fRmax*fRmax*fRmax/3.;
+    l.unlock();
+  }
+  return fCubicVolume;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Computes/returns surface area
+
+G4double G4Orb::GetSurfaceArea()
+{
+  if (fSurfaceArea == 0)
+  {
+    G4AutoLock l(&orbMutex);
+    fSurfaceArea = 4*CLHEP::pi*fRmax*fRmax;
+    l.unlock();
+  }
+  return fSurfaceArea;
+}
 //////////////////////////////////////////////////////////////////////////
 //
 // Methods for visualisation

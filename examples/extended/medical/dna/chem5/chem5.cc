@@ -23,6 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file chem5.cc
+/// \brief Main program of the dna/chem5 example
+
 // This example is provided by the Geant4-DNA collaboration
 // Any report or published results obtained using the Geant4-DNA software
 // shall cite the following Geant4-DNA collaboration publication:
@@ -32,8 +35,6 @@
 // The Geant4-DNA web site is available at http://geant4-dna.org
 //
 //
-/// \file chem5.cc
-/// \brief Chem5 example
 
 #include "ActionInitialization.hh"
 #include "CommandLineParser.hh"
@@ -58,7 +59,7 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 using namespace G4DNAPARSER;
-CommandLineParser* parser(0);
+CommandLineParser* parser(nullptr);
 long seed = 0;
 
 unsigned int noise();
@@ -72,7 +73,7 @@ int main(int argc, char** argv)
 {
   // Parse options given in commandLine
   Parse(argc, argv);
-  Command* commandLine(0);
+  Command* commandLine(nullptr);
   SetSeed();
 
   // Construct the run manager according to whether MT is activated or not
@@ -80,9 +81,10 @@ int main(int argc, char** argv)
   auto* runManager = G4RunManagerFactory::CreateRunManager();
 
   if ((commandLine = parser->GetCommandIfActive("-mt"))) {
-    int nThreads = 2;
+    G4int nThreads;
     if (commandLine->GetOption() == "NMAX") {
       nThreads = G4Threading::G4GetNumberOfCores();
+      G4cout<<"nThreads : "<<nThreads<<G4endl;
     }
     else {
       nThreads = G4UIcommand::ConvertToInt(commandLine->GetOption());
@@ -113,7 +115,7 @@ int main(int argc, char** argv)
 
   // Get the pointer to the User Interface manager
   G4UImanager* UImanager = G4UImanager::GetUIpointer();
-  G4UIExecutive* ui(0);
+  G4UIExecutive* ui = nullptr;
 
   // interactive mode : define UI session
   if ((commandLine = parser->GetCommandIfActive("-gui"))) {
@@ -121,7 +123,7 @@ int main(int argc, char** argv)
 
     if (ui->IsGUI()) UImanager->ApplyCommand("/control/execute gui.mac");
 
-    if (parser->GetCommandIfActive("-novis") == 0) {
+    if (parser->GetCommandIfActive("-novis") == nullptr) {
       // visualization is used by default
       if ((commandLine = parser->GetCommandIfActive("-vis"))) {
         // select a visualization driver if needed (e.g. HepFile)
@@ -184,7 +186,7 @@ bool IsBracket(char c)
 
 void SetSeed()
 {
-  Command* commandLine(0);
+  Command* commandLine(nullptr);
 
   if ((commandLine = parser->GetCommandIfActive("-seed"))) {
     seed = atoi(commandLine->GetOption().c_str());
@@ -249,7 +251,7 @@ unsigned int noise()
   else {
     random_seed_a = 0;
   }
-  random_seed_b = std::time(0);
+  random_seed_b = std::time(nullptr);
   random_seed = random_seed_a xor random_seed_b;
   return random_seed;
 #endif

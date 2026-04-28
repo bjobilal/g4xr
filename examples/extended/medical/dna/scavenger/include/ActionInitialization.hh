@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file scavenger/include/ActionInitialization.hh
+/// \file ActionInitialization.hh
 /// \brief Definition of the scavenger::ActionInitialization class
 
 #ifndef SCAVENGER_ActionInitialization_h
@@ -47,6 +47,9 @@ class ActionInitialization : public G4VUserActionInitialization
     void BuildForMaster() const override;
 
     void Build() const override;
+
+  private:
+    void BuildMoleculeCounter() const;
 };
 
 }  // namespace scavenger

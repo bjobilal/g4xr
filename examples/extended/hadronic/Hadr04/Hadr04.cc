@@ -25,11 +25,6 @@
 //
 /// \file Hadr04.cc
 /// \brief Main program of the hadronic/Hadr04 example
-//
-//
-//
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "ActionInitialization.hh"
 #include "DetectorConstruction.hh"
@@ -84,7 +79,7 @@ int main(int argc, char** argv)
   G4ParticleHPManager::GetInstance()->SetNeglectDoppler(false);
   G4ParticleHPManager::GetInstance()->SetProduceFissionFragments(false);
   G4ParticleHPManager::GetInstance()->SetUseWendtFissionModel(false);
-  G4ParticleHPManager::GetInstance()->SetUseNRESP71Model(false);
+  G4ParticleHPManager::GetInstance()->SetUseNRESP71Model(true);
 
   // get the pointer to the User Interface manager
   G4UImanager* UImanager = G4UImanager::GetUIpointer();

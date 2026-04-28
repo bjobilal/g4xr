@@ -23,7 +23,6 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
 /// \file GB05BOptrSplitAndKillByCrossSection.cc
 /// \brief Implementation of the GB05BOptrSplitAndKillByCrossSection class
 
@@ -44,7 +43,7 @@ GB05BOptrSplitAndKillByCrossSection::GB05BOptrSplitAndKillByCrossSection(G4Strin
 {
   fParticleToBias = G4ParticleTable::GetParticleTable()->FindParticle(particleName);
 
-  if (fParticleToBias == 0) {
+  if (fParticleToBias == nullptr) {
     G4ExceptionDescription ed;
     ed << "Particle `" << particleName << "' not found !" << G4endl;
     G4Exception("GB05BOptrSplitAndKillByCrossSection(...)", "exGB05.01", JustWarning, ed);
@@ -120,7 +119,7 @@ G4VBiasingOperation* GB05BOptrSplitAndKillByCrossSection::ProposeNonPhysicsBiasi
   // -----------------------------------------------------
   // -- Check if current particle type is the one to bias:
   // -----------------------------------------------------
-  if (track->GetDefinition() != fParticleToBias) return 0;
+  if (track->GetDefinition() != fParticleToBias) return nullptr;
 
   // --------------------------------------------------------------------
   // -- Compute the total cross-section for the physics processes
@@ -134,7 +133,7 @@ G4VBiasingOperation* GB05BOptrSplitAndKillByCrossSection::ProposeNonPhysicsBiasi
     G4double interactionLength = fProcesses[i]->GetCurrentInteractionLength();
     if (interactionLength < DBL_MAX / 10.) totalCrossSection += 1. / interactionLength;
   }
-  if (totalCrossSection < DBL_MIN) return 0;
+  if (totalCrossSection < DBL_MIN) return nullptr;
 
   G4double totalInteractionLength = 1. / totalCrossSection;
 

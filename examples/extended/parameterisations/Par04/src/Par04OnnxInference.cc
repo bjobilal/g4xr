@@ -23,18 +23,21 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file Par04OnnxInference.cc
+/// \brief Implementation of the Par04OnnxInference class
+
 #ifdef USE_INFERENCE_ONNX
 #  include "Par04OnnxInference.hh"
 
 #  include "Par04InferenceInterface.hh"  // for Par04InferenceInterface
 
+#  include <onnxruntime_cxx_api.h>  // for Value, Session, Env
 #  include <algorithm>  // for copy, max
 #  include <cassert>  // for assert
 #  include <cstddef>  // for size_t
 #  include <cstdint>  // for int64_t
 #  include <utility>  // for move
 
-#  include <core/session/onnxruntime_cxx_api.h>  // for Value, Session, Env
 #  ifdef USE_CUDA
 #    include "cuda_runtime_api.h"
 #  endif

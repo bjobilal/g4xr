@@ -45,6 +45,7 @@ public:
   virtual ~G4OpenGLWin32Viewer ();
   void SetView ();
   void ShowView ();
+  void SwitchToMasterThread();
 
 protected:
   void GetWin32Connection ();
@@ -65,6 +66,8 @@ private:
   void SetShift(G4int, G4int);
   void SetRotation(G4int, G4int);
   void SetZoom(G4int);
+  G4bool GetWindowSize(unsigned int& a_w, unsigned int& a_h);
+  G4bool GetRenderAreaSize(unsigned int& a_w, unsigned int& a_h);
 
   HWND fWindow;
   HGLRC fHGLRC;

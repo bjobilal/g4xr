@@ -23,10 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
 /// \file GB04BOptnBremSplitting.hh
 /// \brief Definition of the GB04BOptnBremSplitting class
-//
+
 //---------------------------------------------------------------
 //
 // GB04BOptnBremSplitting
@@ -50,31 +49,32 @@ class GB04BOptnBremSplitting : public G4VBiasingOperation
     // -- Constructor :
     GB04BOptnBremSplitting(G4String name);
     // -- destructor:
-    virtual ~GB04BOptnBremSplitting();
+    ~GB04BOptnBremSplitting() override;
 
   public:
     // ----------------------------------------------
     // -- Methods from G4VBiasingOperation interface:
     // ----------------------------------------------
     // -- Unused:
-    virtual const G4VBiasingInteractionLaw*
-    ProvideOccurenceBiasingInteractionLaw(const G4BiasingProcessInterface*, G4ForceCondition&)
+    const G4VBiasingInteractionLaw*
+    ProvideOccurenceBiasingInteractionLaw(const G4BiasingProcessInterface*,
+                                          G4ForceCondition&) override
     {
-      return 0;
+      return nullptr;
     }
 
     // --Used:
-    virtual G4VParticleChange* ApplyFinalStateBiasing(const G4BiasingProcessInterface*,
-                                                      const G4Track*, const G4Step*, G4bool&);
+    G4VParticleChange* ApplyFinalStateBiasing(const G4BiasingProcessInterface*, const G4Track*,
+                                              const G4Step*, G4bool&) override;
 
     // -- Unsued:
-    virtual G4double DistanceToApplyOperation(const G4Track*, G4double, G4ForceCondition*)
+    G4double DistanceToApplyOperation(const G4Track*, G4double, G4ForceCondition*) override
     {
       return DBL_MAX;
     }
-    virtual G4VParticleChange* GenerateBiasingFinalState(const G4Track*, const G4Step*)
+    G4VParticleChange* GenerateBiasingFinalState(const G4Track*, const G4Step*) override
     {
-      return 0;
+      return nullptr;
     }
 
   public:

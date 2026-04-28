@@ -23,11 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
-//
-/// \file eventgenerator/pythia/decayer6/include/G4Pythia6Decayer.hh
+/// \file G4Pythia6Decayer.hh
 /// \brief Definition of the G4Pythia6Decayer class
-//
+
 #ifndef G4_PYTHIA6_DECAYER_H
 #define G4_PYTHIA6_DECAYER_H
 
@@ -46,8 +44,8 @@ class G4DecayProducts;
 ///
 /// Implements the G4VExtDecayer abstract class using the Pythia6 interface.
 /// According to TPythia6Decayer class in Root:
-/// http://root.cern.ch/
-/// see http://root.cern.ch/root/License.html
+/// http://root.cern/
+/// see http://root.cern/root/License.html
 
 class G4Pythia6Decayer : public G4VExtDecayer
 {

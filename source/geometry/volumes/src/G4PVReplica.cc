@@ -23,9 +23,10 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 // 
-// class G4PVReplica Implementation
+// Class G4PVReplica Implementation
 //
-// 29.07.95, P.Kent - First non-stub version
+// Original author: Paul Kent (CERN), 29 July 1995 - First non-stub version
+// - G.Cosmo, A.Dotti (CERN), 13 January 2013 - Modified for MT thread-safety
 // ----------------------------------------------------------------------
 
 #include "G4PVReplica.hh"
@@ -250,9 +251,6 @@ G4PVReplica::G4PVReplica( __void__& a )
 {
   instanceID = subInstanceManager.CreateSubInstance();
 }
-
-// ----------------------------------------------------------------------
-G4PVReplica::~G4PVReplica() = default;
 
 // ----------------------------------------------------------------------
 G4bool G4PVReplica::IsMany() const

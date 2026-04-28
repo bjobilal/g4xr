@@ -23,6 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file ActionInitialization.cc
+/// \brief Implementation of the ActionInitialization class
+
 // This example is provided by the Geant4-DNA collaboration
 // dnadamage3 example is derived from the chem6 example
 // chem6 example authors: W. G. Shin and S. Incerti (CENBG, France)
@@ -39,8 +42,6 @@
 // Authors: J. Naoki D. Kondo (UCSF, US)
 //          J. Ramos-Mendez and B. Faddegon (UCSF, US)
 //
-/// \file ActionInitialization.cc
-/// \brief Implementation of the ActionInitialization class
 
 #include "ActionInitialization.hh"
 
@@ -53,6 +54,8 @@
 #include "G4H2O.hh"
 #include "G4MoleculeCounter.hh"
 #include "G4Scheduler.hh"
+#include "EventAction.hh"
+#include "G4SystemOfUnits.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
 
@@ -63,26 +66,32 @@ ActionInitialization::ActionInitialization() : G4VUserActionInitialization() {}
 void ActionInitialization::BuildForMaster() const
 {
   SetUserAction(new RunAction());
-  G4DNAChemistryManager::Instance()->ResetCounterWhenRunEnds(false);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
 
 void ActionInitialization::Build() const
 {
-  G4MoleculeCounter::Instance()->Use();
-
-  G4MoleculeCounter::Instance()->DontRegister(G4H2O::Definition());
-
-  // sequential mode
-  if (G4Threading::IsMultithreadedApplication() == false) {
-    G4DNAChemistryManager::Instance()->ResetCounterWhenRunEnds(false);
-  }
-
   SetUserAction(new PrimaryGeneratorAction());
   SetUserAction(new RunAction());
   SetUserAction(new StackingAction());
+  SetUserAction(new EventAction());
   G4Scheduler::Instance()->SetUserAction(new TimeStepAction());
+  BuildMoleculeCounters();
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void ActionInitialization::BuildMoleculeCounters() const
+{
+  G4MoleculeCounterManager::Instance()->SetResetCountersBeforeEvent(true);
+  G4MoleculeCounterManager::Instance()->SetResetCountersBeforeRun(true);
+  G4MoleculeCounterManager::Instance()->SetAccumulateCounterIntoMaster(false);
+
+  auto counter = std::make_unique<G4MoleculeCounter>();
+  counter->SetTimeComparer(G4MoleculeCounterTimeComparer::CreateWithFixedPrecision(1 * ps));
+  counter->IgnoreMolecule(G4H2O::Definition());
+  G4MoleculeCounterManager::Instance()->RegisterCounter(std::move(counter));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....

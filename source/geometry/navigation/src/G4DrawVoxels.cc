@@ -23,11 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// class G4DrawVoxels implementation
+// Class G4DrawVoxels implementation
 //
-// Define G4DrawVoxelsDebug for debugging information on G4cout
-//
-// 29/07/1999 first comitted version L.G.
+// Original author: L.G., 29 July 1999
 // --------------------------------------------------------------------
 
 #include "G4DrawVoxels.hh"
@@ -42,7 +40,8 @@
 
 #define voxel_width 0
 
-// Private Constructor
+// --------------------------------------------------------------------
+// Constructor
 //
 G4DrawVoxels::G4DrawVoxels()
 {
@@ -52,6 +51,7 @@ G4DrawVoxels::G4DrawVoxels()
   fBoundingBoxVisAttributes.SetColour(G4Colour(.3,0.,.2));
 }
 
+// --------------------------------------------------------------------
 // Methods that allow changing colors of the drawing
 //
 void G4DrawVoxels::SetVoxelsVisAttributes(G4VisAttributes& VA_voxelX,
@@ -107,8 +107,8 @@ G4DrawVoxels::ComputeVoxelPolyhedra(const G4LogicalVolume* lv,
                                        (ymin+ymax)*0.5,
                                        (zmin+zmax)*0.5);
    
-   ppl->push_back(G4PlacedPolyhedron(bounding_polyhedronBox,
-                                     G4Translate3D(t_centerofBoundingBox)));
+   ppl->emplace_back(bounding_polyhedronBox,
+                                     G4Translate3D(t_centerofBoundingBox));
    
    G4ThreeVector t_FirstCenterofVoxelPlane;
    const G4VisAttributes* voxelsVisAttributes = nullptr;
@@ -163,9 +163,9 @@ G4DrawVoxels::ComputeVoxelPolyhedra(const G4LogicalVolume* lv,
      current_translation_vector = unit_translation_vector;
      current_translation_vector *= step*slice_no;
    
-     ppl->push_back(G4PlacedPolyhedron(voxel_plane,
+     ppl->emplace_back(voxel_plane,
                     G4Translate3D(current_translation_vector
-                                 + t_FirstCenterofVoxelPlane)));
+                                 + t_FirstCenterofVoxelPlane));
      slice_no = (slice->IsHeader()
                ? slice->GetHeader()->GetMaxEquivalentSliceNo()+1
                : slice->GetNode()->GetMaxEquivalentSliceNo()+1);

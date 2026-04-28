@@ -64,7 +64,7 @@
 #include "G4VModel.hh"
 #include "G4ModelingParameters.hh"
 
-#include "G4VTouchable.hh"
+#include "G4NavigationHistory.hh"
 #include "G4Transform3D.hh"
 #include "G4Plane3D.hh"
 #include <iostream>
@@ -122,21 +122,6 @@ public: // With description
     G4int fNonCulledDepth;
     G4Transform3D fTransform;
     G4bool fDrawn;
-  };
-
-  // Nested class for handling nested parameterisations.
-  class G4PhysicalVolumeModelTouchable: public G4VTouchable {
-  public:
-    G4PhysicalVolumeModelTouchable
-    (const std::vector<G4PhysicalVolumeNodeID>& fullPVPath);
-    const G4ThreeVector& GetTranslation(G4int depth) const;
-    const G4RotationMatrix* GetRotation(G4int depth) const;
-    G4VPhysicalVolume* GetVolume(G4int depth) const;
-    G4VSolid* GetSolid(G4int depth) const;
-    G4int GetReplicaNumber(G4int depth) const;
-    G4int GetHistoryDepth() const {return G4int(fFullPVPath.size());}
-  private:
-    const std::vector<G4PhysicalVolumeNodeID>& fFullPVPath;
   };
 
   // Nested struct for encapsulating touchable properties
@@ -242,11 +227,20 @@ public: // With description
   // G4VTrajectory::ShowTrajectory for an example of the use of
   // G4Atts.
 
-  const std::map<G4int,G4int>& GetNumberOfTouchables() const {return fNTouchables;}
+  const std::map<G4int,G4int>& GetMapOfDrawnTouchables() const {return fMapDrawnTouchables;}
   // Number of touchables drawn at each depth.
 
-  G4int GetTotalTouchables () {return fTotalTouchables;}
-  // Total numbere of touchables.
+  G4int GetTotalDrawnTouchables () {return fTotalDrawnTouchables;}
+  // Total number of touchables drawn.
+
+  G4int GetMaxFullDepth () const {return fMaxFullDepth;}
+  // Including base path, i.e., from the world volume
+
+  const std::map<G4int,G4int>& GetMapOfAllTouchables() const {return fMapAllTouchables;}
+  // Number of all touchables at each depth.
+
+  G4int GetTotalAllTouchables () {return fTotalAllTouchables;}
+  // Total number of touchables.
 
   void SetRequestedDepth (G4int requestedDepth) {
     fRequestedDepth = requestedDepth;
@@ -310,13 +304,18 @@ protected:
   std::vector<G4PhysicalVolumeNodeID> fBaseFullPVPath; // Base. May be empty.
   std::vector<G4PhysicalVolumeNodeID> fFullPVPath;     // Starts from base.
   std::vector<G4PhysicalVolumeNodeID> fDrawnPVPath;    // Omits culled volumes.
+  G4NavigationHistory fNavigationHistory;  // Starts from top PV.
   mutable G4bool     fAbort;         // Abort all further traversing.
   mutable G4bool     fCurtailDescent;// Can be set to curtail descent.
   G4VSolid*          fpClippingSolid;
   ClippingMode       fClippingMode;
   G4int              fNClippers;     // No of clipping/cutting solids - only 0 or 1 allowed
-  std::map<G4int,G4int> fNTouchables;   // No of touchables at each depth
-  G4int              fTotalTouchables;
+  std::map<G4int,G4int> fMapDrawnTouchables;   // No of touchables drawn at each depth
+  G4int              fTotalDrawnTouchables;
+  std::map<G4int,G4int> fMapAllTouchables;   // No of all touchables at each depth
+  G4int              fTotalAllTouchables;
+  G4int              fMaxFullDepth;  // Including base path, i.e., from the world volume
+
 
 private:
 

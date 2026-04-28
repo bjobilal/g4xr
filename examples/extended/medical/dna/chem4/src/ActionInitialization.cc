@@ -23,6 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file ActionInitialization.cc
+/// \brief Implementation of the ActionInitialization class
+
 // This example is provided by the Geant4-DNA collaboration
 // Any report or published results obtained using the Geant4-DNA software
 // shall cite the following Geant4-DNA collaboration publication:
@@ -30,20 +33,20 @@
 // J. Comput. Phys. 274 (2014) 841-882
 // The Geant4-DNA web site is available at http://geant4-dna.org
 //
-/// \file ActionInitialization.cc
-/// \brief Implementation of the ActionInitialization class
 
 #include "ActionInitialization.hh"
-
-#include "PrimaryGeneratorAction.hh"
-#include "RunAction.hh"
-#include "StackingAction.hh"
-#include "TrackingAction.hh"
 
 #include "G4DNAChemistryManager.hh"
 #include "G4H2O.hh"
 #include "G4MoleculeCounter.hh"
 #include "G4Scheduler.hh"
+
+#include "G4SystemOfUnits.hh"
+#include "EventAction.hh"
+#include "PrimaryGeneratorAction.hh"
+#include "RunAction.hh"
+#include "StackingAction.hh"
+#include "TrackingAction.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -58,26 +61,33 @@ ActionInitialization::~ActionInitialization() {}
 void ActionInitialization::BuildForMaster() const
 {
   SetUserAction(new RunAction());
-  G4DNAChemistryManager::Instance()->ResetCounterWhenRunEnds(false);
+
+  ActionInitialization::BuildMoleculeCounter();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void ActionInitialization::Build() const
 {
-  G4MoleculeCounter::Instance()->Use();
-  // G4MoleculeCounter::Instance()->SetVerbose(2);
-  G4MoleculeCounter::Instance()->DontRegister(G4H2O::Definition());
-
-  // sequential mode
-  if (G4Threading::IsMultithreadedApplication() == false) {
-    G4DNAChemistryManager::Instance()->ResetCounterWhenRunEnds(false);
-  }
-
   SetUserAction(new PrimaryGeneratorAction());
   SetUserAction(new RunAction());
+  SetUserAction(new EventAction());
   SetUserAction(new StackingAction());
-  //  SetUserAction(new TrackingAction());
+  BuildMoleculeCounter();
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void ActionInitialization::BuildMoleculeCounter() const
+{
+  G4MoleculeCounterManager::Instance()->SetResetCountersBeforeEvent(true);
+  G4MoleculeCounterManager::Instance()->SetResetCountersBeforeRun(true);
+  G4MoleculeCounterManager::Instance()->SetAccumulateCounterIntoMaster(false);
+
+  auto counter = std::make_unique<G4MoleculeCounter>();
+  counter->SetTimeComparer(G4MoleculeCounterTimeComparer::CreateWithFixedPrecision(1 * ps));
+  counter->IgnoreMolecule(G4H2O::Definition());
+  G4MoleculeCounterManager::Instance()->RegisterCounter(std::move(counter));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

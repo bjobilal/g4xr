@@ -23,6 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file PhysicsList.cc
+/// \brief Implementation of the PhysicsList class
+
 // This example is provided by the Geant4-DNA collaboration
 // Any report or published results obtained using the Geant4-DNA software
 // shall cite the following Geant4-DNA collaboration publications:
@@ -33,8 +36,6 @@
 //
 // The Geant4-DNA web site is available at http://geant4-dna.org
 //
-/// \file medical/dna/svalue/src/PhysicsList.cc
-/// \brief Implementation of the PhysicsList class
 
 #include "PhysicsList.hh"
 
@@ -86,8 +87,8 @@ PhysicsList::PhysicsList() : G4VModularPhysicsList(), fEmPhysicsList(0), fMessen
   G4double highLimit = 100. * CLHEP::GeV;
 
   G4ProductionCutsTable::GetProductionCutsTable()->SetEnergyRange(lowLimit, highLimit);
-  // Change time and other limits in G4NuclideTable
 
+  // Change time and other limits in G4NuclideTable
   G4NuclideTable::GetInstance()->SetThresholdOfHalfLife(0.1 * picosecond);
   G4NuclideTable::GetInstance()->SetLevelTolerance(1.0 * eV);
 

@@ -61,6 +61,7 @@
 class G4ParticleDefinition;
 class G4VEmProcess;
 class G4VEnergyLossProcess;
+class G4EmDataRegistry;
 
 class G4EmDataHandler
 {
@@ -70,14 +71,8 @@ public:
 
   ~G4EmDataHandler();
 
-  // add table
-  std::size_t SetTable(G4PhysicsTable*);
-
   // update existing table
   void UpdateTable(G4PhysicsTable*, std::size_t idx);
-
-  // save table pointer 
-  void SaveTable(G4PhysicsTable*, std::size_t idx);
 
   // assuming that the table is already defined
   G4PhysicsTable* MakeTable(std::size_t idx);
@@ -168,6 +163,7 @@ public:
 
 private:
 
+  G4EmDataRegistry* fRegistry;
   std::vector<G4PhysicsTable*> data;
   std::vector<G4double>* fMaxXS;
   std::vector<G4TwoPeaksXS*>* fXSpeaks;
@@ -176,8 +172,8 @@ private:
   std::size_t tLength{0};
   std::size_t eLength{0};
   G4CrossSectionType fXSType{fEmNoIntegral};
-  G4String fName;
   G4bool fUseBaseParticleTable{false};
+  G4String fName;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -23,6 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file RunAction.cc
+/// \brief Implementation of the RunAction class
+
 // This example is provided by the Geant4-DNA collaboration
 // Any report or published results obtained using the Geant4-DNA software
 // shall cite the following Geant4-DNA collaboration publication:
@@ -32,8 +35,6 @@
 // The Geant4-DNA web site is available at http://geant4-dna.org
 //
 //
-/// \file RunAction.cc
-/// \brief Implementation of the RunAction class
 
 #include "RunAction.hh"
 
@@ -45,20 +46,13 @@
 #include "G4RunManager.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4UnitsTable.hh"
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-RunAction::RunAction() : G4UserRunAction() {}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-RunAction::~RunAction() {}
+#include "G4DNAChemistryManager.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4Run* RunAction::GenerateRun()
 {
-  Run* run = new Run();
+  auto run = new Run();
   return run;
 }
 
@@ -66,6 +60,10 @@ G4Run* RunAction::GenerateRun()
 
 void RunAction::BeginOfRunAction(const G4Run* run)
 {
+  // ensure that the chemistry is notified!
+  if (G4DNAChemistryManager::GetInstanceIfExists() != nullptr)
+    G4DNAChemistryManager::GetInstanceIfExists()->BeginOfRunAction(run);
+
   G4cout << "### Run " << run->GetRunID() << " starts." << G4endl;
 
   // informs the runManager to save random number seed
@@ -76,12 +74,16 @@ void RunAction::BeginOfRunAction(const G4Run* run)
 
 void RunAction::EndOfRunAction(const G4Run* run)
 {
-  G4int nofEvents = run->GetNumberOfEvent();
+  // ensure that the chemistry is notified!
+  if (G4DNAChemistryManager::GetInstanceIfExists() != nullptr)
+    G4DNAChemistryManager::GetInstanceIfExists()->EndOfRunAction(run);
+
+  auto nofEvents = run->GetNumberOfEvent();
   if (nofEvents == 0) return;
 
   // results
   //
-  const Run* chem5Run = static_cast<const Run*>(run);
+  auto chem5Run = static_cast<const Run*>(run);
   G4double sumDose = chem5Run->GetSumDose();
 
   // print
@@ -90,7 +92,7 @@ void RunAction::EndOfRunAction(const G4Run* run)
     G4cout << G4endl << "--------------------End of Global Run-----------------------" << G4endl
            << "  The run has " << nofEvents << " events " << G4endl;
 
-    ScoreSpecies* masterScorer = dynamic_cast<ScoreSpecies*>(chem5Run->GetPrimitiveScorer());
+    auto masterScorer = dynamic_cast<ScoreSpecies*>(chem5Run->GetPrimitiveScorer());
 
     G4cout << "Number of events recorded by the species scorer = "
            << masterScorer->GetNumberOfRecordedEvents() << G4endl;

@@ -23,12 +23,8 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file eventgenerator/exgps/src/HistoManager.cc
+/// \file HistoManager.cc
 /// \brief Implementation of the HistoManager class
-//
-//
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "HistoManager.hh"
 
@@ -50,12 +46,11 @@ HistoManager::~HistoManager() {}
 void HistoManager::Book()
 {
   // Create or get analysis manager
-  // The choice of analysis technology is done via selection of a namespace
-  // in HistoManager.hh
   //
   G4AnalysisManager* analysis = G4AnalysisManager::Instance();
 
   analysis->SetDefaultFileType("root");
+  analysis->SetNtupleMerging(true);
   analysis->SetFileName(fFileName);
   analysis->SetVerboseLevel(1);
   analysis->SetActivation(true);  // enable inactivation of histos, nTuples

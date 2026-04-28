@@ -23,31 +23,37 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
 /// \file GB03ActionInitialization.cc
 /// \brief Implementation of the GB03ActionInitialization class
 
 #include "GB03ActionInitialization.hh"
 
+#include "GB03EventAction.hh"
 #include "GB03PrimaryGeneratorAction.hh"
+#include "GB03RunAction.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-GB03ActionInitialization::GB03ActionInitialization() {}
+GB03ActionInitialization::GB03ActionInitialization() = default;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-GB03ActionInitialization::~GB03ActionInitialization() {}
+GB03ActionInitialization::~GB03ActionInitialization() = default;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void GB03ActionInitialization::Build() const
 {
   SetUserAction(new GB03PrimaryGeneratorAction);
+  SetUserAction(new GB03RunAction);
+  SetUserAction(new GB03EventAction);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void GB03ActionInitialization::BuildForMaster() const {}
+void GB03ActionInitialization::BuildForMaster() const
+{
+  SetUserAction(new GB03RunAction);
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

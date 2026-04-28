@@ -23,18 +23,19 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// class G4VoxelNavigation Implementation
+// Class G4VoxelNavigation Implementation
 //
-// Author: P.Kent, 1996
-//
+// Author: Paul Kent (CERN), August 1996
 // --------------------------------------------------------------------
+
 #include "G4VoxelNavigation.hh"
 #include "G4GeometryTolerance.hh"
 #include "G4VoxelSafety.hh"
 
 #include "G4AuxiliaryNavServices.hh"
 
-#include <cassert>
+// #include <cassert>
+
 #include <ostream>
 
 // ********************************************************************
@@ -762,15 +763,21 @@ G4VoxelNavigation::ComputeSafety(const G4ThreeVector& localPoint,
   return ourSafety;
 }
 
+// ********************************************************************
+// RelocateWithinVolume
+// ********************************************************************
+//
 void G4VoxelNavigation::RelocateWithinVolume( G4VPhysicalVolume*  motherPhysical,
                                               const G4ThreeVector& localPoint )
 {
   auto motherLogical = motherPhysical->GetLogicalVolume();
 
-  assert(motherLogical != nullptr);
+  // assert(motherLogical != nullptr);
 
   if ( auto pVoxelHeader = motherLogical->GetVoxelHeader() )
+  {
     VoxelLocate( pVoxelHeader, localPoint );
+  }
 }
 
 // ********************************************************************

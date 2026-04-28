@@ -23,10 +23,8 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file GB01/exampleGB01.cc
-/// \brief Main program of the GB01 example
-//
-//
+/// \file exampleGB01.cc
+/// \brief Main program of the biasing/GB01 example
 
 #include "FTFP_BERT.hh"
 #include "GB01ActionInitialization.hh"
@@ -93,17 +91,17 @@ int main(int argc, char** argv)
   auto* runManager = G4RunManagerFactory::CreateRunManager();
   runManager->SetNumberOfThreads(4);
 
-  G4bool biasingFlag = ( onOffBiasing == "on");
+  G4bool biasingFlag = (onOffBiasing == "on");
 
   // -- Set mandatory initialization classes
-  GB01DetectorConstruction* detector = new GB01DetectorConstruction(biasingFlag);
+  auto detector = new GB01DetectorConstruction(biasingFlag);
   runManager->SetUserInitialization(detector);
   // -- Select a physics list:
-  FTFP_BERT* physicsList = new FTFP_BERT;
+  auto physicsList = new FTFP_BERT;
 
   if (biasingFlag) {
     // -- and augment it with biasing facilities:
-    G4GenericBiasingPhysics* biasingPhysics = new G4GenericBiasingPhysics();
+    auto biasingPhysics = new G4GenericBiasingPhysics();
     biasingPhysics->Bias("gamma");
     biasingPhysics->Bias("neutron");
     biasingPhysics->Bias("kaon0L");
@@ -126,12 +124,12 @@ int main(int argc, char** argv)
   runManager->Initialize();
 
   // Initialize visualization
-  G4VisManager* visManager = new G4VisExecutive;
+  auto visManager = new G4VisExecutive;
   // G4VisExecutive can take a verbosity argument - see /vis/verbose guidance.
   visManager->Initialize();
 
   // Get the pointer to the User Interface manager
-  G4UImanager* UImanager = G4UImanager::GetUIpointer();
+  auto UImanager = G4UImanager::GetUIpointer();
 
   if (!ui)  // batch mode
   {

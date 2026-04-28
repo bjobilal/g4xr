@@ -23,6 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file PhysicsList.cc
+/// \brief Implementation of the PhysicsList class
+
 // This example is provided by the Geant4-DNA collaboration
 // Any report or published results obtained using the Geant4-DNA software
 // shall cite the following Geant4-DNA collaboration publications:
@@ -33,8 +36,6 @@
 //
 // The Geant4-DNA web site is available at http://geant4-dna.org
 //
-/// \file PhysicsList.cc
-/// \brief Implementation of the PhysicsList class
 
 #include "PhysicsList.hh"
 
@@ -58,6 +59,7 @@
 #include "G4GenericIon.hh"
 #include "G4RadioactiveDecayPhysics.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4NuclideTable.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -74,6 +76,10 @@ PhysicsList::PhysicsList() : G4VModularPhysicsList()
   G4EmParameters* param = G4EmParameters::Instance();
   param->SetMinEnergy(100 * eV);
   param->SetMaxEnergy(1 * GeV);
+
+  // Limits in G4NuclideTable
+  G4NuclideTable::GetInstance()->SetThresholdOfHalfLife(0.1 * picosecond);
+  G4NuclideTable::GetInstance()->SetLevelTolerance(1.0 * eV);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

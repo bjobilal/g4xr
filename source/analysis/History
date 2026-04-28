@@ -6,11 +6,36 @@ It must **not** be used as a substitute for writing good git commit messages!
 
 -------------------------------------------------------------------------------
 
-## 2025-03-14 I. Hrivnacova (analysis-V11-02-09)
+## 2025-11-17 I. Hrivnacova (analysis-V11-03-07)
+- Fixing a problem observed in the rdecay02 example reported in User Forum,
+  which happens when all created ntuples are inactivated, and a file is not open:
+  added a protection against a call to non-existing ntuple manager.
+
+## 2025-10-27 I. Hrivnacova (analysis-V11-03-06)
+- Fix in G4THnMessenger, improved top directory description:
+  Added fHnDir' data member: this fixes "...Title not available..."
+  description in the command tree
+
+## 2025-08-19 I. Hrivnacova (analysis-V11-03-05)
+- Coverity fix in G4VAnalysisManager::SetNtupleManager:
+  added protection against dereference of potentially null field
+
+## 2025-07-20 Ben Morgan (analysis-V11-03-04)
+- Use current non-deprecated g4tools ntuple columns interface in XML.
+
+## 2025-05-05 I. Hrivnacova (analysis-V11-03-03)
+- New implementation of generic 'G4Analysis::GetHnType()'' and 'IsProfile()' functions
+  which does not rely on the histogram/profile name position in the long
+  type name provided via tools 's_class()'
+
+## 2025-03-21 Ben Morgan (analysis-V11-03-02)
+- Modernize g4tools macro-based for loops with range-based for
+
+## 2025-03-14 I. Hrivnacova (analysis-V11-03-01)
 - Removed false warnings about non-existing ntuple
   and debug messages when filling inactivated ntuple
 
-## 2025-01-09 Ben Morgan
+## 2025-01-09 Ben Morgan (analysis-V11-03-00)
 - Qualify use of `G4Accumulables` namespace to avoid clashes and order
   dependence of inclusion of headers.
 
@@ -968,7 +993,7 @@ May 4, 2016 I. Hrivnacova (analysis-V10-02-02)
 April 18, 2016 I. Hrivnacova (analysis-V10-02-01)
 - Updated to g4tools 1.27.0 (Guy Barrand):
   Fixed incompatibility with ROOT 5.x and 6.x formats reported in ROOT forum:
-  https://root.cern.ch/phpBB3/viewtopic.php?t=21315
+  https://root.cern/phpBB3/viewtopic.php?t=21315
 
 December 8, 2015 I. Hrivnacova (analysis-V10-02-00)
 - Fixed definition of /analysis/ntuple command directory

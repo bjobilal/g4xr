@@ -65,10 +65,13 @@ if(GEANT4_USE_INVENTOR_QT AND NOT GEANT4_USE_QT)
   message(STATUS "Forcing GEANT4_USE_QT to ON, required by selection of GEANT4_USE_INVENTOR_QT as ON")
 endif()
 
-# TEMPORARY for 11.2 Beta Development
-# Decision still required on whether to allow selection of 5/6 in production
-cmake_dependent_option(GEANT4_USE_QT_QT6 "Require Qt6 when building Qt support" OFF "GEANT4_USE_QT" OFF)
-mark_as_advanced(GEANT4_USE_QT_QT6)
+# We default to Qt6 if available, but allow the user to select Qt5
+set(GEANT4_USE_QT_QT6 ON)
+
+cmake_dependent_option(GEANT4_USE_QT_QT5 "Require Qt5 when building Qt support" OFF "GEANT4_USE_QT" OFF)
+if(GEANT4_USE_QT_QT5)
+  set(GEANT4_USE_QT_QT6 OFF)
+endif()
 
 # - Vtk
 option(GEANT4_USE_VTK "Build Geant4 with VTK visualisation" OFF)
@@ -174,15 +177,13 @@ if(GEANT4_USE_QT)
   # 5.9 is selected as the min version to support based on the system version on CentOS7
   # Once 5.15 is the minimum version, the "Qt${QT_VERSION_MAJOR}_..." variables can be dropped
   # - https://doc.qt.io/qt-6/cmake-manual.html
-  # TEMPORARY for 11.2 beta:
-  # - Decision still required on whether to allow selection of 5/6 in production
   # TODO:
   # - Because VTK and SoQt use Qt themselves, we may want to consider checking that we
   #   have a consistent link to the same Qt version 
-  if(GEANT4_USE_QT_QT6)
-    find_package(QT NAMES Qt6 COMPONENTS Core REQUIRED)
-  else()
+  if(GEANT4_USE_QT_QT5)
     find_package(QT 5.9 NAMES Qt5 COMPONENTS Core REQUIRED)
+  else()
+    find_package(QT NAMES Qt6 COMPONENTS Core REQUIRED)
   endif()
   
   find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Widgets OpenGL REQUIRED)
@@ -194,6 +195,9 @@ if(GEANT4_USE_QT)
     Qt${QT_VERSION_MAJOR}Widgets_DIR
     Qt${QT_VERSION_MAJOR}OpenGL_DIR)
 
+  # RayTracerQT
+  set(GEANT4_USE_RAYTRACER_QT ON)
+
   # G4OpenGL and G4ToolsSG also require OpenGLWidgets in Qt6
   if(QT_VERSION_MAJOR GREATER 5)
     find_package(Qt${QT_VERSION_MAJOR}OpenGLWidgets REQUIRED)
@@ -203,40 +207,6 @@ if(GEANT4_USE_QT)
   get_target_property(QT_QMAKE_EXECUTABLE Qt${QT_VERSION_MAJOR}::qmake IMPORTED_LOCATION)
   geant4_add_feature(GEANT4_USE_QT "Build Geant4 with Qt${QT_VERSION_MAJOR} support")
 
-  # Qt3D is only supported on 5.15 and above, but always on if available
-  set(QT3D_MINIMUM_VERSION 5.15.0)
-  set(GEANT4_USE_QT3D OFF)
-
-  if(QT_VERSION VERSION_GREATER_EQUAL QT3D_MINIMUM_VERSION)
-    find_package(Qt${QT_VERSION_MAJOR}3DCore ${QT_VERSION} EXACT QUIET)
-    find_package(Qt${QT_VERSION_MAJOR}3DExtras ${QT_VERSION} EXACT QUIET)
-    find_package(Qt${QT_VERSION_MAJOR}3DRender ${QT_VERSION} EXACT QUIET)
-
-    # Forward correct minimum version to CMake/etc files
-    set(QT3D_MINIMUM_VERSION ${QT_VERSION})
-
-    if(Qt${QT_VERSION_MAJOR}3DCore_FOUND AND Qt${QT_VERSION_MAJOR}3DExtras_FOUND AND Qt${QT_VERSION_MAJOR}3DRender_FOUND)
-      set(GEANT4_USE_QT3D ON)
-      geant4_save_package_variables(Qt${QT_VERSION_MAJOR}
-        Qt${QT_VERSION_MAJOR}3DCore_DIR
-        Qt${QT_VERSION_MAJOR}3DExtras_DIR
-        Qt${QT_VERSION_MAJOR}3DRender_DIR)
-      geant4_add_feature(GEANT4_USE_QT3D "Build Geant4 Qt3D driver")
-    else()
-      set(_g4_qt3d_missing)
-      if(NOT Qt${QT_VERSION_MAJOR}3DCore_FOUND)
-        list(APPEND _g4_qt3d_missing "Qt${QT_VERSION_MAJOR}3DCore")
-      endif()
-      if(NOT Qt${QT_VERSION_MAJOR}3DExtras_FOUND)
-        list(APPEND _g4_qt3d_missing "Qt${QT_VERSION_MAJOR}3DExtras")
-      endif()
-      if(NOT Qt${QT_VERSION_MAJOR}3DRender_FOUND)
-        list(APPEND _g4_qt3d_missing "Qt${QT_VERSION_MAJOR}3DRender")
-      endif()
-
-      message(STATUS "Disabling Geant4 Qt3D driver, missing Qt packages: ${_g4_qt3d_missing}")
-    endif()
-  endif()
   # Variables for export to GNUmake
   execute_process(COMMAND ${QT_QMAKE_EXECUTABLE} -query QT_INSTALL_PREFIX OUTPUT_VARIABLE G4QTHOME OUTPUT_STRIP_TRAILING_WHITESPACE)
   execute_process(COMMAND ${QT_QMAKE_EXECUTABLE} -query QT_INSTALL_LIBS OUTPUT_VARIABLE G4QTLIBPATH OUTPUT_STRIP_TRAILING_WHITESPACE)

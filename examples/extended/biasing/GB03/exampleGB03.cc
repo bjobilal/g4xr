@@ -23,6 +23,8 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file exampleGB03.cc
+/// \brief Main program of the biasing/GB03 example
 
 #include "FTFP_BERT.hh"
 #include "GB03ActionInitialization.hh"
@@ -50,10 +52,9 @@ void PrintUsage()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-
 int main(int argc, char** argv)
 {
-    // Evaluate arguments
+  // Evaluate arguments
   //
   if (argc > 5) {
     PrintUsage();
@@ -89,7 +90,7 @@ int main(int argc, char** argv)
   auto* runManager = G4RunManagerFactory::CreateRunManager();
   runManager->SetNumberOfThreads(4);
 
-  G4bool biasingFlag = ( onOffBiasing == "on");
+  G4bool biasingFlag = (onOffBiasing == "on");
 
   // -- Set mandatory initialization classes
   G4VUserDetectorConstruction* detector = new GB03DetectorConstruction(biasingFlag);
@@ -119,7 +120,7 @@ int main(int argc, char** argv)
 
   // Visualization manager
   //
-  G4VisManager* visManager = new G4VisExecutive;
+  auto visManager = new G4VisExecutive;
   visManager->Initialize();
 
   // Initialize G4 kernel
@@ -128,7 +129,7 @@ int main(int argc, char** argv)
 
   // Get the pointer to the User Interface manager
   //
-  G4UImanager* UImanager = G4UImanager::GetUIpointer();
+  auto UImanager = G4UImanager::GetUIpointer();
 
   if (ui)  // Define UI session for interactive mode
   {

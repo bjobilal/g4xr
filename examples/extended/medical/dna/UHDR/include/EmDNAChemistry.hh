@@ -23,6 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file EmDNAChemistry.hh
+/// \brief Definition of the EmDNAChemistry class
+
 #ifndef G4EmDNAChemistry_optionx_hh
 #define G4EmDNAChemistry_optionx_hh 1
 
@@ -32,28 +35,24 @@
 #include "globals.hh"
 
 class G4DNAMolecularReactionTable;
-class G4VChemistryWorld;
-class EmDNAChemistry : public G4VUserChemistryList, public G4VPhysicsConstructor
-{
-  public:
-    EmDNAChemistry();
-    ~EmDNAChemistry() override;
+class G4GenericMessenger;
+class EmDNAChemistry : public G4VUserChemistryList,
+                       public G4VPhysicsConstructor {
+public:
+  EmDNAChemistry();
+  ~EmDNAChemistry() override;
 
-    void ConstructParticle() override { ConstructMolecule(); }
-    void ConstructMolecule() final;
-    void ConstructProcess() final;
+  void ConstructParticle() override { ConstructMolecule(); }
+  void ConstructMolecule() final;
+  void ConstructProcess() final;
 
-    void ConstructDissociationChannels() final;
-    void ConstructReactionTable(G4DNAMolecularReactionTable* reactionTable) final;
-    void ConstructTimeStepModel(G4DNAMolecularReactionTable* reactionTable) final;
+  void ConstructDissociationChannels() final;
+  void ConstructReactionTable(G4DNAMolecularReactionTable *reactionTable) final;
+  void ConstructTimeStepModel(G4DNAMolecularReactionTable *reactionTable) final;
 
-    void SetChemistryWorld(G4VChemistryWorld& chemistryWorld)
-    {
-      fpChemistryWorld = &chemistryWorld;
-    }
-
-  private:
-    G4VChemistryWorld* fpChemistryWorld = nullptr;
+private:
+  std::unique_ptr<G4GenericMessenger> fMessenger;
+    //----------------------------------------------
 };
 
 #endif

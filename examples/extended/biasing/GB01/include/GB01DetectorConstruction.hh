@@ -23,9 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file GB01/include/GB01DetectorConstruction.hh
+/// \file GB01DetectorConstruction.hh
 /// \brief Definition of the GB01DetectorConstruction class
-//
+
 #ifndef GB01DetectorConstruction_h
 #define GB01DetectorConstruction_h 1
 
@@ -38,11 +38,11 @@ class GB01DetectorConstruction : public G4VUserDetectorConstruction
 {
   public:
     GB01DetectorConstruction(G4bool bf);
-    ~GB01DetectorConstruction();
+    ~GB01DetectorConstruction() override;
 
   public:
-    virtual G4VPhysicalVolume* Construct();
-    virtual void ConstructSDandField();
+    G4VPhysicalVolume* Construct() override;
+    void ConstructSDandField() override;
 
   private:
     G4bool fBiasingFlag;

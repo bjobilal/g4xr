@@ -119,6 +119,9 @@ G4PhotonEvaporation::EmittedFragment(G4Fragment* nucleus)
 {
   if(!isInitialised) { Initialise(); }
   fSampleTime = !fRDM;
+  if (fRDM) {
+    nucleus->SetNumberOfElectrons(nucleus->GetZ_asInt());
+  }
 
   // potentially external code may set initial polarization
   // but only for radioactive decay nuclear polarization is considered
@@ -244,8 +247,8 @@ G4PhotonEvaporation::GetEmissionProbability(G4Fragment* nucleus)
   // ignore gamma de-excitation for highly excited levels
   if(A >= MAXGRDATA) { A =  MAXGRDATA-1; }
 
-  static const G4float GREfactor = 5.0f;
-  G4double edelta = (G4double)(GREfactor*GRWidth[A] + GREnergy[A]);
+  static const G4double GREfactor = 5.0;
+  G4double edelta = GREfactor*(G4double)GRWidth[A] + (G4double)GREnergy[A];
   if (fVerbose > 2)
     G4cout << "   GREnergy=" << GREnergy[A] << " GRWidth="<<GRWidth[A]
 	   << " Edelta=" << edelta <<G4endl; 
@@ -481,7 +484,8 @@ G4PhotonEvaporation::GenerateGamma(G4Fragment* nucleus)
 	  el = fLevelManager->LevelEnergy(fIndex);
 	}
 	// further decays will be discrete
-	if (std::abs(efinal - el) <= eLimit) {
+        ltime = fLevelManager->LifeTime(fIndex);
+	if (fIndex <= 1 || std::abs(efinal - el) <= eLimit || ltime >= fLocalTimeLimit) {
 	  efinal = el;
 	  finalDiscrete = true;
 	} else {

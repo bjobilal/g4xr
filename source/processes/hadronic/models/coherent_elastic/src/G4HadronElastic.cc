@@ -66,7 +66,6 @@ G4HadronElastic::G4HadronElastic(const G4String& name)
 G4HadronElastic::~G4HadronElastic()
 {}
 
-
 void G4HadronElastic::ModelDescription(std::ostream& outFile) const
 {
   outFile << "G4HadronElastic is the base class for all hadron-nucleus\n" 
@@ -81,8 +80,6 @@ void G4HadronElastic::ModelDescription(std::ostream& outFile) const
 G4HadFinalState* G4HadronElastic::ApplyYourself(
 		 const G4HadProjectile& aTrack, G4Nucleus& targetNucleus)
 {
-  theParticleChange.Clear();
-
   const G4HadProjectile* aParticle = &aTrack;
   G4double ekin = aParticle->GetKineticEnergy();
 
@@ -143,8 +140,10 @@ G4HadFinalState* G4HadronElastic::ApplyYourself(
   G4double phi  = G4UniformRand()*CLHEP::twopi;
   G4double cost = 1. - 2.0*t/pLocalTmax;
 
-  if (cost > 1.0) { cost = 1.0; }
-  else if(cost < -1.0) { cost = -1.0; } 
+  // if cos(theta) negative, there is a numerical problem
+  // instead of making scattering backward, make in this case
+  // no scattering
+  if (std::abs(cost) > 1.0) { cost = 1.0; }
 
   G4double sint = std::sqrt((1.0-cost)*(1.0+cost));
 
@@ -209,7 +208,7 @@ G4HadronElastic::SampleInvariantT(const G4ParticleDefinition* part,
 				  G4double mom, G4int, G4int A)
 {
   const G4double plabLowLimit = 400.0*CLHEP::MeV;
-  const G4double GeV2 = GeV*GeV;
+  const G4double GeV2 = CLHEP::GeV*CLHEP::GeV;
   const G4double z07in13 = std::pow(0.7, 0.3333333333);
   const G4double numLimit = 18.;
 
@@ -263,7 +262,7 @@ G4HadronElastic::SampleInvariantT(const G4ParticleDefinition* part,
   G4double q2 = 1.0 - G4Exp(-std::min(dd*tmax, numLimit));
   G4double s1 = q1*aa;
   G4double s2 = q2*cc;
-  if((s1 + s2)*G4UniformRand() < s2) {
+  if ((s1 + s2)*G4UniformRand() < s2) {
     q1 = q2;
     bb = dd;
   }

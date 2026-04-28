@@ -23,13 +23,8 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file hadronic/NeutronSource/NeutronSource.cc
+/// \file NeutronSource.cc
 /// \brief Main program of the hadronic/NeutronSource example
-//
-//
-//
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "ActionInitialization.hh"
 #include "DetectorConstruction.hh"
@@ -81,7 +76,7 @@ int main(int argc, char** argv)
   G4ParticleHPManager::GetInstance()->SetNeglectDoppler(false);
   G4ParticleHPManager::GetInstance()->SetProduceFissionFragments(false);
   G4ParticleHPManager::GetInstance()->SetUseWendtFissionModel(false);
-  G4ParticleHPManager::GetInstance()->SetUseNRESP71Model(false);
+  G4ParticleHPManager::GetInstance()->SetUseNRESP71Model(true);
 
   // initialize visualization
   G4VisManager* visManager = nullptr;

@@ -23,6 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file SteppingAction.cc
+/// \brief Implementation of the SteppingAction class
+
 // This example is provided by the Geant4-DNA collaboration
 // Any report or published results obtained using the Geant4-DNA software
 // shall cite the following Geant4-DNA collaboration publications:
@@ -33,8 +36,6 @@
 //
 // The Geant4-DNA web site is available at http://geant4-dna.org
 //
-/// \file SteppingAction.cc
-/// \brief Implementation of the SteppingAction class
 
 #include "SteppingAction.hh"
 
@@ -131,7 +132,12 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
       fTotalStoppingPower = fDepositedEnergy / fLength;
       // G4cout << fTotalStoppingPower/(MeV/cm) << G4endl;
 
-      G4RunManager::GetRunManager()->AbortEvent();
+      // *** Default method to stop calculation (no secondary electrons tracked)
+      // G4RunManager::GetRunManager()->AbortEvent();
+
+      // *** Alternative method when secondary electrons are scored in TrackingAction (slower)
+      step->GetTrack()->SetTrackStatus(fStopAndKill);
+
       fSumOfStepLength = 0.;
       fDepositedEnergy = 0;
       fNumberOfSteps = 0;

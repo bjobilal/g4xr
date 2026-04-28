@@ -23,17 +23,15 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file PrimaryGeneratorAction.hh
+/// \brief Definition of the PrimaryGeneratorAction class
+
 // This example is provided by the Geant4-DNA collaboration
 // Any report or published results obtained using the Geant4-DNA software
 // shall cite the following Geant4-DNA collaboration publication:
 // Med. Phys. 37 (2010) 4692-4708
 // J. Comput. Phys. 274 (2014) 841-882
 // The Geant4-DNA web site is available at http://geant4-dna.org
-//
-// $Id$
-//
-/// \file PrimaryGeneratorAction.hh
-/// \brief Definition of the PrimaryGeneratorAction class
 
 #ifndef PrimaryGeneratorAction_h
 #define PrimaryGeneratorAction_h 1
@@ -47,12 +45,11 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
 
 class G4Event;
-class DetectorConstruction;
 
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
   public:
-    explicit PrimaryGeneratorAction(DetectorConstruction* pDet);
+    explicit PrimaryGeneratorAction();
     ~PrimaryGeneratorAction() override = default;
     void GeneratePrimaries(G4Event*) override;
 
@@ -60,7 +57,6 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
   private:
     std::unique_ptr<G4SingleParticleSource> fParticleGun;
-    DetectorConstruction* fpDetector = nullptr;
     std::unique_ptr<PrimaryGeneratorMessenger> fpMessenger;
 };
 

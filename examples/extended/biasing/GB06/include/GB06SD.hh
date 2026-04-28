@@ -23,10 +23,8 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file GB06/include/GB06SD.hh
+/// \file GB06SD.hh
 /// \brief Definition of the GB06SD class
-//
-//
 
 #ifndef GB06SD_h
 #define GB06SD_h 1
@@ -37,10 +35,10 @@ class GB06SD : public G4VSensitiveDetector
 {
   public:
     GB06SD(G4String name);
-    virtual ~GB06SD() {}
+    ~GB06SD() override = default;
 
-    virtual void Initialize(G4HCofThisEvent*) {}
-    virtual G4bool ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist);
+    void Initialize(G4HCofThisEvent*) override {}
+    G4bool ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist) override;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

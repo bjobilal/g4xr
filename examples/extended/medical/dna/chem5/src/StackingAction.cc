@@ -23,6 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file StackingAction.cc
+/// \brief Implementation of the StackingAction class
+
 // This example is provided by the Geant4-DNA collaboration
 // Any report or published results obtained using the Geant4-DNA software
 // shall cite the following Geant4-DNA collaboration publication:
@@ -32,22 +35,11 @@
 // The Geant4-DNA web site is available at http://geant4-dna.org
 //
 //
-/// \file StackingAction.cc
-/// \brief Implementation of the StackingAction class
 
 #include "StackingAction.hh"
 
 #include "G4DNAChemistryManager.hh"
 #include "G4StackManager.hh"
-#include "G4Track.hh"
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-StackingAction::StackingAction() : G4UserStackingAction() {}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-StackingAction::~StackingAction() {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

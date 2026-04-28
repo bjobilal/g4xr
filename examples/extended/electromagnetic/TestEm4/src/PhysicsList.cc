@@ -23,14 +23,8 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file electromagnetic/TestEm4/src/PhysicsList.cc
+/// \file PhysicsList.cc
 /// \brief Implementation of the PhysicsList class
-//
-//
-//
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "PhysicsList.hh"
 
@@ -43,6 +37,7 @@
 #include "G4PhotoElectricEffect.hh"
 #include "G4PhysicsListHelper.hh"
 #include "G4ProcessManager.hh"
+#include "G4RayleighScattering.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4eBremsstrahlung.hh"
 #include "G4eIonisation.hh"
@@ -81,6 +76,7 @@ void PhysicsList::ConstructProcess()
     G4String particleName = particle->GetParticleName();
 
     if (particleName == "gamma") {
+      ph->RegisterProcess(new G4RayleighScattering, particle);    
       ph->RegisterProcess(new G4PhotoElectricEffect, particle);
       ph->RegisterProcess(new G4ComptonScattering, particle);
       ph->RegisterProcess(new G4GammaConversion, particle);

@@ -68,6 +68,7 @@
 #include "G4ElementVector.hh"
 #include "G4ParticleChangeForLoss.hh"
 #include "G4ModifiedTsai.hh"
+#include "G4LPMFunction.hh"
 #include "G4Exp.hh"
 #include "G4Log.hh"
 #include "G4Pow.hh"
@@ -112,27 +113,8 @@ const G4double G4eBremsstrahlungRelModel::gFinelLowZet[] = {
   0.0, 5.9173, 5.6125, 5.5377, 5.4728, 5.4174, 5.3688, 5.3236
 };
 
-// LPM supression functions evaluated at initialisation time
-std::shared_ptr<G4eBremsstrahlungRelModel::LPMFuncs> G4eBremsstrahlungRelModel::gLPMFuncs()
-{
-  // We have to use shared pointer for the LPMFuncs as it is manipulated (content deleted)
-  // by the G4eBremsstrahlungRelModel used in the main thread and this
-  // model is owned (well deleted) by (at least in some cases)
-  // a G4SeltzerBergerModel which is owned by the G4LossTableManager
-  // which owned by a G4ThreadLocalSingleton<G4LossTableManager>
-  // which is a static global and thus deleted after this instance
-  // is deleted.
-  static auto _instance = std::make_shared<G4eBremsstrahlungRelModel::LPMFuncs>();
-  return _instance;
-}
-
 // special data structure per element i.e. per Z
-std::shared_ptr<std::vector<G4eBremsstrahlungRelModel::ElementData*>> G4eBremsstrahlungRelModel::gElementData()
-{
-  // Same code comment as for gLPMFuncs.
-  static auto _instance = std::make_shared<std::vector<G4eBremsstrahlungRelModel::ElementData*>>();
-  return _instance;
-}
+std::vector<G4eBremsstrahlungRelModel::ElementData*> G4eBremsstrahlungRelModel::gElementData;
 
 static std::once_flag applyOnce;
 
@@ -143,7 +125,7 @@ namespace
 
 G4eBremsstrahlungRelModel::G4eBremsstrahlungRelModel(const G4ParticleDefinition* p,
                                                      const G4String& nam)
-: G4VEmModel(nam), fLPMFuncs(gLPMFuncs()), fElementData(gElementData())
+: G4VEmModel(nam)
 {
   fGammaParticle       = G4Gamma::Gamma();
   //
@@ -163,14 +145,8 @@ G4eBremsstrahlungRelModel::~G4eBremsstrahlungRelModel()
 {
   if (fIsInitializer) {
     // clear ElementData container
-    for (auto const & ptr : *fElementData) { delete ptr; }
-    fElementData->clear();
-    // clear LPMFunctions (if any)
-    if (fLPMFuncs->fIsInitialized) {
-      fLPMFuncs->fLPMFuncG.clear();
-      fLPMFuncs->fLPMFuncPhi.clear();
-      fLPMFuncs->fIsInitialized = false;
-    }
+    for (auto const & ptr : gElementData) { delete ptr; }
+    gElementData.clear();
   }
 }
 
@@ -188,13 +164,12 @@ void G4eBremsstrahlungRelModel::Initialise(const G4ParticleDefinition* p,
   std::call_once(applyOnce, [this]() { fIsInitializer = true; });
 
   // for all treads and derived classes
-  if (fIsInitializer || fElementData->empty()) {
+  if (fIsInitializer || gElementData.empty()) {
     G4AutoLock l(&theBremRelMutex);
-    if (fElementData->empty()) {
-      fElementData->resize(gMaxZet+1, nullptr);
+    if (gElementData.empty()) {
+      gElementData.resize(gMaxZet+1, nullptr);
     }
     InitialiseElementData();
-    InitLPMFunctions();
     l.unlock();
   }
 
@@ -203,8 +178,8 @@ void G4eBremsstrahlungRelModel::Initialise(const G4ParticleDefinition* p,
     InitialiseElementSelectors(p, cuts);
   }
   // initialisation in all threads
-  if (nullptr == fParticleChange) { 
-    fParticleChange = GetParticleChangeForLoss(); 
+  if (nullptr == fParticleChange) {
+    fParticleChange = GetParticleChangeForLoss();
   }
   if (GetTripletModel()) {
     GetTripletModel()->Initialise(p, cuts);
@@ -463,7 +438,7 @@ G4eBremsstrahlungRelModel::ComputeRelDXSectionPerAtom(G4double gammaEnergy)
   // evaluate LPM functions (combined with the Ter-Mikaelian effect)
   G4double funcGS, funcPhiS, funcXiS;
   ComputeLPMfunctions(funcXiS, funcGS, funcPhiS, gammaEnergy);
-  const ElementData* elDat = (*fElementData)[fCurrentIZ];
+  const ElementData* elDat = gElementData[fCurrentIZ];
   const G4double term1     = funcXiS*(dum0*funcGS+(onemy+2.0*dum0)*funcPhiS);
   dxsec = term1*elDat->fZFactor1+onemy*elDat->fZFactor2;
   //
@@ -507,7 +482,7 @@ G4eBremsstrahlungRelModel::ComputeDXSectionPerAtom(G4double gammaEnergy)
   const G4double y         = gammaEnergy/fPrimaryTotalEnergy;
   const G4double onemy     = 1.-y;
   const G4double dum0      = onemy+0.75*y*y;
-  const ElementData* elDat = (*fElementData)[fCurrentIZ];
+  const ElementData* elDat = gElementData[fCurrentIZ];
   // use complete screening and L_el, L_inel from Dirac-Fock model instead of TF
   if (fCurrentIZ < 5 || fIsUseCompleteScreening) {
     dxsec  = dum0*elDat->fZFactor1;
@@ -584,7 +559,7 @@ G4eBremsstrahlungRelModel::SampleSecondaries(std::vector<G4DynamicParticle*>* vd
                                           dp->GetLogKineticEnergy(),tmin,tmax);
   //
   fCurrentIZ = elm->GetZasInt();
-  const ElementData* elDat = (*fElementData)[fCurrentIZ];
+  const ElementData* elDat = gElementData[fCurrentIZ];
   const G4double funcMax = elDat->fZFactor1+elDat->fZFactor2;
   // get the random engine
   G4double rndm[2];
@@ -654,7 +629,7 @@ void G4eBremsstrahlungRelModel::InitialiseElementData()
   for (auto const & elem : *elemTable) {
     const G4double zet = elem->GetZ();
     const G4int izet = std::min(elem->GetZasInt(), gMaxZet);
-    if (nullptr == (*fElementData)[izet]) {
+    if (nullptr == gElementData[izet]) {
       auto elemData  = new ElementData();
       const G4double fc = elem->GetfCoulomb();
       G4double Fel      = 1.;
@@ -678,7 +653,7 @@ void G4eBremsstrahlungRelModel::InitialiseElementData()
       elemData->fILVarS1       = 1./G4Log(elemData->fVarS1);
       elemData->fGammaFactor   = 100.0*electron_mass_c2/z13;
       elemData->fEpsilonFactor = 100.0*electron_mass_c2/z23;
-      (*fElementData)[izet] = elemData;
+      gElementData[izet] = elemData;
     }
   }
 }
@@ -692,7 +667,7 @@ void G4eBremsstrahlungRelModel::ComputeLPMfunctions(G4double& funcXiS,
   const G4double    redegamma = egamma/fPrimaryTotalEnergy;
   const G4double    varSprime = std::sqrt(0.125*redegamma*fLPMEnergy/
                                 ((1.0-redegamma)*fPrimaryTotalEnergy));
-  const ElementData* elDat    = (*fElementData)[fCurrentIZ];
+  const ElementData* elDat    = gElementData[fCurrentIZ];
   const G4double varS1        = elDat->fVarS1;
   const G4double condition    = sqrt2*varS1;
   G4double funcXiSprime = 2.0;
@@ -713,89 +688,9 @@ void G4eBremsstrahlungRelModel::ComputeLPMfunctions(G4double& funcXiS,
   } else if (varShat > varS1) {
     funcXiS = 1.0+G4Log(varShat)*elDat->fILVarS1;
   }
-  GetLPMFunctions(funcGS, funcPhiS, varShat);
-  //ComputeLPMGsPhis(funcGS, funcPhiS, varShat);
-  //
+  G4LPMFunction::GetLPMFunctions(funcGS, funcPhiS, varShat);
   //MAKE SURE SUPPRESSION IS SMALLER THAN 1: due to Migdal's approximation on xi
   if (funcXiS*funcPhiS > 1. || varShat > 0.57) {
     funcXiS=1./funcPhiS;
   }
 }
-
-void G4eBremsstrahlungRelModel::ComputeLPMGsPhis(G4double& funcGS,
-                                                 G4double& funcPhiS,
-                                                 const G4double varShat)
-{
-  if (varShat < 0.01) {
-    funcPhiS = 6.0*varShat*(1.0-CLHEP::pi*varShat);
-    funcGS   = 12.0*varShat-2.0*funcPhiS;
-  } else {
-    const G4double varShat2 = varShat*varShat;
-    const G4double varShat3 = varShat*varShat2;
-    const G4double varShat4 = varShat2*varShat2;
-    // use Stanev approximation: for \psi(s) and compute G(s)
-    if (varShat < 0.415827) {
-      funcPhiS = 1.0-G4Exp(-6.0*varShat*(1.0+varShat*(3.0-CLHEP::pi))
-                + varShat3/(0.623+0.796*varShat+0.658*varShat2));
-      // 1-\exp \left\{-4s-\frac{8s^2}{1+3.936s+4.97s^2-0.05s^3+7.5s^4} \right\}
-      const G4double funcPsiS = 1.0 - G4Exp(-4.0*varShat
-                               - 8.0*varShat2/(1.0+3.936*varShat+4.97*varShat2
-                               - 0.05*varShat3 + 7.5*varShat4));
-      // G(s) = 3 \psi(s) - 2 \phi(s)
-      funcGS = 3.0*funcPsiS - 2.0*funcPhiS;
-    } else if (varShat<1.55) {
-      funcPhiS = 1.0-G4Exp(-6.0*varShat*(1.0+varShat*(3.0-CLHEP::pi))
-                + varShat3/(0.623+0.796*varShat+0.658*varShat2));
-      const G4double dum0  = -0.160723          + 3.755030*varShat
-                             -1.798138*varShat2 + 0.672827*varShat3
-                             -0.120772*varShat4;
-      funcGS = std::tanh(dum0);
-    } else {
-      funcPhiS = 1.0-0.011905/varShat4;
-      if (varShat<1.9156) {
-        const G4double dum0 = -0.160723          + 3.755030*varShat
-                              -1.798138*varShat2 + 0.672827*varShat3
-                              -0.120772*varShat4;
-        funcGS = std::tanh(dum0);
-      } else {
-        funcGS   = 1.0-0.023065/varShat4;
-      }
-    }
-  }
-}
-
-// s goes up to 2 with ds = 0.01 to be the default bining
-void G4eBremsstrahlungRelModel::InitLPMFunctions()
-{
-  if (!fLPMFuncs->fIsInitialized) {
-    const G4int num = fLPMFuncs->fSLimit*fLPMFuncs->fISDelta+1;
-    fLPMFuncs->fLPMFuncG.resize(num);
-    fLPMFuncs->fLPMFuncPhi.resize(num);
-    for (G4int i = 0; i < num; ++i) {
-      const G4double sval=i/fLPMFuncs->fISDelta;
-      ComputeLPMGsPhis(fLPMFuncs->fLPMFuncG[i],fLPMFuncs->fLPMFuncPhi[i],sval);
-    }
-    fLPMFuncs->fIsInitialized = true;
-  }
-}
-
-void G4eBremsstrahlungRelModel::GetLPMFunctions(G4double& lpmGs,
-                                                G4double& lpmPhis,
-                                                const G4double sval)
-{
-  if (sval < fLPMFuncs->fSLimit) {
-    G4double     val = sval*fLPMFuncs->fISDelta;
-    const G4int ilow = (G4int)val;
-    val    -= ilow;
-    lpmGs   = (fLPMFuncs->fLPMFuncG[ilow+1]-fLPMFuncs->fLPMFuncG[ilow])*val
-              + fLPMFuncs->fLPMFuncG[ilow];
-    lpmPhis = (fLPMFuncs->fLPMFuncPhi[ilow+1]-fLPMFuncs->fLPMFuncPhi[ilow])*val
-              + fLPMFuncs->fLPMFuncPhi[ilow];
-  } else {
-    G4double ss = sval*sval;
-    ss *= ss;
-    lpmPhis = 1.0-0.01190476/ss;
-    lpmGs   = 1.0-0.0230655/ss;
-  }
-}
-

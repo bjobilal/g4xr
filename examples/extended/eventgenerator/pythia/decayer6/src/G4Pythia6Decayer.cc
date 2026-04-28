@@ -23,14 +23,13 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
-/// \file eventgenerator/pythia/decayer6/src/G4Pythia6Decayer.cc
+/// \file G4Pythia6Decayer.cc
 /// \brief Implementation of the G4Pythia6Decayer class
 
 // ----------------------------------------------------------------------------
 // According to TPythia6Decayer class in Root:
-// http://root.cern.ch/
-// see http://root.cern.ch/root/License.html
+// http://root.cern/
+// see http://root.cern/root/License.html
 // ----------------------------------------------------------------------------
 
 #include "G4Pythia6Decayer.hh"

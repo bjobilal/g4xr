@@ -11,7 +11,7 @@ Environment variable "G4FORCE_RUN_MANAGER_TYPE" enabled with value == Serial. Fo
 
 
 **************************************************************
- Geant4 version Name: geant4-11-03-patch-02    (25-April-2025)
+ Geant4 version Name: geant4-11-04-patch-01    (13-March-2026)
                        Copyright : Geant4 Collaboration
                       References : NIM A 506 (2003), 250-303
                                  : IEEE-TNS 53 (2006), 270-278
@@ -64,7 +64,7 @@ Lowest triplet kinetic energy                      1 MeV
 Enable sampling of gamma linear polarisation       0
 5D gamma conversion model type                     0
 5D gamma conversion model on isolated ion          0
-Use Ricardo-Gerardo pair production model          0
+Use RiGe 5D e+e- pair production model by muons    0
 Livermore data directory                           epics_2017
 =======================================================================
 ======                 Ionisation Parameters                   ========
@@ -78,7 +78,7 @@ Lowest muon/hadron kinetic energy                  1 keV
 Use ICRU90 data                                    0
 Fluctuations of dE/dx are enabled                  1
 Type of fluctuation model for leptons and hadrons  Universal
-Use built-in Birks satuaration                     0
+Use built-in Birks saturation                      0
 Build CSDA range enabled                           0
 Use cut as a final range enabled                   0
 Enable angular generator interface                 0
@@ -110,6 +110,12 @@ Type of electron single scattering model           0
 Type of nuclear form-factor                        1
 Screening factor                                   1
 =======================================================================
+
+Rayl:  for gamma SubType=11 BuildTable=1
+      Lambda table from 100 eV  to 150 keV, 7 bins/decade, spline: 0
+      LambdaPrime table from 150 keV to 100 TeV in 62 bins 
+      ===== EM models for the G4Region  DefaultRegionForTheWorld ======
+   LivermoreRayleigh : Emin=    0 eV  Emax=  100 TeV  CullenGenerator
 
 phot:  for gamma SubType=12 BuildTable=0
       LambdaPrime table from 200 keV to 100 TeV in 61 bins 
@@ -185,7 +191,7 @@ Index : 0     used in the geometry : Yes
 
 Start closing geometry.
 --------------------------------------------------------------------------------
-G4GeometryManager::ReportVoxelStats -- Voxel Statistics
+G4VoxelisationHelper::ReportVoxelStats -- Voxel Statistics
 
     Total memory consumed for geometry optimisation:   0 kByte
     Total CPU time elapsed for geometry optimisation: 0 seconds
@@ -214,24 +220,24 @@ G4GeometryManager::ReportVoxelStats -- Voxel Statistics
  Run terminated.
 Run Summary
   Number of events processed : 100000
-  User=0.350000s Real=0.344177s Sys=0.000000s
+  User=0.380000s Real=0.379041s Sys=0.000000s
 
 --------------------End of Global Run------------------------
  The run consists of 100000 gamma of 9 MeV in a volume of C6F6 
- Energy deposit per event:  mean = 921.134 keV    rms = 2.34106 MeV
+ Energy deposit per event:  mean = 946.135 keV    rms = 2.37382 MeV
 ------------------------------------------------------------
 
 --------- Ranecu engine status ---------
  Initial seed (index) = 0
- Current couple of seeds = 417036897, 829731305
+ Current couple of seeds = 1968343725, 544366099
 ----------------------------------------
 ... write file : testem4.root - done
 ... close file : testem4.root - done
 G4 kernel has come to Quit state.
 Deleting G4Run (id:0) 
-UserDetectorConstruction deleted 0x168da50
-UserPhysicsList deleted 0x168ec60
-UserActionInitialization deleted 0x16f26c0
+UserDetectorConstruction deleted 0x105b1c0
+UserPhysicsList deleted 0x105b530
+UserActionInitialization deleted 0x10bfbd0
 UserWorkerInitialization deleted 0
 UserWorkerThreadInitialization deleted 0
 UserRunAction deleted.

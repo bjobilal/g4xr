@@ -497,10 +497,11 @@ endfunction()
 #
 #   .. code-block:: cmake
 #
-#     geant4_add_category(<name> MODULES <module> [<module> ...])
+#     geant4_add_category(<name> [INTERFACE] [MODULES <module> [<module> ...]])
 #
-#   Add a Geant4 category ``<name>`` to the project, composed of the modules
-#   supplied in the ``MODULES`` list.
+#   Add a Geant4 category ``<name>`` to the project. It can be composed from modules
+#   supplied in the ``MODULES`` list, or the ``INTERFACE`` option can be used
+#   to create an alias to one or more other categories.
 #
 #   Calling this function does not create an actual CMake library target.
 #   Because modules declare dependencies on modules rather than libraries, we
@@ -514,14 +515,29 @@ function(geant4_add_category _name)
   cmake_parse_arguments(G4ADDCAT
     ""
     ""
-    "MODULES"
+    "INTERFACE;MODULES"
     ${ARGN}
     )
-  # - Modules must not be empty (Could also just be ARGN)
-  if(NOT G4ADDCAT_MODULES)
-    message(FATAL_ERROR "geant4_add_category: Missing/empty 'MODULES' argument")
+  # INTERFACE/MODULES are mutually exclusive
+  if(G4ADDCAT_INTERFACE AND G4ADDCAT_MODULES)
+    message(FATAL_ERROR "geant4_add_category: INTERFACE and MODULES arguments are mutually exclusive")
+  endif()
+  # They must have value(s) supplied
+  if(G4ADDCAT_KEYWORDS_MISSING_VALUES MATCHES "INTERFACE")
+    message(FATAL_ERROR "geant4_add_category: Empty 'INTERFACE' argument")
+  endif()
+  if(G4ADDCAT_KEYWORDS_MISSING_VALUES MATCHES "MODULES")
+    message(FATAL_ERROR "geant4_add_category: Empty 'MODULES' argument")
   endif()
 
+  # - Have an ALIAS based category
+  if(G4ADDCAT_INTERFACE)
+    geant4_set_category_property(${_name} PROPERTY IS_ALIAS TRUE)
+    geant4_category_interfaces(${_name} ${G4ADDCAT_INTERFACE})
+    return()
+  endif()
+
+  # - Otherwise, must be a MODULE based category
   # Default to an interface module, geant4_category_modules will update this if needed
   geant4_set_category_property(${_name} PROPERTY IS_INTERFACE TRUE)
 
@@ -530,6 +546,23 @@ function(geant4_add_category _name)
 
   # As we do not create a physical target, store the script in which we're called
   geant4_set_category_property(${_name} PROPERTY CMAKE_LIST_FILE "${CMAKE_CURRENT_LIST_FILE}")
+endfunction()
+
+#-----------------------------------------------------------------------
+#.rst:
+# .. cmake:command:: geant4_category_is_alias
+#
+#   .. code-block:: cmake
+#
+#     geant4_category_is_alias(<category> <outputvar>)
+#
+#   Set ``outputvar`` to ``TRUE`` if ``<category>`` is an alias to one or
+#   more others.
+#
+function(geant4_category_is_alias _outvar _name)
+  __geant4_category_assert_exists(${_name})
+  geant4_get_category_property(_result ${_name} IS_ALIAS)
+  set(${_outvar} ${_result} PARENT_SCOPE)
 endfunction()
 
 #-----------------------------------------------------------------------
@@ -544,6 +577,11 @@ endfunction()
 #
 function(geant4_category_modules _name)
   __geant4_category_assert_exists(${_name})
+  geant4_category_is_alias(check ${_name})
+  if(check)
+    message(FATAL_ERROR "geant4_category_modules: Trying to add modules to ALIAS-type category '${_name}'")
+  endif()
+
   # ARGN must not be empty
   if(NOT ARGN)
     message(FATAL_ERROR "no modules given to add to to category '${_name}'")
@@ -573,6 +611,34 @@ function(geant4_category_modules _name)
     endif()
   endforeach()
   geant4_set_category_property(${_name} PROPERTY IS_INTERFACE ${__cat_is_interface}) 
+endfunction()
+
+#-----------------------------------------------------------------------
+#.rst:
+# .. cmake:command:: geant4_category_interfaces
+#
+#   .. code-block:: cmake
+#
+#     geant4_category_interfaces(<category> <cat> [<mat> ...]))
+#
+#   Add categories to alias category ``<category>``
+#
+function(geant4_category_interfaces _name)
+  __geant4_category_assert_exists(${_name})
+  geant4_category_is_alias(check ${_name})
+  if(NOT check)
+    message(FATAL_ERROR "geant4_category_interfaces: Trying to add categories to non-ALIAS category '${_name}'")
+  endif()
+
+  # ARGN must not be empty
+  if(NOT ARGN)
+    message(FATAL_ERROR "no categories given to add to to category '${_name}'")
+  endif()
+
+  foreach(iface ${ARGN})
+    __geant4_category_assert_exists(${iface})
+    geant4_set_category_property(${_name} APPEND PROPERTY CATEGORIES ${iface})
+  endforeach()
 endfunction()
 
 #-----------------------------------------------------------------------
@@ -627,6 +693,8 @@ endfunction()
 # * ``IS_INTERFACE``
 # * ``MODULES``
 # * ``PUBLIC_HEADERS``
+# * ``IS_ALIAS``
+# * ``CATEGORIES``
 #
 # The properties of a category may be queried and set using the following
 # commands.
@@ -874,8 +942,10 @@ function(geant4_test_link_libraries _target)
     )
   __geant4_assert_no_unparsed_arguments(G4TESTLINKLIB geant4_test_link_libraries)
 
-  # Need defined libraries to be able to resolve between static/shared
+  # Need defined libraries and externals to be able to resolve between static/shared
   get_property(__g4definedlibraries GLOBAL PROPERTY GEANT4_DEFINED_CATEGORIES) 
+  geant4_get_external_categories(__g4externalcategories)
+  list(APPEND __g4definedlibraries ${__g4externalcategories})
 
   foreach(__prop PUBLIC PRIVATE INTERFACE)
     __geant4_resolve_link_libraries(G4TESTLINKLIB_${__prop})
@@ -894,7 +964,6 @@ function(geant4_test_link_libraries _target)
             list(APPEND _g4linklibs "${_linklib}")
           endif()
         endforeach()
-        message(STATUS "${_g4linklibs}")
         set(_linklibs ${_g4linklibs})
       else()
         set(_linklibs ${G4TESTLINKLIB_${__prop}})
@@ -1189,7 +1258,7 @@ endmacro()
 #  This is used internally by the property get/set functions.
 #
 function(__geant4_category_validate_property _property)
-  if(NOT (${_property} MATCHES "CMAKE_LIST_FILE|IS_INTERFACE|MODULES|PUBLIC_HEADERS"))
+  if(NOT (${_property} MATCHES "CMAKE_LIST_FILE|IS_INTERFACE|MODULES|PUBLIC_HEADERS|DEFINE_SYMBOL|IS_ALIAS|CATEGORIES"))
     message(FATAL_ERROR "Undefined property '${_property}'")
   endif()
 endfunction()
@@ -1215,7 +1284,7 @@ function(__geant4_category_reset)
   # Reset category properties, then categories
   geant4_get_categories(__all_categories)
   foreach(__cat ${__all_categories})
-    foreach(_prop CMAKE_LIST_FILE IS_INTERFACE MODULES PUBLIC_HEADERS)
+    foreach(_prop CMAKE_LIST_FILE IS_INTERFACE MODULES PUBLIC_HEADERS DEFINE_SYMBOL IS_ALIAS CATEGORIES)
       geant4_set_category_property(${__cat} PROPERTY ${_prop})
     endforeach()
   endforeach()
@@ -1276,10 +1345,11 @@ function(__geant4_add_library _name _type)
     message(FATAL_ERROR "Invalid library type '${_type}'")
   endif()
 
-  # Check if the overall library is binary or header-only
+  # Check if the overall library is binary, header-only, or an alias (really an interface in CMake terms)
   set(_lib_cmake_type ${_type})
   geant4_get_category_property(_lib_is_interface ${_name} IS_INTERFACE)
-  if(_lib_is_interface)
+  geant4_get_category_property(_lib_is_alias ${_name} IS_ALIAS)
+  if(_lib_is_interface OR _lib_is_alias)
     set(_lib_cmake_type "INTERFACE")
   endif()
 
@@ -1289,13 +1359,29 @@ function(__geant4_add_library _name _type)
   endif()
 
   # - General target creation/properties
-  add_library(${_target_name} ${_lib_cmake_type} "")
+  # Conditional on INTERFACE as CMake < 3.19 cannot create interface lib with sources
+  if(_lib_cmake_type STREQUAL "INTERFACE")
+    add_library(${_target_name} ${_lib_cmake_type})
+  else()
+    add_library(${_target_name} ${_lib_cmake_type} "")
+  endif()
   # Alias for transparent use with imported targets
   add_library(Geant4::${_target_name} ALIAS ${_target_name})
 
+  # - Determine what properties to process
   if(_lib_cmake_type STREQUAL "INTERFACE")
     target_compile_features(${_target_name} INTERFACE ${GEANT4_TARGET_COMPILE_FEATURES})
     set(_props_to_process "INTERFACE")
+
+    # Shortcut: If this category is also an "alias", we just extract the link interface directly
+    if(_lib_is_alias)
+      geant4_get_category_property(iface ${_name} CATEGORIES)
+      if(_type STREQUAL "STATIC")
+        list(TRANSFORM iface APPEND "-static")
+      endif()
+      target_link_libraries(${_target_name} INTERFACE ${iface})
+      return()
+    endif()
   else()
     target_compile_features(${_target_name} PUBLIC ${GEANT4_TARGET_COMPILE_FEATURES})
     set(_props_to_process "PUBLIC" "PRIVATE" "INTERFACE")
@@ -1308,6 +1394,12 @@ function(__geant4_add_library _name _type)
     # category handles the exact import/export statements
     target_compile_definitions(${_target_name} PUBLIC G4LIB_BUILD_DLL)
     set_target_properties(${_target_name} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
+    # Check if we have a DEFINE_SYMBOL for this category
+    geant4_get_category_property(_lib_define_symbol ${_name} DEFINE_SYMBOL)
+    if(_lib_define_symbol)
+      set_target_properties(${_target_name} PROPERTIES DEFINE_SYMBOL ${_lib_define_symbol})
+    endif()
 
     # MacOS
     # Use '@rpath' in install names of libraries on macOS to provide relocatibility

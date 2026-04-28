@@ -6,9 +6,21 @@ It must **not** be used as a substitute for writing good git commit messages!
 
 -------------------------------------------------------------------------------
 
+## 2025-07-30 G.Cosmo (emmuons-V11-03-02)
+- Fixed compilation warnings for implicit type conversions on macOS/XCode
+  in G4MuPairProductionModel.
+
+## 2025-07-17 V.Ivanchenko (emmuons-V11-03-01)
+- G4MuPairProductionModel, G4MuPairProduction - clean-up for handling of data.
+
+## 2025-05-12 V.Ivanchenko (emmuons-V11-03-00)
+- G4RiGeMuPairProductionModel, G4RiGeAngularGenerator - G.Depaola & R.Pacheco
+    provided fixes to the angular distribution of electrons and positrons.
+- G4MuPairProduction - enable RiGe model via G4EmParameters
+
 ## 2023-10-31 V.Ivanchenko (emmuons-V11-01-04)
 - G4RiGeMuPairProductionModel, G4RiGeAngularGenerator - a new 5D model for e+e-
-    pair production by muons
+    pair production by muons (authors G.Depaola & R.Pacheco)
 - fixed declaration of virtual destructors in several header files
 - G4MuPairProductionModel - minor clean-up for better code readability
 

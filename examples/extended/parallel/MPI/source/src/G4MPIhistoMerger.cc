@@ -22,7 +22,9 @@
 // * use  in  resulting  scientific  publications,  and indicate your *
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
-//
+/// @file G4MPIhistoMerger.cc
+/// @brief Histo merger
+
 // Merge G4analysis histogram objects via MPI
 //
 // History:
@@ -52,12 +54,12 @@ void G4MPIhistoMerger::Merge()
     G4cout << "Starting merging of histograms" << G4endl;
   }
 
-  const MPI::Intracomm* parentComm = G4MPImanager::GetManager()->GetComm();
-  MPI::Intracomm comm = parentComm->Dup();
+  const MPI_Comm* parentComm = G4MPImanager::GetManager()->GetComm();
+  MPI_Comm comm;
+  MPI_Comm_dup(*parentComm, &comm);
 
   G4bool verbose = (verboseLevel > 1);
   G4int tag = G4MPImanager::kTAG_HISTO;
-  // const MPI::Intracomm* comm = &COMM_G4COMMAND_;
   toolx::mpi::hmpi* hmpi = new toolx::mpi::hmpi(G4cout, destination, tag, comm, verbose);
   if (!manager->Merge(hmpi)) {
     G4cout << " Merge FAILED" << G4endl;
@@ -68,5 +70,5 @@ void G4MPIhistoMerger::Merge()
   if (verboseLevel > 0) {
     G4cout << "End merging of histograms" << G4endl;
   }
-  comm.Free();
+  MPI_Comm_free(&comm);
 }

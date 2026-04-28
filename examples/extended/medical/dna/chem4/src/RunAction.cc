@@ -23,6 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file RunAction.cc
+/// \brief Implementation of the RunAction class
+
 // This example is provided by the Geant4-DNA collaboration
 // Any report or published results obtained using the Geant4-DNA software
 // shall cite the following Geant4-DNA collaboration publication:
@@ -31,19 +34,18 @@
 // The Geant4-DNA web site is available at http://geant4-dna.org
 //
 //
-/// \file RunAction.cc
-/// \brief Implementation of the RunAction class
 
 #include "RunAction.hh"
 
-#include "DetectorConstruction.hh"
-#include "PrimaryGeneratorAction.hh"
-#include "Run.hh"
-
+#include "G4DNAChemistryManager.hh"
 #include "G4Run.hh"
 #include "G4RunManager.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4UnitsTable.hh"
+
+#include "DetectorConstruction.hh"
+#include "PrimaryGeneratorAction.hh"
+#include "Run.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -65,6 +67,10 @@ G4Run* RunAction::GenerateRun()
 
 void RunAction::BeginOfRunAction(const G4Run* run)
 {
+  // ensure that the chemistry is notified!
+  if (G4DNAChemistryManager::GetInstanceIfExists() != nullptr)
+    G4DNAChemistryManager::GetInstanceIfExists()->BeginOfRunAction(run);
+
   G4cout << "### Run " << run->GetRunID() << " starts." << G4endl;
 
   // informs the runManager to save random number seed
@@ -75,6 +81,10 @@ void RunAction::BeginOfRunAction(const G4Run* run)
 
 void RunAction::EndOfRunAction(const G4Run* run)
 {
+  // ensure that the chemistry is notified!
+  if (G4DNAChemistryManager::GetInstanceIfExists() != nullptr)
+    G4DNAChemistryManager::GetInstanceIfExists()->EndOfRunAction(run);
+
   G4int nofEvents = run->GetNumberOfEvent();
   if (nofEvents == 0) return;
 

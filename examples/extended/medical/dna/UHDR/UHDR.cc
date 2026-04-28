@@ -23,6 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file UHDR.cc
+/// \brief Main program of the dna/UHDR example
+
 #include "ActionInitialization.hh"
 #include "DetectorConstruction.hh"
 #include "PhysicsList.hh"
@@ -55,8 +58,8 @@ int main(int argc, char** argv)
 
   auto pDetector = new DetectorConstruction();
   runManager->SetUserInitialization(pDetector);
-  runManager->SetUserInitialization(new PhysicsList(pDetector));
-  runManager->SetUserInitialization(new ActionInitialization(pDetector));
+  runManager->SetUserInitialization(new PhysicsList());
+  runManager->SetUserInitialization(new ActionInitialization());
 
   ///
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
@@ -64,7 +67,7 @@ int main(int argc, char** argv)
   analysisManager->SetNtupleDirectoryName("ntuple");
   // open output file
   //
-  std::string name = "Dose_" + std::to_string(seed);
+  G4String name = "Dose_" + std::to_string(seed);
   G4bool fileOpen = analysisManager->OpenFile(name);
   if (!fileOpen) {
     G4cout << "\n---> HistoManager::book(): cannot open " << name << G4endl;

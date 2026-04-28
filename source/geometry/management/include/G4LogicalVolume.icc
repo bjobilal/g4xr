@@ -25,13 +25,7 @@
 // 
 // class G4LogicalVolume inline implementation
 //
-// 15.01.13 - G.Cosmo, A.Dotti: Modified for thread-safety for MT
-// 10.20.97 - P. MoraDeFreitas : Added SetFastSimulation method
-// 05.11.98 - M. Verderi: Add Get/Set methods for fBiasWeight
-// 09.11.98 - J.Apostolakis:  Changed MagneticField to FieldManager
-// 12.02.99 - S.Giani: Added set/get methods for voxelization quality
-// 18.04.01 - G.Cosmo: Migrated to STL vector
-// 17.05.02 - G.Cosmo: Added IsToOptimise() method
+// Author: Paul Kent (CERN), 11.07.1995 - Initial version
 // --------------------------------------------------------------------
 
 // ********************************************************************
@@ -92,7 +86,7 @@ inline
 G4FastSimulationManager* G4LogicalVolume::GetFastSimulationManager () const 
 {
   G4FastSimulationManager* fFSM = nullptr;
-  if(fRegion != nullptr) fFSM = fRegion->GetFastSimulationManager();
+  if(fRegion != nullptr) { fFSM = fRegion->GetFastSimulationManager(); }
   return fFSM;
 }
 
@@ -105,7 +99,7 @@ G4bool G4LogicalVolume::IsDaughter(const G4VPhysicalVolume* p) const
 {
   for (const auto & daughter : fDaughters)
   {
-    if (*daughter==*p) return true;
+    if (*daughter==*p) { return true; }
   }
   return false;
 }
@@ -165,8 +159,9 @@ G4VSensitiveDetector* G4LogicalVolume::GetMasterSensitiveDetector() const
 inline
 G4UserLimits* G4LogicalVolume::GetUserLimits() const
 {
-  if(fUserLimits != nullptr) return fUserLimits;
-  if(fRegion != nullptr) return fRegion->GetUserLimits();
+  if(fUserLimits != nullptr) { return fUserLimits;
+}
+  if(fRegion != nullptr) { return fRegion->GetUserLimits(); }
   return nullptr;
 }
 
@@ -268,7 +263,7 @@ inline
 G4bool G4LogicalVolume::IsRegion() const
 {
   G4bool reg = false;
-  if (fRegion != nullptr) reg = true;
+  if (fRegion != nullptr) { reg = true; }
   return reg;
 }
 

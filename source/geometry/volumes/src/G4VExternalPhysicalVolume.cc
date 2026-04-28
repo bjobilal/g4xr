@@ -23,9 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 // 
-// G4VExternalPhysicalVolume Implementation
+// Class G4VExternalPhysicalVolume Implementation
 //
-// Author: J.Apostolakis, CERN - October 2019
+// Author: John Apostolakis (CERN), October 2019
 // ----------------------------------------------------------------------
 
 #include "G4VExternalPhysicalVolume.hh"
@@ -67,11 +67,6 @@ G4VExternalPhysicalVolume::G4VExternalPhysicalVolume( __void__& a )
   : G4VPhysicalVolume(a)
 {
 }
-
-// ----------------------------------------------------------------------
-// Destructor
-//
-G4VExternalPhysicalVolume::~G4VExternalPhysicalVolume() = default;
 
 // ----------------------------------------------------------------------
 // IsMany

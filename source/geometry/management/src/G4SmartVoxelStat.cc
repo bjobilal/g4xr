@@ -28,7 +28,7 @@
 // Stores information on the performance of the smart voxel algorithm
 // for an individual logical volume.
 //
-// Author: D.C.Williams, UCSC (davidw@scipp.ucsc.edu)
+// Author: D.C.Williams (UCSC), 1998
 // --------------------------------------------------------------------
 
 #include "G4SmartVoxelStat.hh"
@@ -127,7 +127,7 @@ void G4SmartVoxelStat::CountHeadsAndNodes( const G4SmartVoxelHeader* head )
   for(std::size_t i=0; i<numSlices; ++i)
   {
     const G4SmartVoxelProxy *proxy = head->GetSlice(i);
-    if (proxy == lastProxy) continue;
+    if (proxy == lastProxy) { continue; }
     
     lastProxy = proxy;
     

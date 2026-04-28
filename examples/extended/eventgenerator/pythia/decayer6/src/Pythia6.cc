@@ -23,16 +23,15 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
-/// \file eventgenerator/pythia/decayer6/src/Pythia6.cc
+/// \file Pythia6.cc
 /// \brief Implementation of the Pythia6 class
 
 // ----------------------------------------------------------------------------
 // According to TPythia6 class from Root:
 // (The TPythia6 class is an interface class to F77 routines in Pythia6                //
 // CERNLIB event generators, written by T.Sjostrand.)
-// http://root.cern.ch/
-// see http://root.cern.ch/root/License.html
+// http://root.cern/
+// see http://root.cern/root/License.html
 //
 // The complete Pythia6 documentation can be found at:
 // http://home.thep.lu.se/~torbjorn/pythiaaux/recent.html

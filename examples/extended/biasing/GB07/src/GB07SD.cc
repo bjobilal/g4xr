@@ -23,10 +23,8 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file GB07/src/GB07SD.cc
+/// \file GB07SD.cc
 /// \brief Implementation of the GB07SD class
-//
-//
 
 #include "GB07SD.hh"
 
@@ -53,4 +51,4 @@ G4bool GB07SD::ProcessHits(G4Step* step, G4TouchableHistory*)
   return true;
 }
 
-GB07SD::~GB07SD() {}
+GB07SD::~GB07SD() = default;

@@ -22,7 +22,10 @@
 // * use  in  resulting  scientific  publications,  and indicate your *
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
-///
+//
+/// \file ActionInitialization.hh
+/// \brief Definition of the ActionInitialization class
+
 // This example is provided by the Geant4-DNA collaboration
 // Any report or published results obtained using the Geant4-DNA software
 // shall cite the following Geant4-DNA collaboration publication:
@@ -30,8 +33,6 @@
 // J. Comput. Phys. 274 (2014) 841-882
 // The Geant4-DNA web site is available at http://geant4-dna.org
 //
-/// \file ActionInitialization.hh
-/// \brief Definition of the ActionInitialization class
 
 #ifndef CHEM4_ActionInitialization_h
 #define CHEM4_ActionInitialization_h 1
@@ -51,6 +52,9 @@ class ActionInitialization : public G4VUserActionInitialization
 
     virtual void BuildForMaster() const;
     virtual void Build() const;
+
+  private:
+    void BuildMoleculeCounter() const;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -23,20 +23,15 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file electromagnetic/TestEm2/include/Run.hh
+/// \file Run.hh
 /// \brief Definition of the Run class
-//
-//
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #ifndef Run_h
 #define Run_h 1
 
 #include "DetectorConstruction.hh"
-
-#include "G4AnalysisManager.hh"
 #include "G4Run.hh"
+#include "G4AnalysisManager.hh"
 
 #include <vector>
 typedef std::vector<G4double> MyVector;

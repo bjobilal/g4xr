@@ -47,7 +47,10 @@
 #include <sstream>
 
 G4VViewer::G4VViewer(G4VSceneHandler& sceneHandler, G4int id, const G4String& name)
-  : fSceneHandler(sceneHandler), fViewId(id), fNeedKernelVisit(true)
+: fSceneHandler(sceneHandler)
+, fViewId(id)
+, fNeedKernelVisit(true)
+, fTransientsNeedRedrawing(false)
 {
   if (name == "") {
     std::ostringstream ost;
@@ -121,8 +124,92 @@ void G4VViewer::ProcessView()
     fSceneHandler.ClearStore();
     fSceneHandler.ProcessScene();
     UpdateGUISceneTree();
+    UpdateGUIControlWidgets();
     timer.Stop();
     fKernelVisitElapsedTimeSeconds = timer.GetRealElapsed();
+  }
+}
+
+void G4VViewer::ProcessTransients()
+{
+  // If transients change, e.g., a time window change...
+  if (fTransientsNeedRedrawing) {
+    // First, reset the flag - see comment above about recursive calls.
+    fTransientsNeedRedrawing = false;
+    fSceneHandler.ClearTransientStore();
+    fSceneHandler.ProcessTransients();
+  }
+}
+
+void G4VViewer::ZoomFromMouseWheel(G4double delta, G4bool shift, G4double xPos, G4double yPos) {
+  
+  G4double sceneWidth = GetSceneNearWidth();
+  unsigned int winWidth = 0, winHeight = 0;
+  G4bool winSizeOk = GetWindowSize(winWidth, winHeight);
+
+  if ((fVP.IsZoomToCursor() || shift) && sceneWidth > 0 && winSizeOk) {
+
+    // Compute mouse position in scene coordinates
+    G4double minWidth = winWidth > winHeight ? winHeight : winWidth;
+    G4double px = xPos - G4double(winWidth) / 2;
+    G4double py = -(yPos - G4double(winHeight) / 2);
+    G4double xi = px * sceneWidth / minWidth;
+    G4double yi = py * sceneWidth / minWidth;
+
+    // ZoomToCursor enabled
+    if (fVP.GetFieldHalfAngle() == 0.) {
+      // Orthographic projection
+      G4double zoomFactor = 1. + std::abs(double(delta)) / 1200;
+      if (delta < 0) zoomFactor = 1. / zoomFactor;
+
+      G4double xf = xi / zoomFactor;
+      G4double yf = yi / zoomFactor;
+
+      G4double deltaX = xf - xi;
+      G4double deltaY = yf - yi;
+
+      fVP.MultiplyZoomFactor(zoomFactor);
+      fVP.IncrementPan(-deltaX, -deltaY, 0);
+    }
+    else {
+      // Perspective projection
+      G4double radius = fSceneHandler.GetScene()->GetExtent().GetExtentRadius();
+      if (radius <= 0.) radius = 1.;
+      const G4double cameraDistance = fVP.GetCameraDistance(radius);
+      const G4double pnear = fVP.GetNearDistance(cameraDistance, radius);
+
+      G4double deltaDolly = 0.1 * cameraDistance * std::abs(delta) / 120;
+      if (delta < 0) deltaDolly = -deltaDolly;
+
+      G4double deltaX = -xi * deltaDolly / pnear;
+      G4double deltaY = -yi * deltaDolly / pnear;
+
+      // This condition prevents going too deeply into the scene, but what if there are volumes with very different sizes?
+      // if(deltaDolly<0 || cameraDistance > radius / std::sin(fVP.GetFieldHalfAngle()) * 1e-2)
+      fVP.IncrementDolly(deltaDolly);
+      fVP.IncrementPan(-deltaX, -deltaY, 0);
+    }
+  }
+  else {
+    // ZoomToCursor disabled
+    if (fVP.GetFieldHalfAngle() == 0.) {
+      // Orthographic projection
+      G4double zoomFactor = 1. + std::abs(double(delta)) / 1200;
+      if (delta < 0) zoomFactor = 1. / zoomFactor;
+      fVP.MultiplyZoomFactor(zoomFactor);
+    }
+    else {
+      // Perspective projection
+      G4double radius = fSceneHandler.GetScene()->GetExtent().GetExtentRadius();
+      if (radius <= 0.) radius = 1.;
+      const G4double cameraDistance = fVP.GetCameraDistance(radius);
+
+      G4double deltaDolly = 0.1 * cameraDistance * std::abs(delta) / 120;
+      if (delta < 0) deltaDolly = -deltaDolly;
+      // This condition prevents going too deeply into the scene, but what if there are volumes with very different sizes?
+      //if (deltaDolly < 0 || cameraDistance > radius / std::sin(fVP.GetFieldHalfAngle()) * 1e-2) 
+      fVP.IncrementDolly(deltaDolly);
+    }
   }
 }
 
@@ -232,6 +319,30 @@ void G4VViewer::UpdateGUISceneTree()
   if (uiWindow) uiWindow->UpdateSceneTree(fSceneTree);
 }
 
+void G4VViewer::UpdateGUIControlWidgets() {
+  this->UpdateGUIDrawingStyle();
+  this->UpdateGUIProjectionStyle();
+  this->UpdateGUITransparencySlider();
+}
+
+void G4VViewer::UpdateGUIDrawingStyle()
+{
+  G4UImanager* UI = G4UImanager::GetUIpointer();
+  auto uiWindow = dynamic_cast<G4VInteractiveSession*>(UI->GetG4UIWindow());
+  if (uiWindow) uiWindow->UpdateDrawingStyle(fVP.GetDrawingStyle());
+}
+void G4VViewer::UpdateGUIProjectionStyle() {
+  G4UImanager* UI = G4UImanager::GetUIpointer();
+  auto uiWindow = dynamic_cast<G4VInteractiveSession*>(UI->GetG4UIWindow());
+  if (uiWindow) uiWindow->UpdateProjectionStyle(fVP.GetFieldHalfAngle() == 0 ? 0 : 1);
+}
+void G4VViewer::UpdateGUITransparencySlider() {
+  G4UImanager* UI = G4UImanager::GetUIpointer();
+  auto uiWindow = dynamic_cast<G4VInteractiveSession*>(UI->GetG4UIWindow());
+  if (uiWindow)
+    uiWindow->UpdateTransparencySlider(fVP.GetTransparencyByDepth(), fVP.GetTransparencyByDepthOption());
+}
+
 void G4VViewer::InsertModelInSceneTree(G4VModel* model)
 {
   const auto& modelType = model->GetType();
@@ -243,26 +354,28 @@ void G4VViewer::InsertModelInSceneTree(G4VModel* model)
 
   fCurtailDescent = false;  // This is used later in SceneTreeScene::ProcessVolume
   G4String furtherInfo;
+  static G4bool firstWarning = true;
+  G4bool warned = false;
   if (pvModel) {
-    struct : public G4PseudoScene {
-      void ProcessVolume(const G4VSolid&) {++fNTotalTouchables;}
-      G4int fNTotalTouchables = 0;
-    } counter;
-    pvModel->DescribeYourselfTo(counter);  // Calls ProcessVolume for every touchable
-    if (counter.fNTotalTouchables > fMaxNTouchables) {
+    const auto& nAllTouchables = pvModel->GetTotalAllTouchables();
+    if (nAllTouchables > fMaxAllTouchables) {
       std::ostringstream oss;
-      oss << counter.fNTotalTouchables << " touchables - too many for scene tree";
+      oss << nAllTouchables << " touchables - too many for scene tree";
       furtherInfo = oss.str();
-      if (G4VisManager::GetInstance()->GetVerbosity() >= G4VisManager::warnings) {
-        G4ExceptionDescription ed;
-        ed << pvModel->GetGlobalDescription() <<
-        ":\n  Too many touchables (" << counter.fNTotalTouchables
-        << ") for scene tree. Scene tree for this model will be empty.";
-        G4Exception("G4VViewer::InsertModelInSceneTree", "visman0404", JustWarning, ed);
+      if (firstWarning) {
+        warned = true;
+        if (G4VisManager::GetInstance()->GetVerbosity() >= G4VisManager::warnings) {
+          G4ExceptionDescription ed;
+          ed << pvModel->GetGlobalDescription() <<
+          ":\n  Too many touchables (" << nAllTouchables
+          << ") for scene tree. Scene tree for this model will be empty.";
+          G4Exception("G4VViewer::InsertModelInSceneTree", "visman0404", JustWarning, ed);
+        }
       }
       fCurtailDescent = true;  // This is used later in SceneTreeScene::ProcessVolume
     }
   }
+  if (warned) firstWarning = false;
 
   // Find appropriate model
   auto& modelItems = fSceneTree.AccessChildren();
@@ -302,15 +415,9 @@ G4VViewer::SceneTreeScene::SceneTreeScene(G4VViewer* pViewer, G4PhysicalVolumeMo
     return;  // To keep Coverity happy
   }
   
-  // Describe the model to an empty scene simply to get the numbers of touchables
-  struct : public G4PseudoScene {
-    void ProcessVolume(const G4VSolid&) {}
-  } counter;
-  fpPVModel->DescribeYourselfTo(counter);  // Calls ProcessVolume for every touchable
-
   // Limit the expanded depth to limit the number expanded so as not to swamp the GUI
   G4int expanded = 0;
-  for (const auto& dn : fpPVModel->GetNumberOfTouchables()) {
+  for (const auto& dn : fpPVModel->GetMapOfDrawnTouchables()) {
     expanded += dn.second;
     if (fMaximumExpandedDepth < dn.first) fMaximumExpandedDepth = dn.first;
     if (expanded > fMaximumExpanded) break;

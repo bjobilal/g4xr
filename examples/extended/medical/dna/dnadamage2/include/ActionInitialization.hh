@@ -23,6 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file ActionInitialization.hh
+/// \brief Definition of the ActionInitialization class
+
 // This example is provided by the Geant4-DNA collaboration
 // DNADAMAGE2 example is derived from the chem6 example
 // chem6 example authors: W. G. Shin and S. Incerti (CENBG, France)
@@ -39,8 +42,6 @@
 // Authors: J. Naoki D. Kondo (UCSF, US)
 //          J. Ramos-Mendez and B. Faddegon (UCSF, US)
 //
-/// \file ActionInitialization.hh
-/// \brief Definition of the ActionInitialization class
 
 #ifndef DNADAMAGE2_ActionInitialization_h
 #define DNADAMAGE2_ActionInitialization_h 1
@@ -57,6 +58,7 @@ class ActionInitialization : public G4VUserActionInitialization
 
     void BuildForMaster() const override;
     void Build() const override;
+    void BuildMoleculeCounters() const;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

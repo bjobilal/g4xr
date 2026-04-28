@@ -22,7 +22,9 @@
 // * use  in  resulting  scientific  publications,  and indicate your *
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
-//
+/// @file G4MPIscorerMerger.hh
+/// @brief Scorer merger
+
 #ifndef G4MPISCORERMERGER_HH
 #define G4MPISCORERMERGER_HH
 #include "G4MPImanager.hh"
@@ -103,7 +105,7 @@ class G4MPIscorerMerger
     G4ScoringManager* scoringManager;
     unsigned int commSize;
     unsigned int destinationRank;
-    MPI::Intracomm comm;
+    MPI_Comm comm;
     G4int verbose;
 };
 

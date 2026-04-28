@@ -23,7 +23,6 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
 /// \file GB03BOptnSplitOrKillOnBoundary.cc
 /// \brief Implementation of the GB03BOptnSplitOrKillOnBoundary class
 
@@ -39,7 +38,7 @@ GB03BOptnSplitOrKillOnBoundary::GB03BOptnSplitOrKillOnBoundary(G4String name)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-GB03BOptnSplitOrKillOnBoundary::~GB03BOptnSplitOrKillOnBoundary() {}
+GB03BOptnSplitOrKillOnBoundary::~GB03BOptnSplitOrKillOnBoundary() = default;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -97,7 +96,7 @@ G4VParticleChange* GB03BOptnSplitOrKillOnBoundary::GenerateBiasingFinalState(con
         // splitting by a factor N:
         fParticleChange.SetNumberOfSecondaries(fSplittingFactor - 1);
         for (G4int iSplit = 1; iSplit < fSplittingFactor; iSplit++) {
-          G4Track* clone = new G4Track(*track);
+          auto clone = new G4Track(*track);
           clone->SetWeight(weightOfTrack);
           fParticleChange.AddSecondary(clone);
         }

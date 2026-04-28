@@ -23,12 +23,8 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file electromagnetic/TestEm18/src/PhysListEmStandard.cc
+/// \file PhysListEmStandard.cc
 /// \brief Implementation of the PhysListEmStandard class
-//
-//
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "PhysListEmStandard.hh"
 
@@ -89,7 +85,7 @@ void PhysListEmStandard::ConstructProcess()
     G4String particleName = particle->GetParticleName();
 
     if (particleName == "gamma") {
-      ////list->RegisterProcess(new G4RayleighScattering, particle);
+      list->RegisterProcess(new G4RayleighScattering, particle);
       list->RegisterProcess(new G4PhotoElectricEffect, particle);
       G4ComptonScattering* compt = new G4ComptonScattering;
       compt->SetEmModel(new G4KleinNishinaModel());

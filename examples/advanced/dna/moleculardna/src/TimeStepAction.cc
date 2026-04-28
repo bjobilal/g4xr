@@ -30,14 +30,13 @@
 #include "DNAGeometry.hh"
 #include "DNAHit.hh"
 #include "DetectorConstruction.hh"
-#include "EventAction.hh"
 #include "OctreeNode.hh"
 
-#include "G4DNAMolecularReactionTable.hh"
 #include "G4ITTrackHolder.hh"
 #include "G4ITTrackingManager.hh"
 #include "G4Molecule.hh"
 #include "G4RunManager.hh"
+#include "G4Scheduler.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 TimeStepAction::TimeStepAction(EventAction* event)
@@ -100,49 +99,50 @@ void TimeStepAction::RadicalKillDistance()
       "TimeStepAction"
       "RadicalKillDistance",
       "NO_fpChemistryTrackHolder", FatalException, exceptionDescription);
-  }
-  G4Track* trackToKill;
-  G4TrackManyList::iterator it_begin = fpChemistryTrackHolder->GetMainList()->begin();
-  G4TrackManyList::iterator it_end = fpChemistryTrackHolder->GetMainList()->end();
-  while (it_begin != it_end) {
-    trackToKill = nullptr;
+  }else{
+    auto it_begin = fpChemistryTrackHolder->GetMainList()->begin();
+    const auto it_end = fpChemistryTrackHolder->GetMainList()->end();
+    while (it_begin != it_end) {
+      G4Track *trackToKill = nullptr;
 
-    const G4VTouchable* touchable = it_begin->GetTouchable();
-    if (touchable == nullptr) {
+      const G4VTouchable* touchable = it_begin->GetTouchable();
+      if (touchable == nullptr) {
+        ++it_begin;
+        continue;
+      }
+
+      G4LogicalVolume* trackLV = touchable->GetVolume()->GetLogicalVolume();
+      G4LogicalVolume* motherLV = touchable->GetVolume()->GetMotherLogical();
+
+      OctreeNode* octree_track = fDNAGeometry->GetTopOctreeNode(trackLV);
+      OctreeNode* octree_mother = fDNAGeometry->GetTopOctreeNode(motherLV);
+
+      if ((octree_track == nullptr) && (octree_mother == nullptr)) {
+        trackToKill = *it_begin;
+      }
+      else if (octree_track != nullptr) {
+        const G4AffineTransform& trans = it_begin->GetTouchable()->GetHistory()->GetTopTransform();
+        G4ThreeVector pos = trans.TransformPoint(it_begin->GetPosition());
+        size_t n = octree_track->SearchOctree(pos, fRadicalKillDistance).size();
+        if (n == 0) {
+          trackToKill = *it_begin;
+        }
+        if (fDNAGeometry->IsInsideHistone(trackLV, pos)) {
+          trackToKill = *it_begin;
+        }
+      }
+      else {
+        const G4AffineTransform& trans = it_begin->GetTouchable()->GetHistory()->GetTopTransform();
+        G4ThreeVector pos = trans.TransformPoint(it_begin->GetPosition());
+        if (fDNAGeometry->IsInsideHistone(trackLV, pos)) {
+          trackToKill = *it_begin;
+        }
+      }
       ++it_begin;
-      continue;
-    }
-
-    G4LogicalVolume* trackLV = touchable->GetVolume()->GetLogicalVolume();
-    G4LogicalVolume* motherLV = touchable->GetVolume()->GetMotherLogical();
-
-    OctreeNode* octree_track = fDNAGeometry->GetTopOctreeNode(trackLV);
-    OctreeNode* octree_mother = fDNAGeometry->GetTopOctreeNode(motherLV);
-
-    if ((octree_track == nullptr) && (octree_mother == nullptr)) {
-      trackToKill = *it_begin;
-    }
-    else if (octree_track != nullptr) {
-      const G4AffineTransform& trans = it_begin->GetTouchable()->GetHistory()->GetTopTransform();
-      G4ThreeVector pos = trans.TransformPoint(it_begin->GetPosition());
-      size_t n = octree_track->SearchOctree(pos, fRadicalKillDistance).size();
-      if (n == 0) {
-        trackToKill = *it_begin;
+      if (trackToKill != nullptr) {
+        fpChemistryTrackHolder->PushToKill(trackToKill);
+        G4Scheduler::Instance()->SetInteractionStep(true);
       }
-      if (fDNAGeometry->IsInsideHistone(trackLV, pos)) {
-        trackToKill = *it_begin;
-      }
-    }
-    else {
-      const G4AffineTransform& trans = it_begin->GetTouchable()->GetHistory()->GetTopTransform();
-      G4ThreeVector pos = trans.TransformPoint(it_begin->GetPosition());
-      if (fDNAGeometry->IsInsideHistone(trackLV, pos)) {
-        trackToKill = *it_begin;
-      }
-    }
-    ++it_begin;
-    if (trackToKill != nullptr) {
-      fpChemistryTrackHolder->PushToKill(trackToKill);
     }
   }
 }

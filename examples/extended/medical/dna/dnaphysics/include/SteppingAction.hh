@@ -23,6 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file SteppingAction.hh
+/// \brief Definition of the SteppingAction class
+
 // This example is provided by the Geant4-DNA collaboration
 // Any report or published results obtained using the Geant4-DNA software
 // shall cite the following Geant4-DNA collaboration publications:
@@ -33,13 +36,14 @@
 //
 // The Geant4-DNA web site is available at http://geant4-dna.org
 //
-/// \file SteppingAction.hh
-/// \brief Definition of the SteppingAction class
 
 #ifndef SteppingAction_h
 #define SteppingAction_h 1
 
 #include "G4UserSteppingAction.hh"
+#include "globals.hh"
+
+class SteppingMessenger;
 
 class SteppingAction : public G4UserSteppingAction
 {
@@ -48,5 +52,12 @@ class SteppingAction : public G4UserSteppingAction
     virtual ~SteppingAction();
 
     virtual void UserSteppingAction(const G4Step*);
+
+    void SetKillStatus(G4int value) { fKill = value; };
+
+  private:
+    G4int fKill = 0;
+    SteppingMessenger* fSteppingMessenger = nullptr;
+
 };
 #endif

@@ -97,9 +97,11 @@ void plotG_time() {
   gStyle->SetPadTickY(1);
 
   TGMainFrame *main = new TGMainFrame(gClient->GetRoot(), 200, 200);
-  TGTab *fTab = new TGTab(main, 200, 200);
+  gTab = new TGTab(main, 200, 200);
 
   Double_t timeA, sumG, sumG2;
+  Double_t sumDose, sumDose2;
+  Double_t sumDoseRate, sumDoseRate2;
   Int_t speciesID, number, nEvent;
   char speciesName[500];
 
@@ -108,7 +110,7 @@ void plotG_time() {
   file = TFile::Open("Dose_0.root");
 
   TDirectoryFile *dir = dynamic_cast<TDirectoryFile *>(file->Get("ntuple"));
-  TTree *tree = (TTree *) dir->Get("0.010000");
+  TTree *tree = (TTree *) dir->Get("Gvalue");
   tree->SetBranchAddress("speciesID", &speciesID);
   tree->SetBranchAddress("number", &number);
   tree->SetBranchAddress("nEvent", &nEvent);
@@ -116,6 +118,10 @@ void plotG_time() {
   tree->SetBranchAddress("time", &timeA);
   tree->SetBranchAddress("sumG", &sumG);
   tree->SetBranchAddress("sumG2", &sumG2);
+  tree->SetBranchAddress("TotalDose", &sumDose);
+  tree->SetBranchAddress("TotalDose2", &sumDose2);
+  tree->SetBranchAddress("TotalDoseRate", &sumDoseRate);
+  tree->SetBranchAddress("TotalDoseRate2", &sumDoseRate2);
 
   Long64_t nentries = tree->GetEntries();
 
@@ -124,6 +130,15 @@ void plotG_time() {
          << file->GetPath() << endl;
     exit(1);
   }
+  tree->GetEntry(1);
+  Double_t errDose = sqrt((sumDose2 / nEvent - pow(sumDose/nEvent, 2))
+                          / (nEvent - 1));
+  std::cout<<"Average dose (in Gy) : "<<sumDose/nEvent<<" +- "<<errDose<<std::endl;
+
+  Double_t errDoseRate = sqrt((sumDoseRate2 / nEvent - pow(sumDoseRate / nEvent, 2))
+                          / (nEvent - 1));
+  std::cout<<"Average dose rate (in Gy/s) : "<<sumDoseRate/nEvent<<" +- "<<errDoseRate<<std::endl;
+
 
   std::map<int, std::map<double, SpeciesInfoAOS>> speciesTimeInfo;
 
@@ -186,7 +201,7 @@ void plotG_time() {
                                               0,
                                               info.fGerr.data());
 
-    TGCompositeFrame *tf = fTab->AddTab(info.fName.c_str());
+    TGCompositeFrame *tf = gTab->AddTab(info.fName.c_str());
     TGCompositeFrame *frame = new TGCompositeFrame(tf, 60, 60,
                                                    kHorizontalFrame);
 
@@ -222,7 +237,7 @@ void plotG_time() {
     gSpecies->Draw("ALP");
   }
 
-  main->AddFrame(fTab, new TGLayoutHints(kLHintsBottom | kLHintsExpandX |
+  main->AddFrame(gTab, new TGLayoutHints(kLHintsBottom | kLHintsExpandX |
                                          kLHintsExpandY, 2, 2, 5, 1));
 
   main->MapSubwindows();

@@ -149,11 +149,7 @@ void G4Scintillation::ProcessDescription(std::ostream& out) const
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 G4bool G4Scintillation::IsApplicable(const G4ParticleDefinition& aParticleType)
 {
-  if(aParticleType.GetParticleName() == "opticalphoton")
-    return false;
-  if(aParticleType.IsShortLived())
-    return false;
-  return true;
+  return (!aParticleType.IsShortLived());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -177,42 +173,27 @@ void G4Scintillation::Initialise()
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void G4Scintillation::BuildPhysicsTable(const G4ParticleDefinition&)
 {
-  if(fIntegralTable1 != nullptr)
-  {
-    fIntegralTable1->clearAndDestroy();
-    delete fIntegralTable1;
-    fIntegralTable1 = nullptr;
-  }
-  if(fIntegralTable2 != nullptr)
-  {
-    fIntegralTable2->clearAndDestroy();
-    delete fIntegralTable2;
-    fIntegralTable2 = nullptr;
-  }
-  if(fIntegralTable3 != nullptr)
-  {
-    fIntegralTable3->clearAndDestroy();
-    delete fIntegralTable3;
-    fIntegralTable3 = nullptr;
-  }
-
   const G4MaterialTable* materialTable = G4Material::GetMaterialTable();
   std::size_t numOfMaterials           = G4Material::GetNumberOfMaterials();
 
-  // create new physics table
-  if(!fIntegralTable1)
-    fIntegralTable1 = new G4PhysicsTable(numOfMaterials);
-  if(!fIntegralTable2)
-    fIntegralTable2 = new G4PhysicsTable(numOfMaterials);
-  if(!fIntegralTable3)
-    fIntegralTable3 = new G4PhysicsTable(numOfMaterials);
-
+  // Find the number of materials that have non-empty material property tables
+  std::size_t numOfMaterialsWithMPT = 0;
   for(std::size_t i = 0; i < numOfMaterials; ++i)
   {
-    auto vector1 = new G4PhysicsFreeVector();
-    auto vector2 = new G4PhysicsFreeVector();
-    auto vector3 = new G4PhysicsFreeVector();
+    if(((*materialTable)[i])->GetMaterialPropertiesTable())
+    {
+       ++numOfMaterialsWithMPT;
+    }
+  }
 
+  // create new physics table
+  fIntegralTable1 = new G4PhysicsTable(numOfMaterialsWithMPT);
+  fIntegralTable2 = new G4PhysicsTable(numOfMaterialsWithMPT);
+  fIntegralTable3 = new G4PhysicsTable(numOfMaterialsWithMPT);
+
+  std::size_t indexMPT = 0;
+  for(std::size_t i = 0; i < numOfMaterials; ++i)
+  {
     // Retrieve vector of scintillation wavelength intensity for
     // the material from the material's optical properties table.
     G4MaterialPropertiesTable* MPT =
@@ -220,117 +201,47 @@ void G4Scintillation::BuildPhysicsTable(const G4ParticleDefinition&)
 
     if(MPT)
     {
-      G4MaterialPropertyVector* MPV =
-        MPT->GetProperty(kSCINTILLATIONCOMPONENT1);
-      if(MPV)
-      {
-        // Retrieve the first intensity point in vector
-        // of (photon energy, intensity) pairs
-        G4double currentIN = (*MPV)[0];
-        if(currentIN >= 0.0)
-        {
-          // Create first (photon energy, Scintillation Integral pair
-          G4double currentPM  = MPV->Energy(0);
-          G4double currentCII = 0.0;
-          vector1->InsertValues(currentPM, currentCII);
+      auto vector1 = new G4PhysicsFreeVector();
+      auto vector2 = new G4PhysicsFreeVector();
+      auto vector3 = new G4PhysicsFreeVector();
 
-          // Set previous values to current ones prior to loop
-          G4double prevPM  = currentPM;
-          G4double prevCII = currentCII;
-          G4double prevIN  = currentIN;
+      BuildInverseCdfTable(MPT->GetProperty(kSCINTILLATIONCOMPONENT1), vector1);
+      BuildInverseCdfTable(MPT->GetProperty(kSCINTILLATIONCOMPONENT2), vector2);
+      BuildInverseCdfTable(MPT->GetProperty(kSCINTILLATIONCOMPONENT3), vector3);
 
-          // loop over all (photon energy, intensity)
-          // pairs stored for this material
-          for(std::size_t ii = 1; ii < MPV->GetVectorLength(); ++ii)
-          {
-            currentPM = MPV->Energy(ii);
-            currentIN = (*MPV)[ii];
-            currentCII =
-              prevCII + 0.5 * (currentPM - prevPM) * (prevIN + currentIN);
+      fIntegralTable1->insertAt(indexMPT, vector1);
+      fIntegralTable2->insertAt(indexMPT, vector2);
+      fIntegralTable3->insertAt(indexMPT, vector3);
 
-            vector1->InsertValues(currentPM, currentCII);
-
-            prevPM  = currentPM;
-            prevCII = currentCII;
-            prevIN  = currentIN;
-          }
-        }
-      }
-
-      MPV = MPT->GetProperty(kSCINTILLATIONCOMPONENT2);
-      if(MPV)
-      {
-        // Retrieve the first intensity point in vector
-        // of (photon energy, intensity) pairs
-        G4double currentIN = (*MPV)[0];
-        if(currentIN >= 0.0)
-        {
-          // Create first (photon energy, Scintillation Integral pair
-          G4double currentPM  = MPV->Energy(0);
-          G4double currentCII = 0.0;
-          vector2->InsertValues(currentPM, currentCII);
-
-          // Set previous values to current ones prior to loop
-          G4double prevPM  = currentPM;
-          G4double prevCII = currentCII;
-          G4double prevIN  = currentIN;
-
-          // loop over all (photon energy, intensity)
-          // pairs stored for this material
-          for(std::size_t ii = 1; ii < MPV->GetVectorLength(); ++ii)
-          {
-            currentPM = MPV->Energy(ii);
-            currentIN = (*MPV)[ii];
-            currentCII =
-              prevCII + 0.5 * (currentPM - prevPM) * (prevIN + currentIN);
-
-            vector2->InsertValues(currentPM, currentCII);
-
-            prevPM  = currentPM;
-            prevCII = currentCII;
-            prevIN  = currentIN;
-          }
-        }
-      }
-      MPV = MPT->GetProperty(kSCINTILLATIONCOMPONENT3);
-      if(MPV)
-      {
-        // Retrieve the first intensity point in vector
-        // of (photon energy, intensity) pairs
-        G4double currentIN = (*MPV)[0];
-        if(currentIN >= 0.0)
-        {
-          // Create first (photon energy, Scintillation Integral pair
-          G4double currentPM  = MPV->Energy(0);
-          G4double currentCII = 0.0;
-          vector3->InsertValues(currentPM, currentCII);
-
-          // Set previous values to current ones prior to loop
-          G4double prevPM  = currentPM;
-          G4double prevCII = currentCII;
-          G4double prevIN  = currentIN;
-
-          // loop over all (photon energy, intensity)
-          // pairs stored for this material
-          for(std::size_t ii = 1; ii < MPV->GetVectorLength(); ++ii)
-          {
-            currentPM = MPV->Energy(ii);
-            currentIN = (*MPV)[ii];
-            currentCII =
-              prevCII + 0.5 * (currentPM - prevPM) * (prevIN + currentIN);
-
-            vector3->InsertValues(currentPM, currentCII);
-
-            prevPM  = currentPM;
-            prevCII = currentCII;
-            prevIN  = currentIN;
-          }
-        }
-      }
+      fIndexMPT.insert(std::make_pair(i, indexMPT));
+      ++indexMPT;
     }
-    fIntegralTable1->insertAt(i, vector1);
-    fIntegralTable2->insertAt(i, vector2);
-    fIntegralTable3->insertAt(i, vector3);
+  }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void G4Scintillation::BuildInverseCdfTable(const G4MaterialPropertyVector* MPV,
+                                           G4PhysicsFreeVector* vec) const
+// Build the inverse cumulative distribution function (C.D.F.) vector for the
+// scintillation photon spectrum from a given G4MaterialPropertyVector.
+// The resulting C.D.F. is stored in a G4PhysicsFreeVector, with values
+// representing the inverse C.D.F. as a function of photon energy.
+{
+  if(MPV && (*MPV)[0] >= 0.0)
+  {
+    std::vector<G4double> cdf(MPV->GetVectorLength());
+    cdf.front() = 0.0;
+    for (std::size_t ii = 1; ii < MPV->GetVectorLength() ; ++ii)
+    {
+      cdf[ii] = cdf[ii - 1] + 0.5 * (MPV->Energy(ii) - MPV->Energy(ii-1))
+        * ((*MPV)[ii] + (*MPV)[ii - 1]);
+    }
+    // Normalize for the inverse C.D.F. vector
+    for (std::size_t ii = 0; ii < MPV->GetVectorLength(); ++ii)
+    {
+        cdf[ii] = cdf[ii] / cdf.back();
+        vec->InsertValues(cdf[ii], MPV->Energy(ii));
+    }
   }
 }
 
@@ -365,6 +276,9 @@ G4VParticleChange* G4Scintillation::PostStepDoIt(const G4Track& aTrack,
   G4double t0      = pPreStepPoint->GetGlobalTime();
 
   G4double TotalEnergyDeposit = aStep.GetTotalEnergyDeposit();
+  if (0.0 >= TotalEnergyDeposit) {
+    G4VRestDiscreteProcess::PostStepDoIt(aTrack, aStep);
+  }
 
   G4MaterialPropertiesTable* MPT = aMaterial->GetMaterialPropertiesTable();
   if(!MPT)
@@ -448,15 +362,34 @@ G4VParticleChange* G4Scintillation::PostStepDoIt(const G4Track& aTrack,
       aParticleChange.ProposeTrackStatus(fSuspend);
   }
 
-  G4int materialIndex = (G4int)aMaterial->GetIndex();
+  std::size_t materialIndex = aMaterial->GetIndex();
+  auto it = fIndexMPT.find(materialIndex);
+
+  std::size_t indexMPT = 0;
+  if(it != fIndexMPT.end())
+  {
+    indexMPT = it->second;
+  }
+  else
+  {
+    G4ExceptionDescription ed;
+    ed << "G4MaterialPropertiesTable for " << aMaterial->GetName()
+       << " is not found!" << G4endl;
+    G4Exception("G4Scintillation::PostStepDoIt", "Scint04", FatalException, ed);
+  }
 
   // Retrieve the Scintillation Integral for this material
   // new G4PhysicsFreeVector allocated to hold CII's
-  std::size_t numPhot                = fNumPhotons;
+  G4int numPhot                      = fNumPhotons;
   G4double scintTime                 = 0.;
   G4double riseTime                  = 0.;
   G4PhysicsFreeVector* scintIntegral = nullptr;
   G4ScintillationType scintType      = Slow;
+
+  G4bool isNeutral = (aParticle->GetDefinition()->GetPDGCharge() == 0);
+  G4double deltaVelocity = pPostStepPoint->GetVelocity() -
+    pPreStepPoint->GetVelocity();
+  auto touchableHandle = aStep.GetPreStepPoint()->GetTouchableHandle();
 
   for(G4int scnt = 0; scnt < N_timeconstants; ++scnt)
   {
@@ -484,8 +417,7 @@ G4VParticleChange* G4Scintillation::PostStepDoIt(const G4Track& aTrack,
         riseTime = MPT->GetConstProperty(kSCINTILLATIONRISETIME1);
       }
       scintType = Fast;
-      scintIntegral =
-        (G4PhysicsFreeVector*) ((*fIntegralTable1)(materialIndex));
+      scintIntegral = (G4PhysicsFreeVector*) ((*fIntegralTable1)(indexMPT));
     }
     else if(scnt == 1)
     {
@@ -511,8 +443,7 @@ G4VParticleChange* G4Scintillation::PostStepDoIt(const G4Track& aTrack,
         riseTime = MPT->GetConstProperty(kSCINTILLATIONRISETIME2);
       }
       scintType = Medium;
-      scintIntegral =
-        (G4PhysicsFreeVector*) ((*fIntegralTable2)(materialIndex));
+      scintIntegral = (G4PhysicsFreeVector*) ((*fIntegralTable2)(indexMPT));
     }
     else if(scnt == 2)
     {
@@ -530,24 +461,20 @@ G4VParticleChange* G4Scintillation::PostStepDoIt(const G4Track& aTrack,
         riseTime = MPT->GetConstProperty(kSCINTILLATIONRISETIME3);
       }
       scintType = Slow;
-      scintIntegral =
-        (G4PhysicsFreeVector*) ((*fIntegralTable3)(materialIndex));
+      scintIntegral = (G4PhysicsFreeVector*) ((*fIntegralTable3)(indexMPT));
     }
 
     if(!scintIntegral)
       continue;
 
-    G4double CIImax = scintIntegral->GetMaxValue();
-    for(std::size_t i = 0; i < numPhot; ++i)
+    for(G4int i = 0; i < numPhot; ++i)
     {
       // Determine photon energy
-      G4double CIIvalue      = G4UniformRand() * CIImax;
-      G4double sampledEnergy = scintIntegral->GetEnergy(CIIvalue);
+      G4double sampledEnergy = scintIntegral->Value(G4UniformRand());
 
       if(verboseLevel > 1)
       {
         G4cout << "sampledEnergy = " << sampledEnergy << G4endl;
-        G4cout << "CIIvalue =        " << CIIvalue << G4endl;
       }
 
       // Generate random photon direction
@@ -572,19 +499,12 @@ G4VParticleChange* G4Scintillation::PostStepDoIt(const G4Track& aTrack,
       scintPhoton->SetKineticEnergy(sampledEnergy);
 
       // Generate new G4Track object:
-      G4double rand = G4UniformRand();
-      if(aParticle->GetDefinition()->GetPDGCharge() == 0)
-      {
-        rand = 1.0;
-      }
+      G4double rand = (isNeutral) ? 1.0 : G4UniformRand();
 
       // emission time distribution
       G4double delta = rand * aStep.GetStepLength();
       G4double deltaTime =
-        delta /
-        (pPreStepPoint->GetVelocity() +
-         rand * (pPostStepPoint->GetVelocity() - pPreStepPoint->GetVelocity()) /
-           2.);
+        delta / (pPreStepPoint->GetVelocity() + 0.5 * rand * deltaVelocity);
       if(riseTime == 0.0)
       {
         deltaTime -= scintTime * std::log(G4UniformRand());
@@ -598,8 +518,7 @@ G4VParticleChange* G4Scintillation::PostStepDoIt(const G4Track& aTrack,
       G4ThreeVector secPosition = x0 + rand * aStep.GetDeltaPosition();
 
       G4Track* secTrack = new G4Track(scintPhoton, secTime, secPosition);
-      secTrack->SetTouchableHandle(
-        aStep.GetPreStepPoint()->GetTouchableHandle());
+      secTrack->SetTouchableHandle(touchableHandle);
       secTrack->SetParentID(aTrack.GetTrackID());
       secTrack->SetCreatorModelID(secID);
       if(fScintillationTrackInfo)

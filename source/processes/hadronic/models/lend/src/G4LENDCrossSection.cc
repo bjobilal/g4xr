@@ -91,15 +91,20 @@ G4double G4LENDCrossSection::GetIsoCrossSection( const G4DynamicParticle* dp , G
    if ( isotope != NULL ) iM = isotope->Getm();
  
    G4GIDI_target* aTarget = get_target_from_map( lend_manager->GetNucleusEncoding( iZ , iA , iM ) );
-   if ( aTarget == NULL ) {
+   if ( aTarget != NULL ) {
+      xs = getLENDCrossSection ( aTarget , ke , temp );
+   }
+   else {
+      ;
+      /*
       G4String message;
       message = this->GetName();
       message += " is unexpectedly called.";
       //G4Exception( "G4LEND::GetIsoCrossSection(,)" , "LENDCrossSection-01" , JustWarning ,
       G4Exception( "G4LEND::GetIsoCrossSection(,)" , "LENDCrossSection-01" , FatalException ,
                   message );
+      */
    }
-   xs = getLENDCrossSection ( aTarget , ke , temp );
 
    return xs;
 }
@@ -122,7 +127,10 @@ G4LENDCrossSection::G4LENDCrossSection( const G4String nam )
    proj = NULL; //will be set in an inherited class
    //default_evaluation = "endl99";
    //default_evaluation = "ENDF.B-VII.0";
-   default_evaluation = "ENDF/BVII.1";
+   //default_evaluation = "ENDF/BVII.1";
+   //default_evaluation = "ENDF/B-8.0";
+   //default_evaluation = "ENDF/B-7.1";
+   default_evaluation = "";
 
    allow_nat = false;
    allow_any = false;

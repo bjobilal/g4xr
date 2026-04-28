@@ -11,7 +11,7 @@ Environment variable "G4FORCE_RUN_MANAGER_TYPE" enabled with value == Serial. Fo
 
 
 **************************************************************
- Geant4 version Name: geant4-11-03-patch-02    (25-April-2025)
+ Geant4 version Name: geant4-11-04-patch-01    (13-March-2026)
                        Copyright : Geant4 Collaboration
                       References : NIM A 506 (2003), 250-303
                                  : IEEE-TNS 53 (2006), 270-278
@@ -40,6 +40,12 @@ Command is ignored.
          --->  Isotope:  Mo98   Z = 42   N =  98   A =  97.91 g/mole   abundance: 100.000 %
           ElmMassFraction: 100.00 %  ElmAbundance 100.00 % 
 
+
+ hInelastic QGSP_BIC_HP  Thresholds: 
+    0) between BIC and BERT for p, n over the interval 1 to 1.5 GeV. 
+    1) between BERT  and FTF/P over the interval 3 to 6 GeV. 
+    2) between FTF/P and QGS/P over the interval 12 to 25 GeV. 
+  -- quasiElastic: 1 for QGS  and 0 for FTF
 @@@ G4ParticleHPInelasticData instantiated for particle neutron data directory variable is G4NEUTRONHPDATA pointing to /cvmfs/geant4.cern.ch/share/data/G4NDL4.7.1
 #
 /gun/particle proton
@@ -57,7 +63,7 @@ Command is ignored.
  Do not adjust final state       1
  Produce fission fragments       1
  Use WendtFissionModel           0
- Use NRESP71Model                0
+ Use NRESP71Model                1
  Use DBRC                        0
  PHP use Poisson                 0
  PHP check                       1
@@ -174,7 +180,7 @@ Command is ignored.
   Process: photonNuclear
         Model:               GammaNPreco: 0 eV  ---> 200 MeV
         Model:            BertiniCascade: 199 MeV ---> 10 GeV
-     Cr_sctns:            PhotoNuclearXS: 0 eV  ---> 100 TeV
+     Cr_sctns:            GammaNuclearXS: 0 eV  ---> 100 TeV
 -----------------------------------------------------------------------
                            Hadronic Processes for kaon+
   Process: hadElastic
@@ -213,18 +219,17 @@ Command is ignored.
   Process: neutronInelastic
         Model:                      QGSP: 12 GeV ---> 100 TeV
         Model:                      FTFP: 3 GeV ---> 25 GeV
-        Model:            Binary Cascade: 19.9 MeV ---> 6 GeV
+        Model:            BertiniCascade: 1 GeV ---> 6 GeV
+        Model:            Binary Cascade: 19.9 MeV ---> 1.5 GeV
         Model:        NeutronHPInelastic: 0 eV  ---> 20 MeV
      Cr_sctns:      NeutronHPInelasticXS: 0 eV  ---> 20 MeV
      Cr_sctns:      G4NeutronInelasticXS: 0 eV  ---> 100 TeV
-  Process: nCapture
-        Model:          NeutronHPCapture: 0 eV  ---> 20 MeV
-        Model:               nRadCapture: 19.9 MeV ---> 100 TeV
+  Process: nCaptureHP
+        Model:             nRadCaptureHP: 0 eV  ---> 100 TeV
      Cr_sctns:        NeutronHPCaptureXS: 0 eV  ---> 100 TeV
      Cr_sctns:        G4NeutronCaptureXS: 0 eV  ---> 100 TeV
-  Process: nFission
+  Process: nFissionHP
         Model:          NeutronHPFission: 0 eV  ---> 20 MeV
-        Model:                G4LFission: 19.9 MeV ---> 100 TeV
      Cr_sctns:        NeutronHPFissionXS: 0 eV  ---> 20 MeV
      Cr_sctns:                    ZeroXS: 0 eV  ---> 100 TeV
 -----------------------------------------------------------------------
@@ -255,7 +260,8 @@ Command is ignored.
   Process: protonInelastic
         Model:                      QGSP: 12 GeV ---> 100 TeV
         Model:                      FTFP: 3 GeV ---> 25 GeV
-        Model:            Binary Cascade: 0 eV  ---> 6 GeV
+        Model:            BertiniCascade: 1 GeV ---> 6 GeV
+        Model:            Binary Cascade: 0 eV  ---> 1.5 GeV
      Cr_sctns:  BarashenkovGlauberGribov: 0 eV  ---> 100 TeV
 -----------------------------------------------------------------------
                            Hadronic Processes for sigma-
@@ -279,10 +285,11 @@ Command is ignored.
 =======================================================================
 ======       Geant4 Native Pre-compound Model Parameters       ========
 =======================================================================
+Type of pre-compound model                          0
 Type of pre-compound inverse x-section              1
 Pre-compound model active                           1
-Pre-compound excitation low energy                  100 keV
-Pre-compound excitation high energy                 30 MeV
+Pre-compound excitation low energy                  0.1 MeV 
+Pre-compound excitation high energy                 15 MeV 
 Angular generator for pre-compound model            1
 Use NeverGoBack option for pre-compound model       0
 Use SoftCutOff option for pre-compound model        0
@@ -295,9 +302,9 @@ Use HETC submodel for pre-compound model            0
 Type of de-excitation inverse x-section             3
 Type of de-excitation factory                       Evaporation+GEM
 Number of de-excitation channels                    68
-Min excitation energy                               10 eV 
-Min energy per nucleon for multifragmentation       200 GeV
-Limit excitation energy for Fermi BreakUp           20 MeV
+Type of Fermi BreakUp model                         ModelVI
+Min excitation energy                               0.01 keV 
+Min energy per nucleon for multifragmentation       2e+05 MeV
 Level density (1/MeV)                               0.075
 Use simple level density model                      1
 Use discrete excitation energy of the residual      0
@@ -340,17 +347,17 @@ N=17 V[N]={906770732717044781, 629165745432651234, 1235682547346241386, 68420008
  Run terminated.
 Run Summary
   Number of events processed : 10000
-  User=0.050000s Real=0.051463s Sys=0.000000s
+  User=0.050000s Real=0.053883s Sys=0.000000s
 
  The run is 10000 proton of 10 MeV through 10 m   of Molybdenum98 (density: 10.28 g/cm3 )
 
  Process calls frequency:
-	hadElastic= 8135	protonInelastic= 1865
+	hadElastic= 8041	protonInelastic= 1959
 
 
- MeanFreePath:	4.9528 cm  +- 4.9326 cm 	massic: 50.915 g/cm2 
- CrossSection:	0.20191 cm^-1 		massic: 1.9641 mm2/g 
- crossSection per atom:	3.1931 barn  
+ MeanFreePath:	4.983 cm  +- 4.8835 cm 	massic: 51.225 g/cm2 
+ CrossSection:	0.20068 cm^-1 		massic: 1.9522 mm2/g 
+ crossSection per atom:	3.1738 barn  
 
  Verification: crossSections from G4HadronicProcessStore
 
@@ -360,37 +367,36 @@ Run Summary
 
  List of nuclear reactions: 
 
-                        proton + Mo98 --> N gamma or e- + Tc99:      21   Q =  6.4903 MeV
-               proton + Mo98 --> N gamma or e- + Tc99[142.684]:       3   Q =  6.3448 MeV
-              proton + Mo98 --> N gamma or e- + neutron + Tc98:    1695   Q = -2.4768 MeV
-     proton + Mo98 --> N gamma or e- + neutron + Tc98[138.590]:     106   Q = -2.6182 MeV
-      proton + Mo98 --> N gamma or e- + neutron + Tc98[90.770]:      15   Q = -2.5661 MeV
-               proton + Mo98 --> N gamma or e- + proton + Mo98:      24   Q = -7.5247 meV
-      proton + Mo98 --> N gamma or e- + proton + Mo98[734.750]:       1   Q = -734.75 keV
-                               proton + Mo98 --> proton + Mo98:    8135   Q = -0.0056849 meV
+                        proton + Mo98 --> N gamma or e- + Tc99:      22   Q =  6.4945 MeV
+             proton + Mo98 --> N gamma or e- + Tc99[142.68360]:       1   Q =  6.3518 MeV
+              proton + Mo98 --> N gamma or e- + neutron + Tc98:    1776   Q = -2.4725 MeV
+   proton + Mo98 --> N gamma or e- + neutron + Tc98[138.59000]:     120   Q = -2.6111 MeV
+    proton + Mo98 --> N gamma or e- + neutron + Tc98[90.77000]:      10   Q = -2.5633 MeV
+               proton + Mo98 --> N gamma or e- + proton + Mo98:      27   Q = -0.042596 meV
+    proton + Mo98 --> N gamma or e- + proton + Mo98[734.75000]:       3   Q = -734.75 keV
+                               proton + Mo98 --> proton + Mo98:    8041   Q = -0.0057252 meV
 
                           number of gamma or e- (ic): N = 1 --> 12
 
  List of generated particles:
-           Mo98:    8159  Emean =   32.88 keV	( 518.57 meV --> 403.53 keV)
-  Mo98[734.750]:       1  Emean =  213.75 keV	( 213.75 keV --> 213.75 keV)
-           Tc98:    1695  Emean =  119.51 keV	( 14.009 keV --> 303.68 keV)
-  Tc98[138.590]:     106  Emean =  124.94 keV	( 10.339 keV --> 298.32 keV)
-   Tc98[90.770]:      15  Emean =  136.39 keV	( 39.975 keV --> 236.45 keV)
-           Tc99:      21  Emean =  103.33 keV	( 89.385 keV --> 118.5 keV)
-  Tc99[142.684]:       3  Emean =  98.445 keV	( 96.511 keV --> 99.576 keV)
-             e-:     618  Emean =   58.96 keV	( 18.479 keV --> 1.0243 MeV)
-          gamma:   10203  Emean =  1.0555 MeV	( 1.9795 keV --> 12.578 MeV)
-        neutron:    1816  Emean =  1.7069 MeV	( 20.947 keV --> 7.1849 MeV)
-         proton:      25  Emean =  6.4261 MeV	( 3.8223 MeV --> 8.9363 MeV)
+           Mo98:    8068  Emean =  33.183 keV	( 1.9562 eV  --> 401.7 keV)
+  Mo98[734.75000]:       3  Emean =  91.773 keV	( 57.063 keV --> 144.47 keV)
+           Tc98:    1776  Emean =  118.67 keV	( 12.565 keV --> 295.23 keV)
+  Tc98[138.59000]:     120  Emean =  117.01 keV	( 23.062 keV --> 276.46 keV)
+  Tc98[90.77000]:      10  Emean =  143.27 keV	( 47.602 keV --> 214.71 keV)
+           Tc99:      22  Emean =  105.24 keV	( 91.697 keV --> 118.68 keV)
+  Tc99[142.68360]:       1  Emean =  96.941 keV	( 96.941 keV --> 96.941 keV)
+          gamma:   11380  Emean =  990.61 keV	( 7.9307 keV --> 12.073 MeV)
+        neutron:    1906  Emean =  1.7323 MeV	( 104.2 keV --> 7.007 MeV)
+         proton:      30  Emean =   6.643 MeV	( 3.6611 MeV --> 9.5463 MeV)
 
-   Momentum balance: Pmean =  50.271 eV 	( 0.00080125 meV --> 3.9649 keV) 
+   Momentum balance: Pmean =  933.25 meV	( 0.00078225 meV --> 60.587 eV ) 
 
 
 ------- MixMaxRng engine status -------
  Current state vector is:
 mixmax state, file version 1.0
-N=17 V[N]={1093877387788901833, 371147560395594651, 2010310641773795863, 707006126048023309, 1283752845460136263, 2136901667507396667, 1732726348304668616, 162871380996529247, 1617401799312215591, 701469719018658424, 1409313085569743966, 2272540614347028566, 2055787017028499992, 370409348396242833, 1696783569287438066, 1282169188348987666, 1030594570725304792} counter= 13sumtot= 1182475787385920786
+N=17 V[N]={1754264211422920542, 1082955125318936279, 402599475922890425, 146407241558192287, 1225671683646015187, 2098918383306110564, 960188014190822303, 1565495293656637349, 1956609809941606200, 1116121548833418844, 2046196586284439102, 1313911472640651208, 125255053698066180, 229358084532735297, 1889518433785165640, 349423770074452278, 1929443708649348895} counter= 6sumtot= 1745593823752856972
 ---------------------------------------
 ================== Deleting memory pools ===================
 Number of memory pools allocated: 11 of which, static: 0

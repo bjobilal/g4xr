@@ -76,8 +76,24 @@ public:
 
   void win_render() {
     if(!m_render_area) return;
-  //m_render_area->update();  //delayed.
     m_render_area->repaint(); //immediate.
+    m_session.sync();
+  }
+
+  void emit_win_render() {
+    if(!m_render_area) return;
+    m_render_area->update();  //delayed.
+  }
+
+  bool window_size(unsigned int& a_w,unsigned int& a_h) {
+    if(!m_render_area) {a_w = 0;a_h = 0;return false;}
+    a_w = (unsigned int)m_render_area->width();
+    a_h = (unsigned int)m_render_area->height();
+    return true;
+  }
+  void render_area_size(unsigned int& a_w,unsigned int& a_h) {
+    a_w = parent::width();
+    a_h = parent::height();
   }
 
   void set_device_interactor(tools::sg::device_interactor* a_interactor) {  //we do not have ownership.
@@ -101,6 +117,4 @@ protected:
 
 }}
 
-
 #endif
-

@@ -23,13 +23,15 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+/// \file PulseActionMessenger.cc
+/// \brief Implementation of the PulseActionMessenger class
 
 #include "PulseActionMessenger.hh"
 
 #include "PulseAction.hh"
 
 #include "G4UIcmdWithABool.hh"
+#include "G4UIcmdWithAString.hh"
 #include "G4UIdirectory.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

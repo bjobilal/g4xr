@@ -6,6 +6,36 @@ It must **not** be used as a substitute for writing good git commit messages!
 
 -------------------------------------------------------------------------------
 
+## 2026-02-20 Alberto Ribon (hadr-inclxx-V11-03-04)
+Two independent bug-fixes provided by Jean-Christophe David and Jason Hirtz :
+- G4INCLNNToNSK2piChannel.cc : replaced "if(iso==-2)" with "else if(iso==-2)".
+  (The problem was reported by Julia Yarba).
+- G4INCLCrossSectionsAntiparticles.cc : correct wrong formulae with isospins
+  concerning the cross sections N Nbar -> N Nbar + 2 pions.
+  The fix consists in exchanging the lines number 509 and 513.
+
+## 2025-12-09 Gabriele Cosmo
+- Fixed reported Coverity defects for use of std::move() in G4INCLCascade.cc
+  and G4INCLNbarAtrestEntryChannel.cc. Use G4 types consistently.
+
+## 2025-11-06 Gabriele Cosmo (hadr-inclxx-V11-03-03)
+- Fixed compilation warning for implicit type conversion on macOS/XCode
+  in G4INCLAntinucleiAtrestEntryChannel::getAnnihilationPosition().
+
+## 2025-10-01 Jean-Christophe David (hadr-inclxx-V11-03-02)
+- Extension of the INCLXX model to handle antineutron (at rest and in-flight).
+- Fix the use of INCL for the reactions antineutron + H1/H2 and decay omega/eta
+- Forbid the use of SRC
+- back to no hyperremnant.
+
+## 2025-05-16 Ben Morgan (hadr-inclxx-V11-03-01)
+- Replace the URL root.cern.ch with canonical root.cern
+  - Fixes [GitHub PR 87](https://github.com/Geant4/geant4/pull/87)
+  - Pure documentation, no functional change
+
+## 2025-02-13 Gabriele Cosmo (hadr-inclxx-V11-03-00)
+- Fixed one more reported Coverity defect for use of std::move() in G4INCLCascade.
+
 ## 2024-09-02 Gabriele Cosmo (hadr-inclxx-V11-02-01)
 - Fixed reported Coverity defects for use of std::move().
 

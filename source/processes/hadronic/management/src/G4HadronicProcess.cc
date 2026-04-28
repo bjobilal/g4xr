@@ -189,18 +189,6 @@ void G4HadronicProcess::BuildPhysicsTable(const G4ParticleDefinition& p)
   if(nullptr == masterProcess) {
     masterProcess = dynamic_cast<const G4HadronicProcess*>(GetMasterProcess());
   }
-  if(nullptr == masterProcess) {
-    if(1 < param->GetVerboseLevel()) {
-      G4ExceptionDescription ed;
-      ed << "G4HadronicProcess::BuildPhysicsTable: for "
-	 << GetProcessName() << " for " << p.GetParticleName()
-	 << " fail due to undefined pointer to the master process \n"
-	 << "  ThreadID= " << G4Threading::G4GetThreadId()
-	 << "  initialisation of worker started before master initialisation";
-      G4Exception("G4HadronicProcess::BuildPhysicsTable", "had066", 
-		  JustWarning, ed);
-    }
-  }
 
   // check particle for integral method
   if(isMaster || nullptr == masterProcess) {
@@ -454,14 +442,6 @@ G4HadronicProcess::PostStepDoIt(const G4Track& aTrack, const G4Step&)
         if ( G4UniformRand() > 0.5 ) { newPart = G4KaonZeroShort::Definition(); }
         else { newPart = G4KaonZeroLong::Definition(); }
         dynamicParticle->SetDefinition( newPart );
-	if ( nKaonWarn < 1 ) {
-	  ++nKaonWarn;
-	  G4ExceptionDescription ed;
-	  ed << " Hadronic model " << theInteraction->GetModelName() << G4endl;
-	  ed << " created " << part->GetParticleName() << G4endl;
-	  ed << " -> forced to be " << newPart->GetParticleName() << G4endl;
-	  G4Exception( "G4HadronicProcess::PostStepDoIt", "had007", JustWarning, ed );
-	}
       }
     }
   }

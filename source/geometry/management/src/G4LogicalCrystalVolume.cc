@@ -25,7 +25,7 @@
 //
 // Implementation of G4LogicalCrystalVolume
 //
-// 21-04-16, created by E.Bagli 
+// Author: Enrico Bagli (Ferrara Univ.), 21.04.2016
 // --------------------------------------------------------------------
 
 #include "G4LogicalCrystalVolume.hh"
@@ -102,14 +102,14 @@ void G4LogicalCrystalVolume::SetMillerOrientation(G4int h,
     
    G4ThreeVector norm = (h*GetBasis(0)+k*GetBasis(1)+l*GetBasis(2)).unit();
     
-   if (verboseLevel>1) G4cout << " norm = " << norm << G4endl;
+   if (verboseLevel>1) { G4cout << " norm = " << norm << G4endl; }
     
    // Aligns geometry +Z axis with lattice (hkl) normal
    fOrient = G4RotationMatrix::IDENTITY;
    fOrient.rotateZ(rot).rotateY(norm.theta()).rotateZ(norm.phi());
    fInverse = fOrient.inverse();
     
-   if (verboseLevel>1) G4cout << " fOrient = " << fOrient << G4endl;
+   if (verboseLevel>1) { G4cout << " fOrient = " << fOrient << G4endl; }
     
    // FIXME:  Is this equivalent to (phi,theta,rot) Euler angles???
 }

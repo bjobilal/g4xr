@@ -29,8 +29,6 @@
 // Andrew Walkden  27th March 1996
 // OpenGL view - opens window, hard copy, etc.
 
-#include "G4ios.hh"
-#include <CLHEP/Units/SystemOfUnits.h>
 #include "G4OpenGLViewer.hh"
 #include "G4OpenGLSceneHandler.hh"
 #include "G4OpenGLTransform3D.hh"
@@ -134,6 +132,7 @@ void G4OpenGLViewer::InitializeGLView ()
   glClearDepth (1.0);
   glDisable (GL_LINE_SMOOTH);
   glDisable (GL_POLYGON_SMOOTH);
+  glDisable (GL_POINT_SMOOTH);
 
 // clear the buffers and window?
   ClearView ();
@@ -1031,7 +1030,7 @@ std::string G4OpenGLViewer::getRealPrintFilename() {
   return temp;
 }
 
-GLdouble G4OpenGLViewer::getSceneNearWidth()
+G4double G4OpenGLViewer::GetSceneNearWidth()
 {
   if (!fSceneHandler.GetScene()) {
     return 0;

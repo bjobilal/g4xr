@@ -23,11 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file GB06/include/GB06ParallelWorldForSlices.hh
+/// \file GB06ParallelWorldForSlices.hh
 /// \brief Definition of the GB06ParallelWorldForSlices class
-//
-//
-//
+
 #ifndef GB06ParallelWorldForSlices_hh
 #define GB06ParallelWorldForSlices_hh
 
@@ -39,17 +37,16 @@ class G4PVReplica;
 class GB06ParallelWorldForSlices : public G4VUserParallelWorld
 {
   public:
-    GB06ParallelWorldForSlices(G4String worldName,G4bool bf);
-    ~GB06ParallelWorldForSlices();
+    GB06ParallelWorldForSlices(G4String worldName, G4bool bf);
+    ~GB06ParallelWorldForSlices() override;
 
   private:
-    virtual void Construct();
-    virtual void ConstructSD();
+    void Construct() override;
+    void ConstructSD() override;
 
     G4LogicalVolume* sliceLogical = nullptr;
     G4PVReplica* slicePhysical = nullptr;
     G4bool fBiasingFlag;
-
 };
 
 #endif

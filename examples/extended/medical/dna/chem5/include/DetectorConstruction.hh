@@ -22,6 +22,9 @@
 // * use  in  resulting  scientific  publications,  and indicate your *
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
+//
+/// \file DetectorConstruction.hh
+/// \brief Definition of the DetectorConstruction class
 
 // This example is provided by the Geant4-DNA collaboration
 // Any report or published results obtained using the Geant4-DNA software
@@ -32,8 +35,6 @@
 // The Geant4-DNA web site is available at http://geant4-dna.org
 //
 //
-/// \file DetectorConstruction.hh
-/// \brief Definition of the DetectorConstruction class
 
 #ifndef CHEM5_DetectorConstruction_h
 #define CHEM5_DetectorConstruction_h 1
@@ -54,12 +55,12 @@ class G4LogicalVolume;
 class DetectorConstruction : public G4VUserDetectorConstruction
 {
   public:
-    DetectorConstruction();
-    virtual ~DetectorConstruction();
+    DetectorConstruction() = default;
+    ~DetectorConstruction() override = default;
 
   public:
-    virtual G4VPhysicalVolume* Construct();
-    virtual void ConstructSDandField();
+    G4VPhysicalVolume* Construct() override;
+    void ConstructSDandField() override;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

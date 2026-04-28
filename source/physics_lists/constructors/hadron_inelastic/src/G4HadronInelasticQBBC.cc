@@ -86,7 +86,8 @@ G4HadronInelasticQBBC::G4HadronInelasticQBBC(G4int ver)
   SetPhysicsType(bHadronInelastic);
   auto param = G4HadronicParameters::Instance();
   param->SetEnableBCParticles(true);
-  param->SetEnableNeutronGeneralProcess(true);
+  param->SetEnableNeutronGeneralProcess(false);
+  param->SetUseRFilesForXS(true);
   param->SetVerboseLevel(ver);
 }
 
@@ -151,7 +152,7 @@ void G4HadronInelasticQBBC::ConstructProcess()
   G4ParticleDefinition* particle = G4Proton::Proton();
   G4HadronicProcess* hp = 
     new G4HadronInelasticProcess( particle->GetParticleName()+"Inelastic", particle );
-  hp->AddDataSet(new G4ParticleInelasticXS(particle));
+  hp->AddDataSet( new G4ParticleInelasticXS(particle) );
   hp->RegisterMe(theFTFP);
   hp->RegisterMe(theBERT);
   hp->RegisterMe(theBIC);

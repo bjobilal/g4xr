@@ -23,6 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file RunAction.cc
+/// \brief Implementation of the RunAction class
+
 // This example is provided by the Geant4-DNA collaboration
 // Any report or published results obtained using the Geant4-DNA software
 // shall cite the following Geant4-DNA collaboration publications:
@@ -33,8 +36,6 @@
 //
 // The Geant4-DNA web site is available at http://geant4-dna.org
 //
-/// \file RunAction.cc
-/// \brief Implementation of the RunAction class
 
 #include "RunAction.hh"
 
@@ -42,19 +43,52 @@
 #include "PrimaryGeneratorAction.hh"
 #include "Run.hh"
 
+#include "G4AnalysisManager.hh"
 #include "G4RunManager.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 RunAction::RunAction() : G4UserRunAction(), fpDetector(0), fpRun(0)
 {
-  fpDetector = dynamic_cast<const DetectorConstruction*>(
+    fpDetector = dynamic_cast<const DetectorConstruction*>(
     G4RunManager::GetRunManager()->GetUserDetectorConstruction());
+
+    // Create analysis manager
+    G4cout << "##### Create analysis manager "
+           << "  " << this << G4endl;
+    auto analysisManager = G4AnalysisManager::Instance();
+
+    analysisManager->SetDefaultFileType("root");
+
+    analysisManager->SetNtupleMerging(true);
+
+    analysisManager->SetActivation(true); // Set the possibility to activate or not
+
+    G4cout << "Using " << analysisManager->GetType() << " analysis manager" << G4endl;
+
+    // Create track information ntuple
+    analysisManager->CreateNtuple("track", "dnaphysics");
+    analysisManager->CreateNtupleDColumn("flagParticle");
+    analysisManager->CreateNtupleDColumn("x");
+    analysisManager->CreateNtupleDColumn("y");
+    analysisManager->CreateNtupleDColumn("z");
+    analysisManager->CreateNtupleDColumn("dirx");
+    analysisManager->CreateNtupleDColumn("diry");
+    analysisManager->CreateNtupleDColumn("dirz");
+    analysisManager->CreateNtupleDColumn("kineticEnergy");
+    analysisManager->CreateNtupleIColumn("trackID");
+    analysisManager->CreateNtupleIColumn("parentID");
+    analysisManager->FinishNtuple();
+
+    // Not activated by default
+    analysisManager->SetNtupleActivation(false);
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-RunAction::~RunAction() {}
+RunAction::~RunAction()
+{}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -68,6 +102,13 @@ G4Run* RunAction::GenerateRun()
 
 void RunAction::BeginOfRunAction(const G4Run*)
 {
+  auto analysisManager = G4AnalysisManager::Instance();
+
+  // Open an output file
+  G4String fileName = "spower";
+  analysisManager->OpenFile(fileName);
+
+  //
   const PrimaryGeneratorAction* primary = dynamic_cast<const PrimaryGeneratorAction*>(
     G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction());
 
@@ -84,4 +125,9 @@ void RunAction::BeginOfRunAction(const G4Run*)
 void RunAction::EndOfRunAction(const G4Run*)
 {
   if (isMaster) fpRun->EndOfRun();
+
+  // Save histograms
+  auto analysisManager = G4AnalysisManager::Instance();
+  analysisManager->Write();
+  analysisManager->CloseFile();
 }

@@ -37,6 +37,7 @@
 #include "G4UnitsTable.hh"
 #include "G4OpenGLStoredQtViewer.hh"
 #include "G4Threading.hh"
+#include "G4SystemOfUnits.hh"
 
 #include "G4OpenGLQtViewer.hh"
 #include "G4OpenGLSceneHandler.hh"
@@ -530,7 +531,7 @@ G4bool G4OpenGLQtViewer::ReadyToDraw() {
 //
 //   Create a popup menu for the widget. This menu is activated by right-mouse click
 //
-void G4OpenGLQtViewer::createPopupMenu()    {
+void G4OpenGLQtViewer::createPopupMenu() {
 
   fContextMenu = new QMenu("All");
 
@@ -702,6 +703,7 @@ void G4OpenGLQtViewer::G4manageContextMenuEvent(QContextMenuEvent *e)
 
     // launch menu
     if ( fContextMenu ) {
+      updateToolbarAndMouseContextMenu();
       fContextMenu->exec( e->globalPos() );
       //    delete fContextMenu;
     }
@@ -957,13 +959,9 @@ void G4OpenGLQtViewer::toggleAux(bool check) {
 
 
 void G4OpenGLQtViewer::togglePicking() {
-  // FIXME : Not the good way to do, we should handle the multiple cases of Icon/ContextMenu and CheckBox in a better way
+
   if (fUiQt) {
-    if (!fVP.IsPicking()) {
-      fUiQt->SetIconPickSelected();
-    } else {
-      fUiQt->SetIconRotateSelected();
-    }
+    fUiQt->TogglePickSelection();
   }
 
   G4UImanager* UI = G4UImanager::GetUIpointer();
@@ -1226,9 +1224,9 @@ void G4OpenGLQtViewer::G4MousePressEvent(QMouseEvent *evnt)
         float deltaY = ((float)getWinHeight()/2-evnt->pos().y());
 
         G4double coefTrans = 0;
-        coefTrans = ((G4double)getSceneNearWidth())/((G4double)getWinWidth());
+        coefTrans = ((G4double)GetSceneNearWidth())/((G4double)getWinWidth());
         if (getWinHeight() <getWinWidth()) {
-          coefTrans = ((G4double)getSceneNearWidth())/((G4double)getWinHeight());
+          coefTrans = ((G4double)GetSceneNearWidth())/((G4double)getWinHeight());
         }
         fVP.IncrementPan(-deltaX*coefTrans,deltaY*coefTrans,0);
         fVP.SetZoomFactor(1.5 * fVP.GetZoomFactor());
@@ -1282,7 +1280,7 @@ void G4OpenGLQtViewer::G4MouseReleaseEvent(QMouseEvent *evnt)
   fGLWidget->setCursor(QCursor(Qt::ArrowCursor));
 
   if (fVP.IsPicking()){  // pick
-    if ((delta.x() != 0) || (delta.y() != 0)) {
+    if ((delta.x() != 0) || (delta.y() != 0) || (evnt->button() & Qt::RightButton)) {
       return;
     }
     updatePickInfosWidget(evnt->pos().x()*factorX,evnt->pos().y()*factorY);
@@ -1413,15 +1411,7 @@ void G4OpenGLQtViewer::G4MouseMoveEvent(QMouseEvent *evnt)
       } else if (fAltKeyPress) {
         rotateQtSceneToggle(((float)deltaX),((float)deltaY));
       } else if (fShiftKeyPress) {
-        unsigned int sizeWin;
-        sizeWin = getWinWidth();
-        if (getWinHeight() < getWinWidth()) {
-          sizeWin = getWinHeight();
-        }
-
-        // L.Garnier : 08/2010 100 is the good value, but don't ask me why !
-        float factor = ((float)100/(float)sizeWin) ;
-        moveScene(-(float)deltaX*factor,-(float)deltaY*factor,0,false);
+        moveScene(-(float)deltaX, -(float)deltaY, 0, true);
       } else if (fControlKeyPress) {
         fVP.SetZoomFactor(fVP.GetZoomFactor()*(1+((float)deltaY)));
       }
@@ -1452,12 +1442,24 @@ void G4OpenGLQtViewer::moveScene(float dx,float dy, float dz,bool mouseMove)
   G4double coefTrans = 0;
   GLdouble coefDepth = 0;
   if(mouseMove) {
-    coefTrans = ((G4double)getSceneNearWidth())/((G4double)getWinWidth());
-    if (getWinHeight() <getWinWidth()) {
-      coefTrans = ((G4double)getSceneNearWidth())/((G4double)getWinHeight());
+    if (fVP.GetFieldHalfAngle() == 0.0) {
+      // Orthographic projection
+      coefTrans = ((G4double)GetSceneNearWidth()) / ((G4double)getWinWidth());
+      if (getWinHeight() < getWinWidth()) {
+        coefTrans = ((G4double)GetSceneNearWidth()) / ((G4double)getWinHeight());
+      }
+    } else {
+      // Perspective projection
+      G4double radius = fSceneHandler.GetScene()->GetExtent().GetExtentRadius();
+      if (radius <= 0.) radius = 1.;
+      const G4double cameraDistance = fVP.GetCameraDistance(radius);
+      coefTrans = cameraDistance * std::tan(fVP.GetFieldHalfAngle()) / ((G4double)getWinWidth());
+      if (getWinHeight() < getWinWidth()) {
+        coefTrans = cameraDistance * std::tan(fVP.GetFieldHalfAngle()) / ((G4double)getWinHeight());
+      }
     }
   } else {
-    coefTrans = getSceneNearWidth()*fPan_sens;
+    coefTrans = GetSceneNearWidth()*fPan_sens;
     coefDepth = getSceneDepth()*fDeltaDepth;
   }
   fVP.IncrementPan(-dx*coefTrans,dy*coefTrans,dz*coefDepth);
@@ -1507,7 +1509,19 @@ void G4OpenGLQtViewer::rotateQtSceneToggle(float dx, float dy)
 }
 
 
+G4bool G4OpenGLQtViewer::GetWindowSize(unsigned int& a_w, unsigned int& a_h)
+{
+  a_w = fWinSize_x / fGLWidget->devicePixelRatio();
+  a_h = fWinSize_y / fGLWidget->devicePixelRatio();
+  return true;
+}
 
+G4bool G4OpenGLQtViewer::GetRenderAreaSize(unsigned int& a_w, unsigned int& a_h)
+{
+  a_w = fWinSize_x;
+  a_h = fWinSize_y;
+  return true;
+}
 
 
 /** This is the benning of a rescale function. It does nothing for the moment
@@ -1537,10 +1551,17 @@ void G4OpenGLQtViewer::rescaleImage(
 void G4OpenGLQtViewer::G4wheelEvent (QWheelEvent * evnt)
 {
 #if (QT_VERSION < QT_VERSION_CHECK(5, 15, 0))
-  fVP.SetZoomFactor(fVP.GetZoomFactor()+(fVP.GetZoomFactor()*(evnt->delta())/1200));
+  double delta = evnt->delta();
 #else
-  fVP.SetZoomFactor(fVP.GetZoomFactor()+(fVP.GetZoomFactor()*(evnt->angleDelta().y())/1200));
+  double delta = evnt->angleDelta().y();
 #endif
+
+#if (QT_VERSION < QT_VERSION_CHECK(5, 14, 0))
+  ZoomFromMouseWheel(delta, evnt->modifiers() & Qt::ShiftModifier, evnt->pos().x(), evnt->pos().y());
+#else
+  ZoomFromMouseWheel(delta, evnt->modifiers() & Qt::ShiftModifier, evnt->position().x(), evnt->position().y());
+#endif
+
   updateQWidget();
 }
 
@@ -2688,8 +2709,6 @@ void G4OpenGLQtViewer::setCheckComponent(QTreeWidgetItem* item,bool check)
     const PVPath& fullPath = fTreeItemModels[item->data(0,Qt::UserRole).toInt()];
     // If a physical volume
     if (fullPath.size() > 0) {
-      SetTouchable(fullPath);
-      TouchableSetVisibility(fullPath, check);
       fMouseOnSceneTree = true;
     }
   }
@@ -2711,9 +2730,9 @@ void G4OpenGLQtViewer::setCheckComponent(QTreeWidgetItem* item,bool check)
 #if QT_VERSION < 0x060000
 #else
 //G.Barrand : from stackoverflow "How to render text with QOpenGLWidget":
-static void transform_point(GLdouble out[4], const GLdouble m[16], const GLdouble in[4])
+static void transform_point(GLdouble out[4], const GLdouble model[16], const GLdouble in[4])
 {
-#define M(row,col)  m[col*4+row]
+#define M(row,col)  model[col*4+row]
     out[0] =
         M(0, 0) * in[0] + M(0, 1) * in[1] + M(0, 2) * in[2] + M(0, 3) * in[3];
     out[1] =
@@ -3642,7 +3661,7 @@ void G4OpenGLQtViewer::changeColorAndTransparency(QTreeWidgetItem* item,int) {
 }
 
 
-void G4OpenGLQtViewer::changeColorAndTransparency(GLuint index, G4Color color) {
+void G4OpenGLQtViewer::changeColorAndTransparency(GLuint index, G4Color /*color*/) {
 
   // change vis attributes to set new colour
   G4int iPO = index;
@@ -3650,8 +3669,6 @@ void G4OpenGLQtViewer::changeColorAndTransparency(GLuint index, G4Color color) {
     const PVPath& fullPath = fTreeItemModels[iPO];
     // If a physical volume
     if (fullPath.size()) {
-      SetTouchable(fullPath);
-      TouchableSetColour(fullPath, color);
       fMouseOnSceneTree = true;
     }
   }
@@ -4110,7 +4127,7 @@ void G4OpenGLQtViewer::updateToolbarAndMouseContextMenu(){
    if (fBatchMode) {
      return;
    }
-
+   
   G4ViewParameters::DrawingStyle
   d_style = fVP.GetDrawingStyle();
 
@@ -4172,31 +4189,26 @@ void G4OpenGLQtViewer::updateToolbarAndMouseContextMenu(){
   if (fUiQt && fContextMenu) {
     if (fUiQt->IsIconPickSelected()) {
       fMousePickAction->setChecked(true);
-      fMouseZoomOutAction->setChecked(false);
-      fMouseZoomInAction->setChecked(false);
-      fMouseRotateAction->setChecked(false);
-      fMouseMoveAction->setChecked(false);
-    } else if (fUiQt->IsIconZoomOutSelected()) {
+    } else {
+      fMousePickAction->setChecked(false);  
+    }
+    if (fUiQt->IsIconZoomOutSelected()) {
       fMouseZoomOutAction->setChecked(true);
-      fMousePickAction->setChecked(false);
       fMouseZoomInAction->setChecked(false);
       fMouseRotateAction->setChecked(false);
       fMouseMoveAction->setChecked(false);
     } else if (fUiQt->IsIconZoomInSelected()) {
       fMouseZoomInAction->setChecked(true);
-      fMousePickAction->setChecked(false);
       fMouseZoomOutAction->setChecked(false);
       fMouseRotateAction->setChecked(false);
       fMouseMoveAction->setChecked(false);
     } else if (fUiQt->IsIconRotateSelected()) {
       fMouseRotateAction->setChecked(true);
-      fMousePickAction->setChecked(false);
       fMouseZoomOutAction->setChecked(false);
       fMouseZoomInAction->setChecked(false);
       fMouseMoveAction->setChecked(false);
     } else if (fUiQt->IsIconMoveSelected()) {
       fMouseMoveAction->setChecked(true);
-      fMousePickAction->setChecked(false);
       fMouseZoomOutAction->setChecked(false);
       fMouseZoomInAction->setChecked(false);
       fMouseRotateAction->setChecked(false);
@@ -4628,9 +4640,9 @@ void G4OpenGLQtViewer::updatePickInfosWidget(int aX, int aY) {
       ed->setVisible((false));
       ed->append(newStr.join(""));
 
-      std::cout << pickCoutButton->text().toStdString() << " "<< fPickInfosWidget->layout()->count()-1<< std::endl;
       int tmp = fPickInfosWidget->layout()->count()-1;
       connect(pickCoutButton, &QPushButton::clicked , [this, tmp](){ this->toggleSceneTreeComponentPickingCout(tmp);});
+
     }
   }
 
@@ -4671,6 +4683,7 @@ void G4OpenGLQtViewer::updatePickInfosWidget(int aX, int aY) {
   }
   // set picking cout visible
   fPickInfosScrollArea->setVisible(true);
+  dial->show();
 }
 
 
@@ -4707,8 +4720,6 @@ void G4OpenGLQtViewer::toggleSceneTreeComponentPickingCout(int pickItem) {
 void G4OpenGLQtViewer::currentTabActivated(int currentTab) {
   if (fUiQt->GetViewerTabWidget()->tabText(currentTab) == GetName().data())  {
     createViewerPropertiesWidget();
-//    createPickInfosWidget();  // Causes a /vis/set/touchable command to do with...
-//    createSceneTreeWidget();  // ...this old scene tree widget (no longer used)
   }
 }
 

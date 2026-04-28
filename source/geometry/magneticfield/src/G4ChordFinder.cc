@@ -25,7 +25,7 @@
 //
 // G4ChordFinder implementation
 //
-// Author: J.Apostolakis - Design and implementation - 25.02.1997
+// Author: John Apostolakis (CERN), 25.02.1997 - Design and implementation
 // -------------------------------------------------------------------
 
 #include <iomanip>
@@ -62,7 +62,9 @@
 #include "G4HelixHeum.hh"
 #include "G4BFieldIntegrationDriver.hh"
 
-#include "G4QSSDriverCreator.hh"
+#include "G4QSStepper.hh"
+#include "G4QSSDriver.hh"
+#include "G4AutoDelete.hh"
 
 #include "G4CachedMagneticField.hh"
 
@@ -70,12 +72,14 @@
 #include <memory>
 
 G4bool G4ChordFinder::gVerboseCtor = false;
+
 // ..........................................................................
 
 G4ChordFinder::G4ChordFinder(G4VIntegrationDriver* pIntegrationDriver)
-  : fDefaultDeltaChord(0.25 * mm), fIntgrDriver(pIntegrationDriver)
+  : fIntgrDriver(pIntegrationDriver)
 {
   // Simple constructor -- it does not create equation
+
   if( gVerboseCtor )
   {
     G4cout << "G4ChordFinder: Simple constructor -- it uses pre-existing driver." << G4endl;
@@ -90,7 +94,6 @@ G4ChordFinder::G4ChordFinder( G4MagneticField*        theMagField,
                               G4double                stepMinimum,
                               G4MagIntegratorStepper* pItsStepper,
                               G4int               stepperDriverId )
-  : fDefaultDeltaChord(0.25 * mm)
 {
   // Construct the Chord Finder
   // by creating in inverse order the Driver, the Stepper and EqRhs ...
@@ -104,12 +107,12 @@ G4ChordFinder::G4ChordFinder( G4MagneticField*        theMagField,
   G4bool useTemplatedStepper= (stepperDriverId == kTemplatedStepperType);  // Was 2 
   G4bool useRegularStepper  = (stepperDriverId == kRegularStepperType);    // Was 3
   G4bool useBfieldDriver    = (stepperDriverId == kBfieldDriverType);      // Was 4 
-  G4bool useG4QSSDriver     = (stepperDriverId == kQss2DriverType) || (stepperDriverId == kQss3DriverType);
+  G4bool useG4QSSDriver     = (stepperDriverId == kQss2DriverType) 
+                           || (stepperDriverId == kQss3DriverType);
  
-  if( stepperDriverId == kQss3DriverType)
+  if( stepperDriverId == kQss3DriverType )
   {
-    stepperDriverId = kQss2DriverType;
-    G4cout << " G4ChordFinder: QSS 3 is currently replaced by QSS 2 driver." << G4endl;
+    G4QSSMessenger::instance()->SetQssOrder(3);
   }
 
   using EquationType = G4Mag_UsualEqRhs;
@@ -146,12 +149,14 @@ G4ChordFinder::G4ChordFinder( G4MagneticField*        theMagField,
             << " - stepper ptr provided : "
             << ( pItsStepper==nullptr ? " no  " : " yes " ) << G4endl;
      if( pItsStepper==nullptr )
+     {
         G4cout << " - stepper/driver Id = " << stepperDriverId << " i.e. "
                << "  useFSAL = " << useFSALstepper
                << "  , useTemplated = " << useTemplatedStepper
                << "  , useRegular = " << useRegularStepper
                << "  , useFSAL = " << useFSALstepper        
                << G4endl;
+     }
   }
 #endif
 
@@ -303,27 +308,22 @@ G4ChordFinder::G4ChordFinder( G4MagneticField*        theMagField,
   }
   else if( useG4QSSDriver )
   {
-     if( stepperDriverId == kQss2DriverType )
+     G4int qssOrder= -1;
+     if ((stepperDriverId == kQss2DriverType) || (stepperDriverId == kQss3DriverType))
      {
-       auto qssStepper2 = G4QSSDriverCreator::CreateQss2Stepper(pEquation);
-       if( gVerboseCtor )
-       {
-         G4cout << "-- Created QSS-2 stepper" << G4endl;
-       }
-       fIntgrDriver = G4QSSDriverCreator::CreateDriver(qssStepper2);
+        qssOrder= (stepperDriverId == kQss2DriverType) ? 2 : 3;
+        G4QSSMessenger::instance()->SetQssOrder(qssOrder);
      }
-     else
-     {
-       auto qssStepper3 = G4QSSDriverCreator::CreateQss3Stepper(pEquation);
-       if( gVerboseCtor )
-       {
-         G4cout << "-- Created QSS-3 stepper" << G4endl;
-       }
-       fIntgrDriver = G4QSSDriverCreator::CreateDriver(qssStepper3);        
-     }
+     // Else we will use the default value, which can be steered interactively
+
+     fQssStepperOwned= new G4QSStepper(pEquation, 6);
+     auto qss_driver = new G4QSSDriver<G4QSStepper>(fQssStepperOwned);
+     fIntgrDriver = qss_driver;
+
      if( gVerboseCtor )
      {
-       G4cout << "-- G4ChordFinder: Using QSS Driver." << G4endl;
+        G4cout << "-- Created QSS-" << G4QSSMessenger::instance()->GetQssOrder() << " stepper" << G4endl;
+        G4cout << "-- G4ChordFinder: Using QSS Driver." << G4endl;
      }
   }
   else
@@ -417,6 +417,7 @@ G4ChordFinder::~G4ChordFinder()
   delete fEquation;
   delete fRegularStepperOwned;
   delete fNewFSALStepperOwned;
+  delete fQssStepperOwned;
   delete fCachedField;
   delete fIntgrDriver;
 }
@@ -638,6 +639,13 @@ ApproxCurvePointV( const G4FieldTrack& CurveA_PointVelocity,
   G4cout.precision(14);
 
   return Current_PointVelocity;
+}
+
+// ...........................................................................
+
+void G4ChordFinder::SetVerboseConstruction(G4bool v)
+{
+  gVerboseCtor = v;
 }
 
 // ...........................................................................

@@ -23,7 +23,6 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
 /// \file GB04ActionInitialization.hh
 /// \brief Definition of the GB04ActionInitialization class
 
@@ -39,10 +38,10 @@ class GB04ActionInitialization : public G4VUserActionInitialization
 {
   public:
     GB04ActionInitialization();
-    virtual ~GB04ActionInitialization();
+    ~GB04ActionInitialization() override;
 
-    virtual void BuildForMaster() const;
-    virtual void Build() const;
+    void BuildForMaster() const override;
+    void Build() const override;
 };
 
 #endif

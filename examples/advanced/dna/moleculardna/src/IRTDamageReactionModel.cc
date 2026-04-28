@@ -193,6 +193,7 @@ G4bool IRTDamageReactionModel::DoReaction(const G4Track& track, const G4double& 
   fpDNAPhyVolume = std::get<const G4VPhysicalVolume*>(vp);
   MakeReaction(track);
   RecordDNADamage();
+  G4Scheduler::Instance()->SetInteractionStep(true);// reset reaction list to avoid crash.
   return true;
 }
 

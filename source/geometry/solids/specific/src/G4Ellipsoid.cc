@@ -42,7 +42,6 @@
 #include "G4AffineTransform.hh"
 #include "G4GeometryTolerance.hh"
 #include "G4BoundingEnvelope.hh"
-#include "G4RandomTools.hh"
 #include "G4QuickRand.hh"
 
 #include "G4VPVParameterisation.hh"
@@ -56,6 +55,7 @@ namespace
 {
   G4Mutex polyhedronMutex  = G4MUTEX_INITIALIZER;
   G4Mutex lateralareaMutex = G4MUTEX_INITIALIZER;
+  G4Mutex ellipseMutex = G4MUTEX_INITIALIZER;
 }
 
 using namespace CLHEP;
@@ -302,7 +302,7 @@ EInside G4Ellipsoid::Inside(const G4ThreeVector& p) const
   G4double distR = fQ1 * rr - fQ2;
   G4double dist  = std::max(distZ, distR);
 
-  if (dist > halfTolerance) return kOutside;
+  if (dist > halfTolerance) { return kOutside; }
   return (dist > -halfTolerance) ? kSurface : kInside;
 }
 
@@ -336,26 +336,30 @@ G4ThreeVector G4Ellipsoid::SurfaceNormal( const G4ThreeVector& p) const
   }
 
   // Return normal
-  if (nsurf == 1) return norm;
-  else if (nsurf > 1) return norm.unit(); // edge
-  else
+  if (nsurf == 1)
   {
-#ifdef G4SPECSDEBUG
-    std::ostringstream message;
-    G4long oldprc = message.precision(16);
-    message << "Point p is not on surface (!?) of solid: "
-            << GetName() << "\n";
-    message << "Position:\n";
-    message << "   p.x() = " << p.x()/mm << " mm\n";
-    message << "   p.y() = " << p.y()/mm << " mm\n";
-    message << "   p.z() = " << p.z()/mm << " mm";
-    G4cout.precision(oldprc);
-    G4Exception("G4Ellipsoid::SurfaceNormal(p)", "GeomSolids1002",
-                JustWarning, message );
-    DumpInfo();
-#endif
-    return ApproxSurfaceNormal(p);
+    return norm;
   }
+  if (nsurf > 1)
+  {
+    return norm.unit(); // edge
+  }
+
+#ifdef G4SPECSDEBUG
+  std::ostringstream message;
+  G4long oldprc = message.precision(16);
+  message << "Point p is not on surface (!?) of solid: "
+          << GetName() << "\n";
+  message << "Position:\n";
+  message << "   p.x() = " << p.x()/mm << " mm\n";
+  message << "   p.y() = " << p.y()/mm << " mm\n";
+  message << "   p.z() = " << p.z()/mm << " mm";
+  G4cout.precision(oldprc);
+  G4Exception("G4Ellipsoid::SurfaceNormal(p)", "GeomSolids1002",
+              JustWarning, message );
+  DumpInfo();
+#endif
+  return ApproxSurfaceNormal(p);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -371,10 +375,11 @@ G4ThreeVector G4Ellipsoid::ApproxSurfaceNormal(const G4ThreeVector& p) const
   G4double rr = x * x + y * y + z * z;
   G4double distZ = std::abs(z - fZMidCut) - fZDimCut;
   G4double distR = std::sqrt(rr) - fR;
-  if  (distR > distZ && rr > 0.) // distR > distZ is correct!
+  if  (distR > distZ && rr > 0.)
+  { // distR > distZ is correct!
     return G4ThreeVector(x*fSx, y*fSy, z*fSz).unit();
-  else
-    return { 0., 0., std::copysign(1., z - fZMidCut) };
+  }
+  return { 0., 0., std::copysign(1., z - fZMidCut) };
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -394,10 +399,10 @@ G4double G4Ellipsoid::DistanceToIn(const G4ThreeVector& p,
   G4double safet = p.z() - fZTopCut;
   G4double safeb = fZBottomCut - p.z();
 
-  if (safex >= -halfTolerance && p.x() * v.x() >= 0.) return kInfinity;
-  if (safey >= -halfTolerance && p.y() * v.y() >= 0.) return kInfinity;
-  if (safet >= -halfTolerance && v.z() >= 0.) return kInfinity;
-  if (safeb >= -halfTolerance && v.z() <= 0.) return kInfinity;
+  if (safex >= -halfTolerance && p.x() * v.x() >= 0.) { return kInfinity; }
+  if (safey >= -halfTolerance && p.y() * v.y() >= 0.) { return kInfinity; }
+  if (safet >= -halfTolerance && v.z() >= 0.) { return kInfinity; }
+  if (safeb >= -halfTolerance && v.z() <= 0.) { return kInfinity; }
 
   // Relocate point, if required
   //
@@ -424,12 +429,12 @@ G4double G4Ellipsoid::DistanceToIn(const G4ThreeVector& p,
   G4double dzcut = fZDimCut;
   G4double pzcut = pz - fZMidCut;
   G4double distZ = std::abs(pzcut) - dzcut;
-  if (distZ >= -halfTolerance && pzcut * vz >= 0.) return kInfinity;
+  if (distZ >= -halfTolerance && pzcut * vz >= 0.) { return kInfinity; }
 
   G4double rr = px * px + py * py + pz * pz;
   G4double pv = px * vx + py * vy + pz * vz;
   G4double distR = fQ1 * rr - fQ2;
-  if (distR >= -halfTolerance && pv >= 0.) return kInfinity;
+  if (distR >= -halfTolerance && pv >= 0.) { return kInfinity; }
 
   G4double A = vx * vx + vy * vy + vz * vz;
   G4double B = pv;
@@ -437,7 +442,7 @@ G4double G4Ellipsoid::DistanceToIn(const G4ThreeVector& p,
   G4double D = B * B - A * C;
   // scratch^2 = R^2 - (R - halfTolerance)^2 = 2 * R * halfTolerance
   G4double EPS = A * A * fR * kCarTolerance; // discriminant at scratching
-  if (D <= EPS) return kInfinity; // no intersection or scratching
+  if (D <= EPS) { return kInfinity; } // no intersection or scratching
 
   // Find intersection with Z planes
   //
@@ -459,7 +464,8 @@ G4double G4Ellipsoid::DistanceToIn(const G4ThreeVector& p,
   G4double tmin = std::max(tzmin, trmin);
   G4double tmax = std::min(tzmax, trmax);
 
-  if (tmax - tmin <= halfTolerance) return kInfinity; // touch or no hit
+  if (tmax - tmin <= halfTolerance) { return kInfinity; } // touch or no hit
+
   return (tmin < halfTolerance) ? offset : tmin + offset;
 }
 
@@ -584,7 +590,9 @@ G4double G4Ellipsoid::DistanceToOut(const G4ThreeVector& p,
 
   // Find intersection with Z cuts
   //
-  G4double tzmax = (vz == 0.) ? DBL_MAX : (std::copysign(dzcut, vz) - pzcut) / vz;
+  G4double tzmax = (vz == 0.)
+                 ? DBL_MAX
+                 : (std::copysign(dzcut, vz) - pzcut) / vz;
 
   // Find intersection with lateral surface
   //
@@ -677,30 +685,6 @@ std::ostream& G4Ellipsoid::StreamInfo( std::ostream& os ) const
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Return volume
-
-G4double G4Ellipsoid::GetCubicVolume()
-{
-  if (fCubicVolume == 0.)
-  {
-    G4double piAB_3 = CLHEP::pi * fDx * fDy / 3.;
-    fCubicVolume = 4. * piAB_3 * fDz;
-    if (fZBottomCut > -fDz)
-    {
-      G4double hbot = 1. + fZBottomCut / fDz;
-      fCubicVolume -= piAB_3 * hbot * hbot * (2. * fDz - fZBottomCut);
-    }
-    if (fZTopCut < fDz)
-    {
-      G4double htop = 1. - fZTopCut / fDz;
-      fCubicVolume -= piAB_3 * htop * htop * (2. * fDz + fZTopCut);
-    }
-  }
-  return fCubicVolume;
-}
-
-//////////////////////////////////////////////////////////////////////////
-//
 // Calculate area of lateral surface
 
 G4double G4Ellipsoid::LateralSurfaceArea() const
@@ -787,12 +771,39 @@ G4double G4Ellipsoid::LateralSurfaceArea() const
 
 //////////////////////////////////////////////////////////////////////////
 //
+// Return volume
+
+G4double G4Ellipsoid::GetCubicVolume()
+{
+  if (fCubicVolume == 0)
+  {
+    G4AutoLock l(&ellipseMutex);
+    G4double piAB_3 = CLHEP::pi * fDx * fDy / 3.;
+    fCubicVolume = 4. * piAB_3 * fDz;
+    if (fZBottomCut > -fDz)
+    {
+      G4double hbot = 1. + fZBottomCut / fDz;
+      fCubicVolume -= piAB_3 * hbot * hbot * (2. * fDz - fZBottomCut);
+    }
+    if (fZTopCut < fDz)
+    {
+      G4double htop = 1. - fZTopCut / fDz;
+      fCubicVolume -= piAB_3 * htop * htop * (2. * fDz + fZTopCut);
+    }
+    l.unlock();
+  }
+  return fCubicVolume;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
 // Return surface area
 
 G4double G4Ellipsoid::GetSurfaceArea()
 {
   if (fSurfaceArea == 0.)
   {
+    G4AutoLock l(&ellipseMutex);
     G4double piAB = CLHEP::pi * fDx * fDy;
     fSurfaceArea = LateralSurfaceArea();
     if (fZBottomCut > -fDz)
@@ -805,6 +816,7 @@ G4double G4Ellipsoid::GetSurfaceArea()
       G4double htop = 1. - fZTopCut / fDz;
       fSurfaceArea += piAB * htop * (2. - htop);
     }
+    l.unlock();
   }
   return fSurfaceArea;
 }
@@ -822,8 +834,9 @@ G4ThreeVector G4Ellipsoid::GetPointOnSurface() const
   G4double Ztop = GetZTopCut();
 
   // Calculate cut areas
-  G4double Hbot = 1. + Zbot / C;
-  G4double Htop = 1. - Ztop / C;
+  G4double invC = 1. / C;
+  G4double Hbot = 1. + Zbot * invC;
+  G4double Htop = 1. - Ztop * invC;
   G4double piAB = CLHEP::pi * A * B;
   G4double Sbot = piAB * Hbot * (2. - Hbot);
   G4double Stop = piAB * Htop * (2. - Htop);
@@ -840,47 +853,46 @@ G4ThreeVector G4Ellipsoid::GetPointOnSurface() const
   // Select surface (0 - bottom cut, 1 - lateral surface, 2 - top cut)
   G4double select = (Sbot + Slat + Stop) * G4QuickRand();
   G4int k = 0;
-  if (select > Sbot) k = 1;
-  if (select > Sbot + Slat) k = 2;
+  k += (G4int)(select > Sbot);
+  k += (G4int)(select > Sbot + Slat);
 
-  // Pick random point on selected surface (rejection sampling)
+  // Pick random point on selected surface
+  G4double phi = CLHEP::twopi * G4QuickRand();
+  G4double cosphi = std::cos(phi);
+  G4double sinphi = std::sin(phi);
   G4ThreeVector p;
   switch (k)
   {
-    case 0: // bootom z-cut
+    case 0: // bootom z-cut, ellipse
     {
       G4double scale = std::sqrt(Hbot * (2. - Hbot));
-      G4TwoVector rho = G4RandomPointInEllipse(A * scale, B * scale);
-      p.set(rho.x(), rho.y(), Zbot);
+      G4double rho = scale*std::sqrt(G4QuickRand());
+      p.set(A * rho * cosphi, B * rho * sinphi, Zbot);
       break;
     }
-    case 1: // lateral surface
+    case 1: // lateral surface (rejection sampling)
     {
       G4double x, y, z;
-      G4double mu_max = std::max(std::max(A * B, A * C), B * C);
-      for (G4int i = 0; i < 1000; ++i)
+      G4double s_max = std::max(std::max(A * B, A * C), B * C);
+      for (G4int i = 0; i < 10000; ++i)
       {
         // generate random point on unit sphere
-        z = (Zbot + (Ztop - Zbot) * G4QuickRand()) / C;
+        z = (Zbot + (Ztop - Zbot) * G4QuickRand()) * invC;
         G4double rho = std::sqrt((1. + z) * (1. - z));
-        G4double phi = CLHEP::twopi * G4QuickRand();
-        x = rho * std::cos(phi);
-        y = rho * std::sin(phi);
+        x = rho * cosphi;
+        y = rho * sinphi;
         // check  acceptance
-        G4double xbc = x * B * C;
-        G4double yac = y * A * C;
-        G4double zab = z * A * B;
-        G4double mu  = std::sqrt(xbc * xbc + yac * yac + zab * zab);
-        if (mu_max * G4QuickRand() <= mu) break;
+        G4double ss  = sqr(B * C * x) + sqr(A * C * y) + sqr(A * B * z);
+        if (sqr(s_max * G4QuickRand()) <= ss) { break; }
       }
       p.set(A * x, B * y, C * z);
       break;
     }
-    case 2: // top z-cut
+    case 2: // top z-cut, ellipse
     {
       G4double scale  = std::sqrt(Htop * (2. - Htop));
-      G4TwoVector rho = G4RandomPointInEllipse(A * scale, B * scale);
-      p.set(rho.x(), rho.y(), Ztop);
+      G4double rho = scale*std::sqrt(G4QuickRand());
+      p.set(A * rho * cosphi, B * rho * sinphi, Ztop);
       break;
     }
   }

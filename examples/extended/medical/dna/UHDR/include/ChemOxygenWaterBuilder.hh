@@ -23,12 +23,17 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file ChemOxygenWaterBuilder.hh
+/// \brief Definition of the ChemOxygenWaterBuilder class
 
 #ifndef ChemOxygenWaterBuilder_hh
 #  define ChemOxygenWaterBuilder_hh 1
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#  include "G4VUserChemistryList.hh"
+#include "G4ChemTimeStepModel.hh"
 
 class G4DNAMolecularReactionTable;
+class G4DNAMolecularReactionData;
 
 class ChemOxygenWaterBuilder
 {
@@ -40,6 +45,10 @@ class ChemOxygenWaterBuilder
     static void SecondOrderReactionExtended(G4DNAMolecularReactionTable* pReactionTable);
 
     static void OxygenScavengerReaction(G4DNAMolecularReactionTable* pReactionTable);
+
+    static void CO2ScavengerReaction(G4DNAMolecularReactionTable* pReactionTable);
+
+    static void SetReactionType(G4DNAMolecularReactionData* pData, G4ChemTimeStepModel model);
 };
 
 #endif  //

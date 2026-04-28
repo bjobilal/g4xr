@@ -218,7 +218,7 @@ void G4VisCommandList::SetNewValue (G4UIcommand*, G4String newValue)
 
   G4VisManager::PrintAvailableVerbosity(G4cout);
   G4cout << G4endl;
-  fpVisManager->PrintAvailableGraphicsSystems(verbosity);
+  fpVisManager->PrintAvailableGraphicsSystems(G4VisManager::all);
   G4cout << G4endl;
   fpVisManager->PrintAvailableModels(verbosity);
   G4cout << G4endl;
@@ -560,8 +560,8 @@ G4VisCommandVerbose::G4VisCommandVerbose () {
   G4bool omitable;
 
   fpCommand = new G4UIcmdWithAString("/vis/verbose", this);
-  for (size_t i = 0; i < G4VisManager::VerbosityGuidanceStrings.size(); ++i) {
-    fpCommand -> SetGuidance(G4VisManager::VerbosityGuidanceStrings[i]);
+  for (const auto& VerbosityGuidanceString : G4VisManager::VerbosityGuidanceStrings) {
+    fpCommand -> SetGuidance(VerbosityGuidanceString);
   }
   fpCommand -> SetParameterName("verbosity", omitable=true);
   fpCommand -> SetDefaultValue("");

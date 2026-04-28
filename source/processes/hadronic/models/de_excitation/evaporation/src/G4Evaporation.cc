@@ -111,6 +111,10 @@ void G4Evaporation::InitialiseChannelFactory()
     theFBU = new G4FermiBreakUpVI();
     theFBU->Initialise();
   }
+  if (nullptr == theChannelFactory) {
+    channelType = fEvaporation;
+    theChannelFactory = new G4EvaporationFactory(thePhotonEvaporation);
+  }
   theChannels = theChannelFactory->GetChannel(); 
   nChannels = theChannels->size();   
   probabilities.resize(nChannels, 0.0);
@@ -214,7 +218,7 @@ void G4Evaporation::BreakFragment(G4FragmentVector* theResult,
     // loop over evaporation channels
     for(i=0; i<nChannels; ++i) {
       prob = (*theChannels)[i]->GetEmissionProbability(theResidualNucleus);
-      if(fVerbose > 1 && prob > 0.0) {
+      if (fVerbose > 1 && prob > 0.0) {
 	G4cout << "    Channel# " << i << "  prob= " << prob << G4endl; 
       }
       totprob += prob;
@@ -273,7 +277,10 @@ void G4Evaporation::BreakFragment(G4FragmentVector* theResult,
       if (probabilities[i] >= totprob) { break; }
     }
 
-    if(fVerbose > 1) { G4cout << "$$$ Channel # " << i << G4endl; }
+    if (fVerbose > 1) {
+      G4cout << "$$$ Selected Channel# " << i << " MaxChannel="
+	     << maxchannel << G4endl;
+    }
     G4Fragment* frag = (*theChannels)[i]->EmittedFragment(theResidualNucleus);
     if(fVerbose > 2 && frag) { G4cout << "   " << *frag << G4endl; }
 

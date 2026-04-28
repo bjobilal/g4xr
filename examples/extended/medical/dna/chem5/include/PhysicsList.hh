@@ -23,6 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file PhysicsList.hh
+/// \brief Definition of the PhysicsList class
+
 // This example is provided by the Geant4-DNA collaboration
 // Any report or published results obtained using the Geant4-DNA software
 // shall cite the following Geant4-DNA collaboration publication:
@@ -32,8 +35,6 @@
 // The Geant4-DNA web site is available at http://geant4-dna.org
 //
 //
-/// \file PhysicsList.hh
-/// \brief Definition of the PhysicsList class
 
 #ifndef CHEM5_PhysicsList_h
 #define CHEM5_PhysicsList_h 1
@@ -48,7 +49,7 @@ class G4EmDNAChemistry_option1;
 class PhysicsList : public G4VModularPhysicsList
 {
   public:
-    explicit PhysicsList();
+    PhysicsList();
     ~PhysicsList() override;
 
     void ConstructParticle() override;
@@ -57,9 +58,9 @@ class PhysicsList : public G4VModularPhysicsList
     void RegisterConstructor(const G4String& name);
 
   private:
-    G4VPhysicsConstructor* fEmDNAPhysicsList;
-    G4EmDNAChemistry* fEmDNAChemistryList;
-    G4EmDNAChemistry_option1* fEmDNAChemistryList1;
+    G4VPhysicsConstructor* fEmDNAPhysicsList = nullptr;
+    G4EmDNAChemistry* fEmDNAChemistryList = nullptr;
+    G4EmDNAChemistry_option1* fEmDNAChemistryList1 = nullptr;
     G4String fPhysDNAName;
 };
 #endif

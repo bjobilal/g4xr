@@ -35,6 +35,8 @@
 #include "G4CopyRandomState.hh"
 #include "G4GeometryManager.hh"
 #include "G4HCofThisEvent.hh"
+#include "G4LogicalBorderSurface.hh"
+#include "G4LogicalSkinSurface.hh"
 #include "G4LogicalVolume.hh"
 #include "G4LogicalVolumeStore.hh"
 #include "G4MTRunManagerKernel.hh"
@@ -80,6 +82,7 @@
 #include "G4WorkerRunManagerKernel.hh"
 #include "G4ios.hh"
 #include "Randomize.hh"
+#include "G4MaterialScanner.hh"
 
 #include <sstream>
 
@@ -129,7 +132,9 @@ G4RunManager::G4RunManager()
   randomNumberStatusForThisRun = oss.str();
   randomNumberStatusForThisEvent = oss.str();
   runManagerType = sequentialRM;
+  materialScanner = new G4MaterialScanner();
   G4UImanager::GetUIpointer()->SetAlias("RunMode sequential");
+
 }
 
 // --------------------------------------------------------------------
@@ -155,6 +160,7 @@ G4RunManager::G4RunManager(RMType rmType)
   switch (rmType) {
     case masterRM:
       kernel = new G4MTRunManagerKernel();
+      materialScanner = new G4MaterialScanner();
       break;
     case workerRM:
       kernel = new G4WorkerRunManagerKernel();
@@ -205,6 +211,7 @@ G4RunManager::~G4RunManager()
   delete timer;
   delete runMessenger;
   delete previousEvents;
+  delete materialScanner;
 
   // The following will work for all RunManager types
   // if derived class does the correct thing in the derived
@@ -632,6 +639,17 @@ void G4RunManager::Initialize()
 }
 
 // --------------------------------------------------------------------
+void G4RunManager::GeometryOptimisation()
+{
+  G4GeometryManager* geomManager = G4GeometryManager::GetInstance();
+  // G4bool configred = geomManager->IsParallelOptimisationConfigured();
+  // G4bool finished = geomManager->IsParallelOptimisationFinished();
+
+  geomManager->OpenGeometry();
+  geomManager->CloseGeometry(true, true);
+}
+
+// --------------------------------------------------------------------
 void G4RunManager::InitializeGeometry()
 {
   if (userDetector == nullptr) {
@@ -1015,13 +1033,15 @@ void G4RunManager::ReinitializeGeometry(G4bool destroyFirst, G4bool prop)
 {
   if (destroyFirst && G4Threading::IsMasterThread()) {
     if (verboseLevel > 0) {
-      G4cout << "#### Assemblies, Volumes and Solids Stores are wiped out." << G4endl;
+      G4cout << "#### Assembly, Volume, Solid, and Surface Stores are being cleaned." << G4endl;
     }
     G4GeometryManager::GetInstance()->OpenGeometry();
     G4AssemblyStore::GetInstance()->Clean();
     G4PhysicalVolumeStore::GetInstance()->Clean();
     G4LogicalVolumeStore::GetInstance()->Clean();
     G4SolidStore::GetInstance()->Clean();
+    G4LogicalSkinSurface::CleanSurfaceTable();
+    G4LogicalBorderSurface::CleanSurfaceTable();
 
     // remove all logical volume pointers from regions
     // exception: world logical volume pointer must be kept

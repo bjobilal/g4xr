@@ -25,8 +25,8 @@
 //
 //
 //
-#ifndef G4UIQt_h
-#define G4UIQt_h
+#ifndef G4UIQT_HH
+#define G4UIQT_HH
 
 #include "G4VBasicShell.hh"
 #include "G4VInteractiveSession.hh"
@@ -44,6 +44,7 @@ class QLineEdit;
 class G4UIsession;
 class QListWidget;
 class QTreeWidgetItem;
+class QSlider;
 class QTextEdit;
 class QTextBrowser;
 class QLabel;
@@ -58,6 +59,7 @@ class QCompleter;
 class QtGlobal;
 class QStandardItemModel;
 class QToolButton;
+class QRadioButton;
 
 // Class description :
 //
@@ -93,10 +95,10 @@ class G4QTabWidget : public QTabWidget
   G4int fLastCreated;
   G4int fPreferedSizeX;
   G4int fPreferedSizeY;
-  inline void setPreferredSize(QSize s)
+  inline void setPreferredSize(QSize size)
   {
-    fPreferedSizeX = s.width() + 6;  // tab label height + margin left+right
-    fPreferedSizeY = s.height() + 58;  // margin left+right
+    fPreferedSizeX = size.width() + 6;  // tab label height + margin left+right
+    fPreferedSizeY = size.height() + 58;  // margin left+right
   }
   inline QSize sizeHint() const override { return QSize(fPreferedSizeX, fPreferedSizeY); }
 };
@@ -191,13 +193,14 @@ class G4UIQt : public QObject, public G4VBasicShell, public G4VInteractiveSessio
 
   void SetIconMoveSelected();
   void SetIconRotateSelected();
-  void SetIconPickSelected();
+  void TogglePickSelection();
   void SetIconZoomInSelected();
   void SetIconZoomOutSelected();
   void SetIconHLHSRSelected();
   void SetIconHLRSelected();
   void SetIconSolidSelected();
   void SetIconWireframeSelected();
+  void SetIconCoudPointSelected();
   void SetIconPerspectiveSelected();
   void SetIconOrthoSelected();
 
@@ -242,6 +245,12 @@ class G4UIQt : public QObject, public G4VBasicShell, public G4VInteractiveSessio
   // Update "new" scene tree
   void UpdateSceneTree(const G4SceneTreeItem&) override;
 
+  // Update control widgets
+  void UpdateDrawingStyle(G4int style) override;
+  void UpdateProjectionStyle(G4int style) override;
+  void UpdateTransparencySlider(G4double depth, G4int option) override;
+
+
 public:
   ~G4UIQt() override;
   void Prompt(const G4String&);
@@ -252,7 +261,7 @@ public:
   G4int ReceiveG4cerr(const G4String&) override;
   //   G4String GetCommand(Widget);
 
- private:
+private:
   void SecondaryLoop(const G4String&);  // a VIRER
   void CreateHelpWidget();
   void InitHelpTreeAndVisParametersWidget();
@@ -279,6 +288,9 @@ public:
   void SceneTreeItemDoubleClicked(QTreeWidgetItem*);
   void SceneTreeItemExpanded(QTreeWidgetItem*);
   void SceneTreeItemCollapsed(QTreeWidgetItem*);
+  void SliderValueChanged(G4int value);
+  void SliderReleased();
+  void SliderRadioButtonClicked(G4int buttonNo);
   // Class for trapping special mouse events on new scene tree
   struct NewSceneTreeItemTreeWidget: public QTreeWidget {
     void mousePressEvent(QMouseEvent*) override;
@@ -295,13 +307,12 @@ public:
     G4int&) override;  // have to be implemeted because we heritate from G4VBasicShell
   bool eventFilter(QObject*, QEvent*) override;
   void ActivateCommand(G4String);
-#if (QT_VERSION < QT_VERSION_CHECK(5, 15, 0))
-  QMap<G4int, QString> LookForHelpStringInChildTree(G4UIcommandTree*, const QString&);
-#else
-  QMultiMap<G4int, QString> LookForHelpStringInChildTree(G4UIcommandTree*, const QString&);
-#endif
+
+  QMultiMap<G4double, QString> LookForHelpStringInChildTree(G4UIcommandTree*, const QString&);
+  G4double ComputeStringMatchScore(const QString&, const QString&);
   QWidget* CreateVisParametersTBWidget();
   QWidget* CreateHelpTBWidget();
+  QWidget* CreateTimeWindowWidget();
   G4UIDockWidget* CreateCoutTBWidget();
   QWidget* CreateHistoryTBWidget();
   G4UIDockWidget* CreateUITabWidget();
@@ -339,12 +350,18 @@ public:
   QListWidget* fHistoryTBTableList;
   QTreeWidget* fHelpTreeWidget;
   QWidget* fHelpTBWidget;
+  QWidget* fTimeWindowWidget;
   QWidget* fHistoryTBWidget;
   G4UIDockWidget* fCoutDockWidget;
   G4UIDockWidget* fUIDockWidget;
   QWidget* fSceneTreeWidget;
   QWidget* fNewSceneTreeWidget;
   NewSceneTreeItemTreeWidget* fNewSceneTreeItemTreeWidget;
+  G4int fMaxPVDepth;
+  QSlider* fNewSceneTreeSlider;
+  QRadioButton* fUnwrapButtonWidget;
+  QRadioButton* fFadeButtonWidget;
+  QRadioButton* fXrayButtonWidget;
   QWidget* fViewerPropertiesWidget;
   QWidget* fPickInfosWidget;
   QLineEdit* fHelpLine;
@@ -376,6 +393,7 @@ public:
   QPixmap* fZoomOutIcon;
   QPixmap* fWireframeIcon;
   QPixmap* fSolidIcon;
+  QPixmap* fPointCloudIcon;
   QPixmap* fHiddenLineRemovalIcon;
   QPixmap* fHiddenLineAndSurfaceRemovalIcon;
   QPixmap* fPerspectiveIcon;
@@ -386,6 +404,8 @@ public:
   QPixmap* fParamIcon;
   QPixmap* fPickTargetIcon;
   QPixmap* fExitIcon;
+  QPixmap* fResetCameraIcon;
+  QPixmap* fResetTargetPointIcon;
 
 #ifdef G4MULTITHREADED
   QComboBox* fThreadsFilterComboBox;
@@ -427,6 +447,8 @@ public:
   void SaveIconCallback(const QString&);
   void ViewerPropertiesIconCallback(int);
   void ChangePerspectiveOrtho(const QString&);
+  void ResetCameraCallback();
+
 };
 
 #endif

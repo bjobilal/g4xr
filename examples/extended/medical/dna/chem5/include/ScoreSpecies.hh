@@ -23,6 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file ScoreSpecies.hh
+/// \brief Definition of the ScoreSpecies class
+
 // This example is provided by the Geant4-DNA collaboration
 // Any report or published results obtained using the Geant4-DNA software
 // shall cite the following Geant4-DNA collaboration publication:
@@ -42,8 +45,6 @@
 
 class G4MolecularConfiguration;
 
-/** \file ScoreSpecies.hh*/
-
 // Description:
 //   This is a primitive scorer class for scoring the radiolitic species
 // produced after irradiation in a water volume
@@ -54,9 +55,9 @@ class G4MolecularConfiguration;
 class ScoreSpecies : public G4VPrimitiveScorer
 {
   public:
-    ScoreSpecies(G4String name, G4int depth = 0);
+    explicit ScoreSpecies(G4String name, G4int depth = 0);
 
-    virtual ~ScoreSpecies();
+    ~ScoreSpecies() override = default;
 
     /** Add a time at which the number of species should be recorded.
         Default times are set up to 1 microsecond.*/
@@ -66,19 +67,14 @@ class ScoreSpecies : public G4VPrimitiveScorer
     inline void ClearTimeToRecord() { fTimeToRecord.clear(); }
 
     /** Get number of recorded events*/
-    inline int GetNumberOfRecordedEvents() const { return fNEvent; }
+    inline G4int GetNumberOfRecordedEvents() const { return fNEvent; }
 
     /** Write results to an text file*/
     void ASCII();
 
     struct SpeciesInfo
     {
-        SpeciesInfo()
-        {
-          fNumber = 0;
-          fG = 0.;
-          fG2 = 0.;
-        }
+        SpeciesInfo() = default;
         SpeciesInfo(const SpeciesInfo& right)  // Species A(B);
         {
           fNumber = right.fNumber;
@@ -93,39 +89,38 @@ class ScoreSpecies : public G4VPrimitiveScorer
           fG2 = right.fG2;
           return *this;
         }
-        int fNumber;
-        double fG;
-        double fG2;
+        G4int fNumber = 0;
+        G4double fG = 0;
+        G4double fG2 = 0;
     };
 
   private:
-    typedef const G4MolecularConfiguration Species;
-    typedef std::map<Species*, SpeciesInfo> InnerSpeciesMap;
-    typedef std::map<double, InnerSpeciesMap> SpeciesMap;
+    using Species = const G4MolecularConfiguration;
+    using InnerSpeciesMap = std::map<Species*, SpeciesInfo>;
+    using SpeciesMap = std::map<double, InnerSpeciesMap> ;
     SpeciesMap fSpeciesInfoPerTime;
 
     std::set<G4double> fTimeToRecord;
 
-    int fNEvent;  // number of processed events
-    double fEdep;  // total energy deposition
+    G4int fNEvent = 0;  // number of processed events
+    G4double fEdep = 0;  // total energy deposition
 
   protected:
-    virtual G4bool ProcessHits(G4Step*, G4TouchableHistory*);
+    G4bool ProcessHits(G4Step*, G4TouchableHistory*) override;
 
   public:
-    virtual void Initialize(G4HCofThisEvent*);
-    virtual void EndOfEvent(G4HCofThisEvent*);
-    virtual void DrawAll();
-    virtual void PrintAll();
+    void Initialize(G4HCofThisEvent*) override;
+    void EndOfEvent(G4HCofThisEvent*) override;
+    void PrintAll() override;
     /** Method used in multithreading mode in order to merge
         the results*/
-    virtual void AbsorbResultsFromWorkerScorer(G4VPrimitiveScorer*);
-    virtual void OutputAndClear();
+    void AbsorbResultsFromWorkerScorer(G4VPrimitiveScorer*);
+    void OutputAndClear();
 
     SpeciesMap GetSpeciesInfo() { return fSpeciesInfoPerTime; }
 
   private:
-    G4int fHCID;
-    G4THitsMap<G4double>* fEvtMap;
+    G4int fHCID = -1;
+    G4THitsMap<G4double>* fEvtMap = nullptr;
 };
 #endif

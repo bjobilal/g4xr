@@ -49,6 +49,7 @@
 #include "G4ChatterjeeCrossSection.hh"
 #include "G4InterfaceToXS.hh"
 #include "G4IsotopeList.hh"
+#include "G4DeexPrecoUtility.hh"
 #include "G4Neutron.hh"
 #include "G4Proton.hh"
 #include "G4Deuteron.hh"
@@ -62,7 +63,9 @@
 
 namespace
 {
-  const G4double explim = 160.;
+  const G4double explim = 160.;        // limit of G4Exp argument, OPTxs = 0
+  const G4double lim = 2*CLHEP::MeV;   // limit on x-section interface, OPTxs = 1
+  const G4double kmin = 20*CLHEP::keV; // low-energy limit on primary kinetic energy
 }
 
 G4EvaporationProbability::G4EvaporationProbability(G4int anA, G4int aZ, 
@@ -91,9 +94,9 @@ G4EvaporationProbability::G4EvaporationProbability(G4int anA, G4int aZ,
   }
   
   if (0 == aZ) {
-    ResetIntegrator(30, 0.15*CLHEP::MeV, 0.02);
+    ResetIntegrator(0.15*CLHEP::MeV, 0.01);
   } else {
-    ResetIntegrator(30, 0.25*CLHEP::MeV, 0.03);
+    ResetIntegrator(0.20*CLHEP::MeV, 0.01);
   }
 }
 
@@ -123,7 +126,7 @@ G4double G4EvaporationProbability::TotalProbability(
   delta0 = pNuclearLevelData->GetPairingCorrection(fragZ, fragA);
   delta1 = pNuclearLevelData->GetPairingCorrection(resZ, resA);
   resA13 = pG4pow->Z13(resA);
-  /*      
+  /*
   G4cout << "G4EvaporationProbability: Z= " << theZ << " A= " << theA 
 	 << " resZ= " << resZ << " resA= " << resA 
 	 << " fragZ= " << fragZ << " fragA= " << fragA 
@@ -169,38 +172,53 @@ G4double G4EvaporationProbability::TotalProbability(
   return pProbability;
 }
 
-G4double G4EvaporationProbability::ComputeProbability(G4double K, G4double CB)
+G4double G4EvaporationProbability::ComputeProbability(G4double kinE, G4double CB)
 {
+  G4double K = std::max(kinE, kmin);
   // abnormal case - should never happens
   if(pMass < pEvapMass + pResMass + K) { return 0.0; }
     
-  G4double pEvapM2 = pEvapMass*pEvapMass;
-  G4double mres = std::sqrt(pMass*pMass + pEvapM2 - 2.*pMass*(pEvapMass + K));
+  G4double K1 = pMass - pEvapMass - K;
+  G4double mres = std::sqrt(K1*K1 - K*(2*pEvapMass + K));
 
   G4double excRes = mres - pResMass;
   if (excRes < 0.0) { return 0.0; }
-  G4double K1 = (pMass*(K + pEvapMass) - pEvapM2)/mres - pEvapMass;
-  K1 = std::max(K1, 0.0); 
-  G4double xs = CrossSection(K1, CB);
+  G4double K2 = 0.5*(pMass + pEvapMass + mres)*(pMass - pEvapMass - mres)/mres;
+  G4double xs = CrossSection(K2, CB);
   if (xs <= 0.0) { return 0.0; }
 
   a1 = pNuclearLevelData->GetLevelDensity(resZ, resA, excRes);
   G4double E0 = std::max(freeU - delta0, 0.0);
   G4double E1 = std::max(excRes - delta1, 0.0);
-  G4double prob = pcoeff*G4Exp(2.0*(std::sqrt(a1*E1) - std::sqrt(a0*E0)))*K1*xs;
+  G4double prob = pcoeff*G4Exp(2.0*(std::sqrt(a1*E1) - std::sqrt(a0*E0)))*K*xs;
   return prob;
 }
 
 G4double 
-G4EvaporationProbability::CrossSection(G4double K, G4double CB)
+G4EvaporationProbability::CrossSection(G4double kine, G4double CB)
 {
+  G4double K = std::max(kine, kmin);
   // compute power once
   if (OPTxs > 1 && 0 < index && resA != lastA) {
     lastA = resA;
     muu = G4KalbachCrossSection::ComputePowerParameter(resA, index);
   }
+  // In the case of OPTxs = 0 this method is not called
   if (OPTxs == 1) {
-    recentXS = fXSection->GetElementCrossSection(K, resZ)/CLHEP::millibarn;
+    G4int Z = std::min(resZ, ZMAXNUCLEARDATA);
+    if (0 == index) {
+      G4double e1 = lowEnergyLimitMeV[Z];
+      if (e1 == 0.0) { e1 = lim; }
+      K = std::max(K, e1);
+    } else {
+      if (K < 0.5*CB) {
+	recentXS = 0.0;
+	return recentXS;
+      }
+      K = std::max(K, 2*CB);
+    }
+    G4double corr = G4DeexPrecoUtility::CorrectionFactor(index, theZ, resA13, CB, kine);
+    recentXS = corr*fXSection->GetElementCrossSection(K, Z)/CLHEP::millibarn;
 
   } else if (OPTxs == 2) { 
     recentXS = G4ChatterjeeCrossSection::ComputeCrossSection(K, CB, resA13, muu,

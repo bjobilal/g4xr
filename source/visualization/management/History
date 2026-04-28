@@ -6,6 +6,257 @@ It must **not** be used as a substitute for writing good git commit messages!
 
 -------------------------------------------------------------------------------
 
+## 2025-11-07 John Allison (visman-V11-03-24)
+- G4VisExecutive.icc:
+  - Remove all references to HepRep.
+- G4VisManager.cc:
+  - Substitute G4FRSCENEHANDLER for G4HepRepFile in a comment about ClearTransientStore.
+- G4VisCommandsSceneAdd.cc, G4VisCommandsTouchable.cc, G4VisCommandsViewer.cc:
+  - Remove a mention of HepRep in command guidance.
+
+## 2025-11-05 John Allison (visman-V11-03-23)
+- G4VSceneHandler.cc: Fix another Coverity warning.
+
+## 2025-11-03 John Allison (visman-V11-03-22)
+- G4VisExecutive.icc:
+  - Remove all references to Qt3D.
+
+## 2025-11-03 John Allison (visman-V11-03-21)
+- G4VSceneHandler.cc: Fix Coverity warning.
+
+## 2025-10-31 Andrea Barresi (visman-V11-03-20)
+- G4VViewer:
+  - Added UpdateGUIControlWidgets, UpdateGUIDrawingStyle, UpdateGUIProjectionStyle, 
+    and UpdateGUITransparencySlider methods to update the GUI control widgets
+-G4VisCommandsViewer:
+  - Added UpdateGUIControlWidgets to G4VisCommandViewerSelect::SetNewValue to 
+    update the control widget when the viewer is changed
+  
+## 2025-10-24 Guy Barrand (visman-V11-03-19)
+- G4VisExecutive.icc: Vtk: remove "#undef G4VIS_USE_TOOLSSG_QT_GLES" within the
+  first "#ifdef G4VIS_USE_VTK" block, since ToolsSG-GLES compiles now with OpenGL-3.2
+  if Vtk is choosen, and then can cowork with Vtk at run time.
+  Remove also the "#undef G4VIS_USE_TOOLSSG_[X11,XT,WINDOWS]_GLES" irrelevant with
+  a Qt build.
+
+## 2025-10-15 John Allison (visman-V11-03-18)
+- Smooth dots default and end-of-run drawing.
+  - Following updates to ToolsSG, its behaviour matches OGL's.
+  - Change dotsSmooth initialisation so that dots are typically drawn as
+    filled circles.
+  - We can remove temporary "workaround" in G4VisManager.
+- G4ViewParameters.cc:
+  - fDotsSmooth initialised to true.
+- G4VisCommandsViewerSet.cc:
+  - Improved guidance for vis/viewer/set/dotsSmooth:
+    - "Smooth" typically means rounded, i.e., dots drawn as filled circles.
+      The vis system is configured by default to draw smooth dots. This may
+      be switched off with "/vis/viewer/set/dotsSmooth false" - typically
+      this will result in square dots.
+- G4VisManager.cc:
+  - Remove temporary "workaround" RefreshView() from G4VisManager::EndDraw(2D)().
+
+## 2025-10-01 John Allison (visman-V11-03-17)
+- Add /vis/viewer/set/dotsSize and dotsSmooth.
+  - G4PolyMarkers have a MarkerType that can be dots, circles, or squares. If
+    the MarkerType is G4PolyMarker::dots, the size is determined _only_ by
+    G4ViewParameters::GetDotsSize(), set with /vis/viewer/set/dotsSize. This
+    policy is enforced in G4VSceneHandler::GetMarkerSize(). Other types of
+    marker may be changed in size with /vis/viewer/set/globalMarkerScale.
+  - *Individual scene handlers should use GetMarkerSize() for _all_
+    types of marker*.
+  - *Thus, dots size can no longer be changed with /vis/viewer/set/globalMarkerScale.
+    Use /vis/viewer/set/dotsSize instead*.
+- G4ViewParameters:
+  - Add data members fDotsSize and fDotsSmooth and their access functions.
+  - Also augment operator>> and !=, PrintDifferences and the command dumping
+    routines (for /vis/viewer/save) as apppropriate.
+  - Change GetZoomToCursor() to IsZoomToCursor() to follow convention
+    for Boolean parameters.
+- G4VisCommandsViewerSet:
+  - Add /vis/viewer/set/dotsSize and dotsSmooth.
+  - Follow change in G4ViewParameters: GetZoomToCursor() to IsZoomToCursor().
+- G4VSceneHandler.cc:
+  - Enforce the above policy in G4VSceneHandler::GetMarkerSize().
+  - Remove statements such as dots.SetSize(G4VMarker::screen,1.), which
+    now have no effect for a polymarker of dots.
+- G4VViewer:
+  - Follow change in G4ViewParameters: GetZoomToCursor() to IsZoomToCursor().
+
+## 2025-08-23 Andrea Barresi (visman-V11-03-16)
+- G4VViewer.cc:
+  - Changed Shift key modifier behavior to enable ZoomToCursor while pressed.
+
+## 2025-08-22 John Allison (visman-V11-03-15)
+- G4VisManager.cc:
+  - EndDraw() and EndDraw2D(): Refresh view at end of drawing.
+
+## 2025-08-04 John Allison (visman-V11-03-14)
+- G4VisExecutive.icc:
+  - Introduce nickname/alias TSGZB for appropriate driver by priority.
+- G4VisCommands.cc:
+  - Always print available drivers when using /vis/list.
+
+## 2025-06-18 Andrea Barresi (visman-V11-03-13)
+- G4ViewParameters:
+  - Added zoomToCursor parameter to control the zoom behavior of the mouse wheel.
+- G4VisCommandsViewerSet:
+  - Added command /vis/viewer/set/zoomToCursor to set the zoomToCursor VP
+- G4VViewer:
+  - Added ZoomFromMouseWheel function to control mouse wheel behavior
+  - Added virtual methods to get window size, render area size and scene near width
+  - Implemented ZoomToCursor algorithm to zoom toward the mouse cursor.
+  - General optimization of zoom behavior with mouse wheel. Added Shift key modifier 
+    to change zoom mode in perspective projection from Dolly (default) to zoomFactor.
+
+## 2025-06-08 John Allison (visman-V11-03-12)
+- G4ViewParameters.cc:
+  - Fix for bug report 2460.
+    - Fix typo whereby "/vis/viewer/set/lightsMove cam" behaves incorrectly for
+      "/vis/viewer/set/lightsVector 0 0 1".
+
+## 2025-06-01 John Allison (visman-V11-03-11)
+- Make TSG the "flagship" vis driver.
+- G4VisExecutive.icc:
+  - Make nickname/alias OGL synonymous with TSG.
+  - Make TSG default for selection by build flags.
+- G4VisManager.cc:
+  - Initialise fDefaultGraphicsSystemName to TSG.
+    - This is just for consistency, since it is overridden in
+      G4VisExecutive.icc anyway.
+
+## 2025-05-27 John Allison (visman-V11-03-10)
+- G4VViewer.cc:
+  - Initialise fTransientsNeedRedrawing(false).
+    - Previously, this was initialised "true", but it is up to the viewer
+      to decide if transients (trajectories) need redrawing.
+    - Testing with OGL, TSG and VTK actually shows no change of behaviour,
+      but some future developments are affected, so this MR corrects.
+
+## 2025-05-24 John Allison (visman-V11-03-09)
+- Minor improvement to listing of histograms (if any)
+- G4VisManager::EndOfRun:
+  - Print list of histograms even if vis is disabled.
+
+## 2025-04-06 John Allison (visman-V11-03-08)
+- G4VisCommandsSceneAdd:
+  - Add /vis/scene/add/endOfRunMacro.
+  - The macro is executed at end of run and when rebuild required.
+  - WARNING: some vis commands in the macro cause recursion. Stick to simple
+    commmands, e.g., which invoke vis manager Draw() methods.
+
+## 2025-04-02 John Allison (visman-V11-03-07)
+- Co-works: raytracer-V11-03-00, cmake-V11-03-02.
+- G4VisExecutive.icc: Add RayTracerQt.
+- G4VisCommandsViewer.cc: /vis/viewer/select:
+  - Remove subsequent refresh, even for auto-refresh drivers.
+  - Refresh not required after a select - window systems keep the image.
+
+## 2025-04-01 John Allison (visman-V11-03-06)
+- G4VisCommandsTouchable.cc:
+  - Disable /vis/touchable/centre... and /twinkle in the case of large process times.
+    - This was an omission. It is already done for /vis/viewer/interpolate, etc.
+    - If the time taken to (re-)build is greater than (currently) 0.1 s, fancy
+      features like zooming in on and twinkling that rely on rebuilds are disabled.
+
+## 2025-03-21 Ben Morgan (visman-V11-03-05)
+- Modernize g4tools macro-based loops with range-based for.
+- Update raw for loops with range-for where possible.
+
+## 2025-02-24 John Allison (visman-V11-03-04)
+- Split scene processing into its "permanent" (run-duration models) and "transient"
+  (end-of-event and end-of-run models) parts.
+  - This allows us to update just the
+    transient part, e.g., trajectories, which we might want to display in a
+    different way, leaving the permanent part (e.g., detector) unchanged, i.e.,
+    leaving the permanent part of the graphical database unchanged, avoiding
+    unnecessary re-processing. This is exactly the situation for time windowing -
+    the detector does not change, the trajectories also actually do not change,
+    just the way they are drawn changes.
+  - The idea is that the concrete viewer makes the decision in its DrawView().
+    Typically, a viewer has CompareForKernelVisit(), to be used when a *complete*
+    reprocessing is required, and CompareForTransientsRedraw() (say) if only
+    transient models need reprocessing.
+- G4VSceneHandler:
+  - Introduce virtual void ProcessTransients().
+  - Move pertinent code from ProcessScene() to ProcessTransients().
+    - ProcessScene() calls ProcessTransients(), i.e., the existing "kernel
+      visit" processes both permanent and transient models as before.
+  - Also some re-indentation within ProcessTransients().
+- G4VViewer:
+  - Introduce void ProcessTransients() and fTransientsNeedRedrawing flag.
+
+## 2025-02-20 John Allison (visman-V11-03-03)
+- G4VVisCommand.cc:
+  - InterpolateViews():
+    - Implement desired time per time step (or desired fps). Computation time
+      per step may cause this to increase (i.e., fps to fall below this).
+- G4VisCommandsViewer.cc:
+  - /vis/viewer/interpolate:
+    - Small improvement to guidance consequent on the above.
+- G4VisCommandsViewer.cc:
+  - /vis/viewer/set/timeWindow/displayHeadTime:
+    - Implement "current as default". This is more rational; prevents surprises.
+      There might be some minor change of behaviour.
+
+## 2025-02-01 John Allison (visman-V11-03-02)
+- Simplify G4ViewParameters.
+- Co-works: opengl-V11-03-01.
+- G4ViewParameters.hh/cc:
+  - Use single G4ModelingParameters::TimeParameters to replace 18 time window
+    parameters.
+- G4VSceneHandler.cc:
+  - Copy time parameters into modeling parameters.
+- G4VisCommandsViewerSet.cc:
+  - /vis/viewer/set/timeWindow commands:
+    - Follow changes in G4ViewParameters.
+
+## 2025-01-13 John Allison (visman-V11-03-01)
+- G4VisCommandsViewerSet:
+  - /vis/viewer/set/transparencyByDepth: improve guidance.
+
+## 2025-01-06 John Allison (visman-V11-03-00)
+- Co-works: modeling-V11-03-00, interfaces-V11-03-00, opengl-V11-03-00,
+  visQt3D-V11-03-00, vis_toolssg-V11-03-00, openinventor-V11-03-00,
+  greps-V11-03-00.
+- Re-instate the transparency slider.
+- The transparency slider, whereby the user could see into the geometry
+  progressively, was a powerful feature of the OpenGL Qt viewer, but it
+  suffered a demise when we moved to a generic (new) scene tree. In this
+  MR we re-implement it in a generic way, i.e., for all drivers. It is moved
+  from the OpenGL Qt viewer to the Qt GUI (G4UIQt) and uses a new command,
+  "/vis/viewer/set/transparencyByDepth <d> [option]". G4UIQt issues this
+  command on signals from the slider. The user may, of course, use this
+  command directly.
+- The command initiates a "kernel visit", which causes a rebuild of the
+  graphical database. This may sound very heavy, but it is remarkably quick
+  for reasonable geometries on modern CPUs. (It is envisaged that this
+  feature is most useful when a detector - or a sub-detector - is being
+  developed.)
+- The design is based on the original design by Laurent Garnier in OpenGL Qt.
+  Laurent's ideas have been borrowed - thanks, Laurent. It was prompted in
+  particular by a user, Andrea Barresi, who missed its presence in G4 11.2,
+  and made some concrete proposals for its reintroduction using existing
+  commands. In the end I felt it deserved a new command to maximise
+  efficiency, but I have really appreciated his engagement in the process
+  of developing this new feature, and one of the algorithms is his
+  (option 3, "X-ray"). Thank you, Andrea. Unfortunately, it didn't make 11.3.
+- G4VisManager:
+  - Tidy - mainly improved indentation.
+- G4VSceneHandler:
+  - Calculate and maintain fMaxGeometryDepth (new base class data member).
+    (The base class is G4VGraphicsScene in graphics_reps category. Placing
+    the data member there makes is accessible to G4PhysicalVolumeModel.)
+  - Improve some diagnostic printing.
+- G4VViewer:
+  - Follow changes in G4PhysicalVolumeModel
+  - Use pvModel->GetTotalAllTouchables()
+  - Tidy
+- G4ViewParameters:
+  - Add TransparencyByDepth and TransparencyByDepthOption.
+- G4VisCommandsViewerSet:
+  - Add /vis/viewer/set/transparencyByDepth.
+
 ## 2024-10-27 John Allison (visman-V11-02-28)
 - G4VisExecutive.icc:
   - Remove #include <QtGlobal> - no longer needed.

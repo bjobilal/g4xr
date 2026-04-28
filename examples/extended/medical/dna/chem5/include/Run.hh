@@ -23,6 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file Run.hh
+/// \brief Definition of the Run class
+
 // This example is provided by the Geant4-DNA collaboration
 // Any report or published results obtained using the Geant4-DNA software
 // shall cite the following Geant4-DNA collaboration publication:
@@ -32,8 +35,6 @@
 // The Geant4-DNA web site is available at http://geant4-dna.org
 //
 //
-/// \file Run.hh
-/// \brief Definition of the Run class
 
 #ifndef CHEM5_Run_h
 #define CHEM5_Run_h 1
@@ -54,17 +55,17 @@ class Run : public G4Run
 {
   public:
     Run();
-    virtual ~Run();
+    ~Run() override = default;
 
-    virtual void RecordEvent(const G4Event*);
-    virtual void Merge(const G4Run*);
+    void RecordEvent(const G4Event*) override;
+    void Merge(const G4Run*) override;
 
     G4double GetSumDose() const { return fSumEne; }
     G4VPrimitiveScorer* GetPrimitiveScorer() const { return fScorerRun; }
 
   private:
-    G4double fSumEne;
-    G4VPrimitiveScorer* fScorerRun;
+    G4double fSumEne = 0;
+    G4VPrimitiveScorer* fScorerRun = nullptr;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

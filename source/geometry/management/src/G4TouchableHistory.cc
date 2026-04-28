@@ -25,7 +25,7 @@
 // 
 // class G4TouchableHistory Implementation
 //
-// Created: Paul Kent, August 1996
+// Author: Paul Kent (CERN), August 1996
 // ----------------------------------------------------------------------
 
 #include "G4TouchableHistory.hh"
@@ -51,8 +51,6 @@ G4TouchableHistory::G4TouchableHistory( const G4NavigationHistory& history )
   frot = tf.InverseNetRotation();
 }
 
-G4TouchableHistory::~G4TouchableHistory() = default;
-
 const G4ThreeVector&
 G4TouchableHistory::GetTranslation(G4int depth) const
 { 
@@ -65,12 +63,8 @@ G4TouchableHistory::GetTranslation(G4int depth) const
   {
     return ftlate;
   }
-  else
-  {
-    *ctrans =
-      fhistory.GetTransform(CalculateHistoryIndex(depth)).NetTranslation();
-    return *ctrans;
-  }
+  *ctrans = fhistory.GetTransform(CalculateHistoryIndex(depth)).NetTranslation();
+  return *ctrans;
 }
 
 const G4RotationMatrix*
@@ -86,9 +80,6 @@ G4TouchableHistory::GetRotation(G4int depth) const
   {
     return &frot;
   }
-  else
-  {
-    *rotM = fhistory.GetTransform(CalculateHistoryIndex(depth)).NetRotation();
-    return rotM;
-  }
+  *rotM = fhistory.GetTransform(CalculateHistoryIndex(depth)).NetRotation();
+  return rotM;
 }

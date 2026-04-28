@@ -23,6 +23,9 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file chem6.cc
+/// \brief Main program of the dna/chem6 example
+
 // This example is provided by the Geant4-DNA collaboration
 // chem6 example is derived from chem4 and chem5 examples
 //
@@ -37,8 +40,6 @@
 //
 // Authors: W. G. Shin and S. Incerti (CENBG, France)
 //
-/// \file chem6.cc
-/// \brief Chem6 example
 
 #include "ActionInitialization.hh"
 #include "DetectorConstruction.hh"
@@ -48,7 +49,6 @@
 #include "G4RunManagerFactory.hh"
 #include "G4UIExecutive.hh"
 #include "G4UImanager.hh"
-#include "G4VisExecutive.hh"
 
 /*
  * WARNING : Geant4 was initially not intended for this kind of application
@@ -62,41 +62,41 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
 
 std::ofstream out;
-long seed = 0;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
 
-int main(int argc, char** argv)
+int main(const G4int argc, char** argv)
 {
   out.open("Species.txt", std::ios::app);
 
-  G4UIExecutive* ui = 0;
-  if (argc == 1) {
+  G4UIExecutive* ui = nullptr;
+  if (argc == 1)
+  {
     ui = new G4UIExecutive(argc, argv);
   }
 
-  G4Random::setTheEngine(new CLHEP::RanecuEngine);
+  // Optionally: choose a different Random engine...
+  // G4Random::setTheEngine(new CLHEP::MTwistEngine);
 
-  auto* runManager = G4RunManagerFactory::CreateRunManager();
+  auto runManager = G4RunManagerFactory::CreateRunManager();
 
   // Set mandatory initialization classes
   runManager->SetUserInitialization(new PhysicsList());
   runManager->SetUserInitialization(new DetectorConstruction());
   runManager->SetUserInitialization(new ActionInitialization());
 
-  // get the pointer to the User Interface manager
-  G4UImanager* UI = G4UImanager::GetUIpointer();
+  // Get the pointer to the User Interface manager
+  auto uiManager = G4UImanager::GetUIpointer();
 
-  if (argc > 1)  // batch mode
+  if (!ui)  // batch mode
   {
-    G4String command = "/control/execute ";
-    G4String fileName = argv[1];
-    UI->ApplyCommand(command + fileName);
+    const G4String& command = "/control/execute ";
+    const G4String& fileName = argv[1];
+    uiManager->ApplyCommand(command + fileName);
   }
-
-  else  // define visualization and UI terminal for interactive mode
+  else  // no interactive mode
   {
-    UI->ApplyCommand("/control/execute beam.in");
+    uiManager->ApplyCommand("/control/execute beam.in");
     delete ui;
   }
 
@@ -105,8 +105,8 @@ int main(int argc, char** argv)
   // owned and deleted by the run manager, so they should not be deleted
   // in the main() program !
   out.close();
+
   delete runManager;
-  return 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....

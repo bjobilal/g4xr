@@ -25,7 +25,7 @@
 //
 // G4SafetyCalculator class Implementation
 //
-// Author: John Apostolakis, CERN - February 2023
+// Author: John Apostolakis (CERN), February 2023
 // --------------------------------------------------------------------
 
 #include "G4SafetyCalculator.hh"
@@ -94,7 +94,7 @@ SafetyInCurrentVolume( const G4ThreeVector& pGlobalpoint,
     switch(dtype)
     {
       case kNormal:
-        if ( pVoxelHeader ) 
+        if ( pVoxelHeader != nullptr ) 
         {
           // New way: best safety
           safety = fVoxelSafety.ComputeSafety(localPoint,
@@ -165,7 +165,7 @@ QuickLocateWithinVolume( const G4ThreeVector& pointLocal,
   switch( CharacteriseDaughters(motherLogical) )
   {
     case kNormal:
-      if ( pVoxelHeader )
+      if ( pVoxelHeader != nullptr )
       {
         fvoxelNav.VoxelLocate( pVoxelHeader, pointLocal );
       }
