@@ -49,8 +49,6 @@
 #include "G4VNestedParameterisation.hh"
 #include "G4VPhysicalVolume.hh"
 
-
-
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -134,23 +132,24 @@ uint16_t G4XrSceneHandler::GetStringID(const std::string& s)
 void G4XrSceneHandler::AddPrimitive(const G4Polyline& polyline)
 {
     G4AttHolder holder;
-
     const G4VisAttributes* visAttr = polyline.GetVisAttributes();
-
     const G4TrajectoriesModel* trajModel = dynamic_cast<G4TrajectoriesModel*>(fpModel);
     if (trajModel)
     {
         if (trajModel->GetRunID() != runno) 
         {
             runno = trajModel->GetRunID();
-            loggedIDs.clear(); //loggedIDs is cleared as soon as a trajectory with a new run no. is seen.
-            InitializeBinary(); // create a new binary file.
+            loggedIDs.clear();
+            InitializeBinary();
         }
         const G4VTrajectory* traj = trajModel->GetCurrentTrajectory();
         if(traj)
         {
+            if (traj->GetTrackID() == 1)
+                loggedIDs.clear();
+
             int trackID = traj->GetTrackID();
-            if(loggedIDs.find(trackID)==loggedIDs.end()) // prevents logging a particular trajectory more than once
+            if(loggedIDs.find(trackID)==loggedIDs.end())
             {
                 double r = 0.0; double g = 0.0; double b = 0.0;
                 if (visAttr)
@@ -166,7 +165,6 @@ void G4XrSceneHandler::AddPrimitive(const G4Polyline& polyline)
         }
     }
 }
-
 
 void G4XrSceneHandler::AddPrimitive(const G4Text& text)
 {

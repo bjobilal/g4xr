@@ -131,7 +131,7 @@ class G4XrSceneHandler : public G4VSceneHandler
     std::vector<MeshData> collectedMeshes;
     std::vector<TrackData> collectedTracks;
     std::vector<HitData> collectedHits;
-    std::unordered_set<int> loggedIDs;
+    std::set<int> loggedIDs; 
 
     // instancing layers
     std::vector<MeshData> uniqueMeshes;
