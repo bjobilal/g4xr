@@ -34,6 +34,8 @@
 
 #include "G4Box.hh"
 #include "G4Circle.hh"
+#include "G4Event.hh"
+#include "G4EventManager.hh"
 #include "G4LogicalVolume.hh"
 #include "G4LogicalVolumeModel.hh"
 #include "G4Material.hh"
@@ -500,6 +502,8 @@ void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, G4double r,G4
     TrackData t;
 
     t.trackID = traj->GetTrackID();
+    const G4Event* currentEvent = G4EventManager::GetEventManager()->GetConstCurrentEvent();
+    t.eventID = currentEvent ? currentEvent->GetEventID() : -1;
     t.particleName = traj->GetParticleName();
     t.charge = traj->GetCharge();
 
@@ -533,6 +537,13 @@ void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, G4double r,G4
             t.pz.push_back(mom.z());
             double P = mom.mag();
             t.energy.push_back(std::sqrt(P*P + mass*mass));
+        }
+        else
+        {
+            t.px.push_back(0);
+            t.py.push_back(0);
+            t.pz.push_back(0);
+            t.energy.push_back(0);
         }
 
         auto* atts = p->CreateAttValues();
@@ -610,6 +621,7 @@ void G4XrSceneHandler::WriteTrackBinary(const TrackData& t)
     uint16_t nameID = GetStringID(t.particleName);
 
     out.write((char*)&t.trackID,4);
+    out.write((char*)&t.eventID,4);
     out.write((char*)&nameID,2);
     out.write((char*)&t.charge,8);
 

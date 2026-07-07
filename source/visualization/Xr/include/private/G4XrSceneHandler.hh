@@ -57,6 +57,7 @@ struct MeshData {
 struct TrackData
 {
     int trackID;
+    int eventID = -1;  
     std::string particleName;
     double charge;
 
@@ -88,10 +89,10 @@ struct InstanceData {
 struct Header
 {
     char magic[4] = {'G','4','T','K'};
-    uint32_t version = 1;
+    uint32_t version = 2;  
     uint32_t stringCount = 0;
     uint32_t trackCount = 0;
-}; 
+};
 
 class G4XrSceneHandler : public G4VSceneHandler
 {
