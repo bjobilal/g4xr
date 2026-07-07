@@ -21,6 +21,7 @@ geant4_module_link_libraries(G4visXr
   PUBLIC
     G4vis_management
   PRIVATE
+    G4event
     G4csg
     G4geometrymng
     G4globman
