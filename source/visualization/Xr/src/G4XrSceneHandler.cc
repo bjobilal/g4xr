@@ -330,6 +330,14 @@ void DecomposeTransform( const G4Transform3D& T, std::vector<double>& translatio
     rotation = { qx, qy, qz, qw };
 }
 
+static std::string DeepestVolume(const std::string& path)
+{
+    size_t slash = path.find_last_of('/');
+    std::string leaf = (slash == std::string::npos) ? path : path.substr(slash + 1);
+    size_t colon = leaf.find_last_of(':');            // drop ":copyNo"
+    return (colon == std::string::npos) ? leaf : leaf.substr(0, colon);
+}
+
 void G4XrSceneHandler::ConvertMeshToGLB(const std::string& outputFile)
 {
     tinygltf::Model model;
@@ -531,6 +539,7 @@ void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, G4double r,G4
 
         float time=0,edep=0;
         uint16_t procID=0;
+        uint16_t volID=0;                 
 
         if(atts)
         {
@@ -538,12 +547,13 @@ void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, G4double r,G4
             {
                 if(a.GetName()=="PostT")
                     time = std::stod(a.GetValue());
-
                 else if(a.GetName()=="TED")
                     edep = std::stod(a.GetValue());
-
                 else if(a.GetName()=="PDS")
                     procID = GetStringID(a.GetValue());
+                else if(a.GetName()=="PreVPath")
+                    {volID = GetStringID(DeepestVolume(a.GetValue()));
+                    std::cout << "In Volume: " << DeepestVolume(a.GetValue()) << std::endl;}
             }
             delete atts;
         }
@@ -551,6 +561,7 @@ void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, G4double r,G4
         t.time.push_back(time);
         t.edep.push_back(edep);
         t.processID.push_back(procID);
+        t.volumeID.push_back(volID);      
     }
     WriteTrackBinary(t);
 }
@@ -621,6 +632,7 @@ void G4XrSceneHandler::WriteTrackBinary(const TrackData& t)
     out.write((char*)t.energy.data(),sizeof(float)*n);
 
     out.write((char*)t.processID.data(),sizeof(uint16_t)*n);
+    out.write((char*)t.volumeID.data(),sizeof(uint16_t)*n);  
 
     // --- update header in file ---
     std::streampos endPos = out.tellp();

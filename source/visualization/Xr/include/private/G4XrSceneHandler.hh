@@ -70,6 +70,7 @@ struct TrackData
     std::vector<float> energy;
 
     std::vector<uint16_t> processID;
+    std::vector<uint16_t> volumeID;  
 };
 
 
