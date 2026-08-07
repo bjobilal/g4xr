@@ -83,7 +83,6 @@ class G4XrViewer : public G4VViewer
     const std::string UPLOAD_DIR = "./uploads";
     const int PORT = 2535;
     std::string URL;
-    bool safe_path(std::string& path) {return path.find("..") == std::string::npos;}
     static std::string get_local_ip();
     void push_file(const std::string& dirname = "/GLTF"); 
     int server_init();

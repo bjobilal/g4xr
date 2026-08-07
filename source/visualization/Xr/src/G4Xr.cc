@@ -9,6 +9,11 @@
 
 G4String G4Xr::fPendingSessionName = "";
 
+bool safe_path(const std::string& path)
+{
+    return path.find("..") == std::string::npos;
+}
+
 G4Xr::G4Xr()
   : G4VGraphicsSystem("Xr", "Xr", "Web delivery of XR file", G4VGraphicsSystem::noFunctionality)
 {

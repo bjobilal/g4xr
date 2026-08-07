@@ -28,7 +28,11 @@
 
 #include "G4VGraphicsSystem.hh"
 
-class G4XrMessenger; 
+#include <string>
+
+class G4XrMessenger;
+
+bool safe_path(const std::string& path);
 
 class G4Xr : public G4VGraphicsSystem
 {
