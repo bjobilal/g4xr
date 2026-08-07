@@ -38,7 +38,8 @@ geant4_module_link_libraries(G4visXr
     Qt${QT_VERSION_MAJOR}::3DExtras
     Qt${QT_VERSION_MAJOR}::3DRender
     G4tinygltf
-    G4cpp-httplib)
+    G4cpp-httplib
+    G4miniz)
 
 geant4_module_link_libraries(G4visXr PRIVATE G4UIimplementation)
 

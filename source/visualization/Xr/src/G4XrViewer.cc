@@ -1,7 +1,9 @@
 #include "G4XrViewer.hh"
 #include "G4VSceneHandler.hh"
-#include "G4XrSceneHandler.hh" 
-#include "G4Xr.hh"    
+#include "G4XrSceneHandler.hh"
+#include "G4Xr.hh"
+
+#include "miniz.h"
 
 // tinygltf
 // Define these only in *one* .cc file.
@@ -268,16 +270,39 @@ void G4XrViewer::SaveSession()
     }
     std::string zipName = fSessionName + ".zip";
 
-    std::string cmd = "zip -r " + zipName + " " + UPLOAD_DIR;
-    int ret = std::system(cmd.c_str());
-
-    if (ret != 0) {
-        G4cerr << "G4XrViewer: zip failed with code " << ret << G4endl;
+    if (!ZipDirectory(zipName, fs::path(UPLOAD_DIR))) {
+        G4cerr << "G4XrViewer: zip failed." << G4endl;
         return;
     }
 
     G4cout << "G4XrViewer: session saved to " << zipName << G4endl;
     WriteLauncherScript(zipName);
+}
+
+bool G4XrViewer::ZipDirectory(const std::string& zipName, const fs::path& srcDir)
+{
+    if (!fs::exists(srcDir)) return false;
+
+    mz_zip_archive zip;
+    mz_zip_zero_struct(&zip);
+    if (!mz_zip_writer_init_file(&zip, zipName.c_str(), 0)) return false;
+
+    bool ok = true;
+    for (const auto& entry : fs::recursive_directory_iterator(srcDir)) {
+        if (!entry.is_regular_file()) continue;
+
+        const std::string archiveName =
+            fs::relative(entry.path(), fs::current_path()).generic_string();
+        if (!mz_zip_writer_add_file(&zip, archiveName.c_str(), entry.path().string().c_str(),
+                                     nullptr, 0, MZ_DEFAULT_COMPRESSION)) {
+            ok = false;
+            break;
+        }
+    }
+
+    ok = ok && mz_zip_writer_finalize_archive(&zip);
+    mz_zip_writer_end(&zip);
+    return ok;
 }
 
 void G4XrViewer::WriteLauncherScript(const std::string& zipName)
@@ -290,6 +315,40 @@ void G4XrViewer::WriteLauncherScript(const std::string& zipName)
     }
 
     f << "#!/usr/bin/env python3\n"
+         "\"\"\"\n"
+         "G4Xr Session Replay Server\n\n"
+
+         "Description\n"
+         "-----------\n"
+         "Replays a G4Xr session previously saved by the Geant4 Xr visualization\n"
+         "driver (G4XrViewer). On startup, extracts the given session .zip (if not\n"
+         "already extracted) and runs a small HTTP server exposing the same\n"
+         "upload/download API used by G4XrViewer at simulation time, so a G4VR\n"
+         "client can reconnect and view the saved GLTF/GLB scene without rerunning\n"
+         "the Geant4 simulation.\n\n"
+
+         "Usage\n"
+         "-----\n"
+         "python3 g4xr_launch.py --zip <file_name>.zip\n\n"
+
+         "Requirements\n"
+         "------------\n"
+         "Python 3 standard library only (http.server, zipfile, os, socket, re,\n"
+         "json, cgi, argparse, pathlib, shutil) - no third-party packages needed.\n"
+         "Note: the cgi module was removed in Python 3.13, so this script requires\n"
+         "Python 3.3-3.12.\n\n"
+
+         "Author\n"
+         "------\n"
+         "Benjamin Jobilal\n"
+         "University of California, Los Angeles (2026)\n\n"
+
+         "Notes\n"
+         "-----\n"
+         "This script is distributed as part of the Geant4 visualization library.\n"
+         "See the Geant4 license for licensing information.\n"
+         "\"\"\"\n\n"
+
          "import http.server, zipfile, os, socket, re, json, cgi, argparse\n"
          "from pathlib import Path\n\n"
 

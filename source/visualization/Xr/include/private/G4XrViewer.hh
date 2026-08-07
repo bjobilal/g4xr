@@ -89,6 +89,7 @@ class G4XrViewer : public G4VViewer
 
     // save mode scripts
     void SaveSession();
+    bool ZipDirectory(const std::string& zipName, const fs::path& srcDir);
     void WriteLauncherScript(const std::string& zip_name);
     
 };
