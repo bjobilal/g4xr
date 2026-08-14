@@ -34,6 +34,8 @@
 
 #include "G4Box.hh"
 #include "G4Circle.hh"
+#include "G4Event.hh"
+#include "G4EventManager.hh"
 #include "G4LogicalVolume.hh"
 #include "G4LogicalVolumeModel.hh"
 #include "G4Material.hh"
@@ -143,6 +145,9 @@ void G4XrSceneHandler::AddPrimitive(const G4Polyline& polyline)
         const G4VTrajectory* traj = trajModel->GetCurrentTrajectory();
         if(traj)
         {
+            if (traj->GetTrackID() == 1)
+                loggedIDs.clear();
+
             int trackID = traj->GetTrackID();
             if(loggedIDs.find(trackID)==loggedIDs.end()) // prevents logging a particular trajectory more than once
             {
@@ -326,6 +331,14 @@ void DecomposeTransform( const G4Transform3D& T, std::vector<double>& translatio
     rotation = { qx, qy, qz, qw };
 }
 
+static std::string DeepestVolume(const std::string& path)
+{
+    size_t slash = path.find_last_of('/');
+    std::string leaf = (slash == std::string::npos) ? path : path.substr(slash + 1);
+    size_t colon = leaf.find_last_of(':');            // drop ":copyNo"
+    return (colon == std::string::npos) ? leaf : leaf.substr(0, colon);
+}
+
 void G4XrSceneHandler::ConvertMeshToGLB(const std::string& outputFile)
 {
     tinygltf::Model model;
@@ -488,6 +501,8 @@ void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, G4double r,G4
     TrackData t;
 
     t.trackID = traj->GetTrackID();
+    const G4Event* currentEvent = G4EventManager::GetEventManager()->GetConstCurrentEvent();
+    t.eventID = currentEvent ? currentEvent->GetEventID() : -1;
     t.particleName = traj->GetParticleName();
     t.charge = traj->GetCharge();
 
@@ -522,11 +537,19 @@ void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, G4double r,G4
             double P = mom.mag();
             t.energy.push_back(std::sqrt(P*P + mass*mass));
         }
+        else
+        {
+            t.px.push_back(0);
+            t.py.push_back(0);
+            t.pz.push_back(0);
+            t.energy.push_back(0);
+        }
 
         auto* atts = p->CreateAttValues();
 
         float time=0,edep=0;
         uint16_t procID=0;
+        uint16_t volID=0;
 
         if(atts)
         {
@@ -534,12 +557,13 @@ void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, G4double r,G4
             {
                 if(a.GetName()=="PostT")
                     time = std::stod(a.GetValue());
-
                 else if(a.GetName()=="TED")
                     edep = std::stod(a.GetValue());
-
                 else if(a.GetName()=="PDS")
                     procID = GetStringID(a.GetValue());
+                else if(a.GetName()=="PreVPath")
+                    {volID = GetStringID(DeepestVolume(a.GetValue()));
+                    std::cout << "In Volume: " << DeepestVolume(a.GetValue()) << std::endl;}
             }
             delete atts;
         }
@@ -547,6 +571,7 @@ void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, G4double r,G4
         t.time.push_back(time);
         t.edep.push_back(edep);
         t.processID.push_back(procID);
+        t.volumeID.push_back(volID);
     }
     WriteTrackBinary(t);
 }
@@ -595,6 +620,7 @@ void G4XrSceneHandler::WriteTrackBinary(const TrackData& t)
     uint16_t nameID = GetStringID(t.particleName);
 
     out.write((char*)&t.trackID,4);
+    out.write((char*)&t.eventID,4);
     out.write((char*)&nameID,2);
     out.write((char*)&t.charge,8);
 
@@ -617,6 +643,7 @@ void G4XrSceneHandler::WriteTrackBinary(const TrackData& t)
     out.write((char*)t.energy.data(),sizeof(float)*n);
 
     out.write((char*)t.processID.data(),sizeof(uint16_t)*n);
+    out.write((char*)t.volumeID.data(),sizeof(uint16_t)*n);
 
     // --- update header in file ---
     std::streampos endPos = out.tellp();
