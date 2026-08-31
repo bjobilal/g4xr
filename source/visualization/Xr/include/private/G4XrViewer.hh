@@ -52,6 +52,10 @@
 #include <chrono>
 #include <stdio.h>
 #include <vector>
+#include <string>
+#include <stdexcept>
+#include <ctime>
+#include <iomanip>
 
 namespace fs = std::filesystem;
 
@@ -72,16 +76,21 @@ class G4XrViewer : public G4VViewer
     httplib::Server svr;
     std::thread svr_thread;
     std::vector<std::string> pushedFiles;
-    G4VSceneHandler& sceneHandler; 
     
+    G4VSceneHandler& fSceneHandler;
+    std::string fSessionName = ""; 
+
     const std::string UPLOAD_DIR = "./uploads";
     const int PORT = 2535;
     std::string URL;
-    bool safe_path(std::string& path) {return path.find("..") == std::string::npos;}
     static std::string get_local_ip();
     void push_file(const std::string& dirname = "/GLTF"); 
     int server_init();
-    
+
+    // save mode scripts
+    void SaveSession();
+    bool ZipDirectory(const std::string& zipName, const fs::path& srcDir);
+    void WriteLauncherScript(const std::string& zip_name);
     
 };
 

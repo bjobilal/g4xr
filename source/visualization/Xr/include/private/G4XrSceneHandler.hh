@@ -34,9 +34,9 @@
 #define G4XRSCENEHANDLER_HH
 
 #include "G4VSceneHandler.hh"
-#include "G4XrViewer.hh"
+//#include "G4XrViewer.hh"
 
-#include "G4UIManager.hh"
+#include "G4UImanager.hh"
 
 #include "G4Polyhedron.hh"
 #include "G4Transform3D.hh"
@@ -45,6 +45,10 @@
 
 #include <map>
 #include <vector>
+#include <unordered_set>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 struct MeshData {
     std::string name;
@@ -57,7 +61,7 @@ struct MeshData {
 struct TrackData
 {
     int trackID;
-    int eventID = -1;  
+    int eventID = -1;
     std::string particleName;
     double charge;
 
@@ -71,7 +75,7 @@ struct TrackData
     std::vector<float> energy;
 
     std::vector<uint16_t> processID;
-    std::vector<uint16_t> volumeID;  
+    std::vector<uint16_t> volumeID;
 };
 
 
@@ -89,7 +93,7 @@ struct InstanceData {
 struct Header
 {
     char magic[4] = {'G','4','T','K'};
-    uint32_t version = 2;  
+    uint32_t version = 2;
     uint32_t stringCount = 0;
     uint32_t trackCount = 0;
 };

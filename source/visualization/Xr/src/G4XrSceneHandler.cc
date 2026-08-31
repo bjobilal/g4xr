@@ -83,12 +83,6 @@ G4XrSceneHandler::G4XrSceneHandler(G4VGraphicsSystem& system, const G4String& na
 
 G4XrSceneHandler::~G4XrSceneHandler()
 {
-
-    fs::path gltf = fs::current_path() / "GLTF";
-    fs::path uploads = fs::current_path() / "uploads";
-    fs::remove_all(gltf);
-    fs::remove_all(uploads);
-    std::cout << "G4Xr contents deleted." << std::endl;
 }
 
 void G4XrSceneHandler::InitializeBinary()
@@ -550,7 +544,7 @@ void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, G4double r,G4
 
         float time=0,edep=0;
         uint16_t procID=0;
-        uint16_t volID=0;                 
+        uint16_t volID=0;
 
         if(atts)
         {
@@ -572,7 +566,7 @@ void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, G4double r,G4
         t.time.push_back(time);
         t.edep.push_back(edep);
         t.processID.push_back(procID);
-        t.volumeID.push_back(volID);      
+        t.volumeID.push_back(volID);
     }
     WriteTrackBinary(t);
 }
@@ -644,7 +638,7 @@ void G4XrSceneHandler::WriteTrackBinary(const TrackData& t)
     out.write((char*)t.energy.data(),sizeof(float)*n);
 
     out.write((char*)t.processID.data(),sizeof(uint16_t)*n);
-    out.write((char*)t.volumeID.data(),sizeof(uint16_t)*n);  
+    out.write((char*)t.volumeID.data(),sizeof(uint16_t)*n);
 
     // --- update header in file ---
     std::streampos endPos = out.tellp();
