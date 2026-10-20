@@ -44,6 +44,8 @@
 #include "G4VisAttributes.hh"
 
 #include <map>
+#include <set>
+#include <utility>
 #include <vector>
 #include <unordered_set>
 #include <filesystem>
@@ -123,6 +125,7 @@ class G4XrSceneHandler : public G4VSceneHandler
     void WriteToCSV(const std::string& filename, const HitData hd);
 
     void FinalizeBinary();
+    void EnsureRichTrajectories();
     
     std::vector<MeshData> GetCollectedMeshes(){return collectedMeshes;}
     std::vector<TrackData> GetCollectedTracks(){return collectedTracks;}
@@ -137,7 +140,8 @@ class G4XrSceneHandler : public G4VSceneHandler
     std::vector<MeshData> collectedMeshes;
     std::vector<TrackData> collectedTracks;
     std::vector<HitData> collectedHits;
-    std::set<int> loggedIDs; 
+
+    std::set<std::pair<G4int, G4int>> loggedTracks;
 
     // instancing layers
     std::vector<MeshData> uniqueMeshes;
@@ -150,10 +154,12 @@ class G4XrSceneHandler : public G4VSceneHandler
     Header header;
     
     bool glbState = false;
+    bool fWarnedNotRich = false;
     G4int runno = -1;
 
     void InitializeBinary();
     uint16_t GetStringID(const std::string& s); 
+    G4int CurrentEventID() const;
 
 };
 

@@ -16,7 +16,11 @@ G4String GenerateDefaultSessionName()
 {
     std::time_t t = std::time(nullptr);
     std::tm tmBuf{};
+#ifdef _WIN32
+    localtime_s(&tmBuf, &t);
+#else
     localtime_r(&t, &tmBuf);
+#endif
 
     std::ostringstream dateStream;
     dateStream << std::put_time(&tmBuf, "%d_%m_%y");

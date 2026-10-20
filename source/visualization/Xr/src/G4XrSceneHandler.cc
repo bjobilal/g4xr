@@ -36,6 +36,8 @@
 #include "G4Circle.hh"
 #include "G4Event.hh"
 #include "G4EventManager.hh"
+#include "G4ModelingParameters.hh"
+#include "G4VModel.hh"
 #include "G4LogicalVolume.hh"
 #include "G4LogicalVolumeModel.hh"
 #include "G4Material.hh"
@@ -44,12 +46,21 @@
 #include "G4Polyhedron.hh"
 #include "G4Polyline.hh"
 #include "G4PseudoScene.hh"
+#include "G4Scene.hh"
 #include "G4Square.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4Text.hh"
+#include "G4Threading.hh"
+#include "G4UIcommand.hh"
 #include "G4UnitsTable.hh"
 #include "G4VNestedParameterisation.hh"
 #include "G4VPhysicalVolume.hh"
+
+#include <algorithm>
+#include <cstdint>
+#include <limits>
+#include <locale>
+#include <sstream>
 
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
@@ -77,8 +88,31 @@ G4int G4XrSceneHandler::fSceneIdCount = 0;
 G4XrSceneHandler::G4XrSceneHandler(G4VGraphicsSystem& system, const G4String& name)
   : G4VSceneHandler(system, fSceneIdCount++, name)
 {
-    // Added this to force rich trajectories
-    G4UImanager::GetUIpointer()->ApplyCommand("/vis/scene/add/trajectories rich");
+}
+
+void G4XrSceneHandler::EnsureRichTrajectories()
+{
+    // Called from G4XrViewer::DrawView
+    // This re-applies rich trajectories even if the user has changed it explicitly.
+    if (!G4Threading::IsMasterThread() || fpScene == nullptr) return;
+
+    bool drawsTrajectories = false;
+    for (const auto& model : fpScene->GetEndOfEventModelList()) {
+        if (dynamic_cast<G4TrajectoriesModel*>(model.fpModel) != nullptr) {
+            drawsTrajectories = true;
+            break;
+        }
+    }
+    if (!drawsTrajectories) return;
+
+    auto* UImanager = G4UImanager::GetUIpointer();
+    const G4int mode =
+        G4UIcommand::ConvertToInt(UImanager->GetCurrentValues("/tracking/storeTrajectory"));
+    if (mode == 1 || mode == 2) {
+        const G4int richMode = (mode == 2) ? 4 : 3;
+        G4cout << "G4Xr: switching to rich trajectories (/tracking/storeTrajectory " << richMode << "); the Xr driver needs rich trajectory data." << G4endl;
+        UImanager->ApplyCommand("/tracking/storeTrajectory " + std::to_string(richMode));
+    }
 }
 
 G4XrSceneHandler::~G4XrSceneHandler()
@@ -112,6 +146,13 @@ void G4XrSceneHandler::FinalizeBinary()
 
 // helper function(s) for track data writing
 
+G4int G4XrSceneHandler::CurrentEventID() const
+{
+    const G4ModelingParameters* mp = fpModel ? fpModel->GetModelingParameters() : nullptr;
+    const G4Event* event = mp ? mp->GetEvent() : nullptr;
+    return event ? event->GetEventID() : -1;
+}
+
 uint16_t G4XrSceneHandler::GetStringID(const std::string& s)
 {
     auto it = stringIndex.find(s);
@@ -135,17 +176,18 @@ void G4XrSceneHandler::AddPrimitive(const G4Polyline& polyline)
         if (trajModel->GetRunID() != runno) 
         {
             runno = trajModel->GetRunID();
-            loggedIDs.clear();
+            loggedTracks.clear();
             InitializeBinary();
         }
         const G4VTrajectory* traj = trajModel->GetCurrentTrajectory();
+        if (traj && !fWarnedNotRich && dynamic_cast<const G4RichTrajectory*>(traj) == nullptr)
+        {
+            fWarnedNotRich = true;
+            G4Exception("G4XrSceneHandler::AddPrimitive", "XR0001", JustWarning, "Trajectories are not rich. Per-point time, energy deposit, process and volume will be zero.");
+        }
         if(traj)
         {
-            if (traj->GetTrackID() == 1)
-                loggedIDs.clear();
-
-            int trackID = traj->GetTrackID();
-            if(loggedIDs.find(trackID)==loggedIDs.end())
+            if(loggedTracks.insert({CurrentEventID(), traj->GetTrackID()}).second)
             {
                 double r = 0.0; double g = 0.0; double b = 0.0;
                 if (visAttr)
@@ -155,7 +197,6 @@ void G4XrSceneHandler::AddPrimitive(const G4Polyline& polyline)
                     g = c.GetGreen();
                     b = c.GetBlue();
                 }
-                loggedIDs.insert(trackID);
                 CollectTrackData(traj, r, g, b);
             }
         }
@@ -334,6 +375,17 @@ static std::string DeepestVolume(const std::string& path)
     return (colon == std::string::npos) ? leaf : leaf.substr(0, colon);
 }
 
+// Parse a unit string into Geant4 internal units
+static G4double ParseWithUnit(const std::string& s)
+{
+    std::istringstream is(s);
+    is.imbue(std::locale::classic());
+    G4double value = 0.;
+    std::string unit;
+    if (!(is >> value >> unit)) return 0.;
+    return value * G4UnitDefinition::GetValueOf(unit);
+}
+
 void G4XrSceneHandler::ConvertMeshToGLB(const std::string& outputFile)
 {
     tinygltf::Model model;
@@ -496,8 +548,7 @@ void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, G4double r,G4
     TrackData t;
 
     t.trackID = traj->GetTrackID();
-    const G4Event* currentEvent = G4EventManager::GetEventManager()->GetConstCurrentEvent();
-    t.eventID = currentEvent ? currentEvent->GetEventID() : -1;
+    t.eventID = CurrentEventID();
     t.particleName = traj->GetParticleName();
     t.charge = traj->GetCharge();
 
@@ -550,10 +601,11 @@ void G4XrSceneHandler::CollectTrackData(const G4VTrajectory* traj, G4double r,G4
         {
             for(auto& a:*atts)
             {
+                // matching units to G4VR expectation
                 if(a.GetName()=="PostT")
-                    time = std::stod(a.GetValue());
+                    time = ParseWithUnit(a.GetValue()) / CLHEP::picosecond;
                 else if(a.GetName()=="TED")
-                    edep = std::stod(a.GetValue());
+                    edep = ParseWithUnit(a.GetValue()) / CLHEP::MeV;
                 else if(a.GetName()=="PDS")
                     procID = GetStringID(a.GetValue());
                 else if(a.GetName()=="PreVPath")

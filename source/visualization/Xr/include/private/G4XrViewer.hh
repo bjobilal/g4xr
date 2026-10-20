@@ -43,11 +43,16 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#endif
 #include <thread>
 #include <chrono>
 #include <stdio.h>
@@ -84,7 +89,7 @@ class G4XrViewer : public G4VViewer
     const int PORT = 2535;
     std::string URL;
     static std::string get_local_ip();
-    void push_file(const std::string& dirname = "/GLTF"); 
+    void push_file(const std::string& dirname = "GLTF"); 
     int server_init();
 
     // save mode scripts
