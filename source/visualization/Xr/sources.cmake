@@ -3,17 +3,13 @@
 geant4_add_module(G4visXr
   PUBLIC_HEADERS
     G4Xr.hh
-    G4XrQt.hh
   PRIVATE_HEADERS
     G4XrViewer.hh
-    G4XrQtViewer.hh
     G4XrSceneHandler.hh
     G4XrMessenger.hh
   SOURCES
     G4Xr.cc
-    G4XrQt.cc
     G4XrViewer.cc
-    G4XrQtViewer.cc
     G4XrSceneHandler.cc
     G4XrMessenger.cc)
 
@@ -34,11 +30,6 @@ geant4_module_link_libraries(G4visXr
     G4materials
     G4modeling
     G4specsolids
-    Qt${QT_VERSION_MAJOR}::Gui
-    Qt${QT_VERSION_MAJOR}::Widgets
-    Qt${QT_VERSION_MAJOR}::3DCore
-    Qt${QT_VERSION_MAJOR}::3DExtras
-    Qt${QT_VERSION_MAJOR}::3DRender
     G4tinygltf
     G4cpp-httplib
     G4miniz)

@@ -3,7 +3,6 @@
 #include "G4XrViewer.hh"
 #include "G4XrMessenger.hh" 
 
-#include "G4UIQt.hh"
 #include "G4UIbatch.hh"
 #include "G4UImanager.hh"
 
