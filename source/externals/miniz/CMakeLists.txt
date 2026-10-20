@@ -5,3 +5,6 @@ target_include_directories(G4miniz PUBLIC
         $<INSTALL_INTERFACE:include>)
 
 set_target_properties(G4miniz PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+install(TARGETS G4miniz EXPORT Geant4LibraryDepends
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Development)
